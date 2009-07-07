@@ -23,6 +23,10 @@
                     <term>BetweenString</term>
                     <description>'{0}' may only have {1} up to {2} letters.</description>
                 </item>
+              <item>
+            	  <term>BetweenStringLength</term>
+                     <description>'{0}' must be {1} letters long.</description>
+                 </item>
             </list>
             </para>
         </member>
@@ -105,6 +109,7 @@
             </summary>
             <param name="min">Value must be equal to this or larger.</param>
             <param name="max">Value must be equal or less than this.</param>
+            <exception cref="T:System.ArgumentException">Thrown if the max value is more than the min value</exception>
         </member>
         <member name="M:Fadd.Validation.ValidateBetweenAttribute.Validate(System.Object,System.Object)">
             <summary>
@@ -115,6 +120,7 @@
             <returns>
             true if value passed the validation; otherwise false.
             </returns>
+            <exception cref="T:System.NotSupportedException">Thrown if an unsupported object value is supplied</exception>
         </member>
         <member name="M:Fadd.Validation.ValidateBetweenAttribute.Format(System.String,Fadd.Globalization.ILanguageNode)">
             <summary>
@@ -145,86 +151,6 @@
         <member name="P:Fadd.Validation.ValidateBetweenAttribute.Max">
             <summary>
             Max value
-            </summary>
-        </member>
-        <member name="T:Fadd.Logging.NullLogProvider">
-            <summary>
-            Temporary class (before transaction where <see cref="T:Fadd.Logging.ILogProvider"/>'s will be removed) to disable logging totally
-            </summary>
-        </member>
-        <member name="T:Fadd.Logging.ILogProvider">
-            <summary>
-            Provides different logger implementations.
-            </summary>
-        </member>
-        <member name="M:Fadd.Logging.ILogProvider.GetLogger(System.String)">
-            <summary>
-            Get a logger with the specified name.
-            </summary>
-            <param name="name"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Fadd.Logging.ILogProvider.GetCurrentClassLogger">
-            <summary>
-            Get logger for current class.
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Fadd.Logging.NullLogProvider.GetLogger(System.String)">
-            <summary>Returns a <see cref="T:Fadd.Logging.NullLogger"/></summary>
-        </member>
-        <member name="M:Fadd.Logging.NullLogProvider.GetCurrentClassLogger">
-            <summary>Returns a <see cref="T:Fadd.Logging.NullLogger"/></summary>
-        </member>
-        <member name="T:Fadd.Logging.LogManager">
-            <summary>
-            Manager that provides logs to the classes.
-            </summary>
-        </member>
-        <member name="F:Fadd.Logging.LogManager.NullLogger">
-            <summary>
-            Logger that is logging to nothing.
-            </summary>
-        </member>
-        <member name="M:Fadd.Logging.LogManager.GetLogger(System.String)">
-            <summary>
-            Gets the logger.
-            </summary>
-            <param name="name">The name.</param>
-            <returns>A <see cref="T:Fadd.Logging.ILogger"/>.</returns>
-        </member>
-        <member name="M:Fadd.Logging.LogManager.GetCurrentClassLogger">
-            <summary>
-            Get logger for the current class.
-            </summary>
-            <returns>A <see cref="T:Fadd.Logging.ILogger"/>.</returns>
-        </member>
-        <member name="M:Fadd.Logging.LogManager.SetProvider(Fadd.Logging.ILogProvider)">
-            <summary>
-            Set the provider used to get loggers.
-            </summary>
-            <param name="provider"></param>
-        </member>
-        <member name="T:Fadd.Components.Parameter">
-            <summary>
-            A parameter to a component constructor.
-            </summary>
-        </member>
-        <member name="M:Fadd.Components.Parameter.#ctor(System.String,System.Object)">
-            <summary>
-            Initializes a new instance of the <see cref="T:Fadd.Components.Parameter"/> class.
-            </summary>
-            <param name="name">name of constructor parameter.</param>
-            <param name="value">parameter value.</param>
-        </member>
-        <member name="P:Fadd.Components.Parameter.Value">
-            <summary>
-            parameter value
-            </summary>
-        </member>
-        <member name="P:Fadd.Components.Parameter.Name">
-            <summary>
-            name of constructor parameter.
             </summary>
         </member>
         <member name="T:Fadd.Commands.Tests.TestObject">
@@ -686,31 +612,6 @@
             <param name="text">Text to parse.</param>
             <returns>a parsed tree</returns>
         </member>
-        <member name="T:Fadd.Components.CircularDependenciesException">
-            <summary>
-            Thrown when components are dependent of each other and therefore cannot be created.
-            </summary>
-        </member>
-        <member name="M:Fadd.Components.CircularDependenciesException.#ctor(System.Collections.Generic.Stack{System.Type})">
-            <summary>
-            Initializes a new instance of the <see cref="T:Fadd.Components.CircularDependenciesException"/> class.
-            </summary>
-            <param name="types">The types.</param>
-        </member>
-        <member name="P:Fadd.Components.CircularDependenciesException.Message">
-            <summary>
-            Gets a message that describes the current exception.
-            </summary>
-            <value></value>
-            <returns>
-            The error message that explains the reason for the exception, or an empty string("").
-            </returns>
-        </member>
-        <member name="P:Fadd.Components.CircularDependenciesException.DependencyStack">
-            <summary>
-            Dependency stack (contains path for the circular dependencies).
-            </summary>
-        </member>
         <member name="T:Fadd.Plugins.EvidenceRequestedEventArgs">
             <summary>
             Arguments for <see cref="T:Fadd.Plugins.EvidenceRequestedHandler"/>
@@ -739,98 +640,6 @@
             </summary>
             <param name="source">PluginManager</param>
             <param name="args">Assembly information</param>
-        </member>
-        <member name="T:Fadd.Logging.ILogger">
-            <summary>
-            A logger is used to write log entries to a specific source, it can for instance be to the console
-            (<see cref="T:Fadd.Logging.ConsoleLogger"/>) or to a text file (<see cref="T:Fadd.Logging.TextFileLogger"/>).
-            </summary>
-        </member>
-        <member name="M:Fadd.Logging.ILogger.Trace(System.String)">
-            <summary>
-            Very detailed log messages, potentially of a high frequency and volume
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.ILogger.Trace(System.String,System.Exception)">
-            <summary>
-            Very detailed log messages, potentially of a high frequency and volume
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="M:Fadd.Logging.ILogger.Debug(System.String)">
-            <summary>
-            Less detailed and/or less frequent debugging messages
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.ILogger.Debug(System.String,System.Exception)">
-            <summary>
-            Less detailed and/or less frequent debugging messages
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="M:Fadd.Logging.ILogger.Info(System.String)">
-            <summary>
-            Informational messages
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.ILogger.Info(System.String,System.Exception)">
-            <summary>
-            Informational messages
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="M:Fadd.Logging.ILogger.Warning(System.String)">
-            <summary>
-            Warnings which don't appear to the user of the application
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.ILogger.Warning(System.String,System.Exception)">
-            <summary>
-            Warnings which don't appear to the user of the application
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="M:Fadd.Logging.ILogger.Error(System.String)">
-            <summary>
-            Error messages
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.ILogger.Error(System.String,System.Exception)">
-            <summary>
-            Error messages
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="M:Fadd.Logging.ILogger.Fatal(System.String)">
-            <summary>
-            Fatal error messages. After a fatal error, the application usually terminates. 
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.ILogger.Fatal(System.String,System.Exception)">
-            <summary>
-            Fatal error messages. After a fatal error, the application usually terminates. 
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="P:Fadd.Logging.ILogger.LoggerConfiguration">
-            <summary>
-            Gets the configuration used for the logger
-            </summary>
-            <remarks>
-            Can be null in case the logger lacks a configuration.
-            </remarks>
         </member>
         <member name="T:Fadd.Globalization.EmptyLanguageNode">
             <summary>
@@ -1261,486 +1070,6 @@
         <member name="P:Fadd.Globalization.EmptyLanguageNode.Count">
             <summary>
             Number languages
-            </summary>
-        </member>
-        <member name="T:Fadd.Components.ComponentFactory">
-            <summary>
-            Used to create and maintain components.
-            </summary>
-            <remarks>
-            Supports lazy loading which means that components will be loaded when 
-            requested. 
-            </remarks>
-        </member>
-        <member name="T:Fadd.Components.IComponentManager">
-            <summary>
-            Used to create and maintain components.
-            </summary>
-            <seealso cref="T:Fadd.Components.ComponentFactory"/>
-        </member>
-        <member name="T:Fadd.Components.IComponentProvider">
-            <summary>
-            Base interface used to provide components.
-            </summary>
-        </member>
-        <member name="M:Fadd.Components.IComponentProvider.Add``2(Fadd.Components.Parameter[])">
-            <summary>
-            Add a component.
-            </summary>
-            <typeparam name="InterfaceType">Interface type, used to request components.</typeparam>
-            <typeparam name="InstanceType">Instance type, used to create component.</typeparam>
-            <param name="constructorParameters">Extra parameters used in the constructor.</param>
-        </member>
-        <member name="M:Fadd.Components.IComponentProvider.AddInstance``1(System.Object)">
-            <summary>
-            Add an existing instance.
-            </summary>
-            <param name="instance"></param>
-            <typeparam name="T">Interface type being requested when getting this component</typeparam>
-            <exception cref="T:System.ArgumentException"></exception>
-        </member>
-        <member name="M:Fadd.Components.IComponentProvider.Contains(System.Type)">
-            <summary>
-            Checks whether a specific type exists (loaded or not loaded)
-            </summary>
-            <param name="interfaceType">Interface to check.</param>
-        </member>
-        <member name="M:Fadd.Components.IComponentProvider.Contains(System.String)">
-            <summary>
-            Checks whether a specific type exists (loaded or not loaded)
-            </summary>
-            <param name="name">Name of component.</param>
-        </member>
-        <member name="M:Fadd.Components.IComponentProvider.Get``1">
-            <summary>
-            Gets a component.
-            </summary>
-            <remarks>
-            The component will be created if needed.
-            </remarks>
-            <typeparam name="T">Type of component (interface)</typeparam>
-            <returns>Component if found; otherwise null.</returns>
-        </member>
-        <member name="M:Fadd.Components.IComponentManager.AddPrivate``2(Fadd.Components.Parameter[])">
-            <summary>
-            Add a private component.
-            </summary>
-            <remarks>
-            <para>
-            Private components are created like regular components when their dependencies are met, 
-            the difference between private and regular components are that they are not accessible from anywhere.
-            </para>
-            <para>
-            Private components are typically used to instantiate components that are not used anywhere 
-            but still need to be created when their dependencies have been met.
-            </para>
-            </remarks>
-            <typeparam name="InterfaceType">Interface type, used to request components.</typeparam>
-            <typeparam name="InstanceType">Instance type, used to create component.</typeparam>
-            <param name="constructorParameters">Extra parameters used in the constructor.</param>
-        </member>
-        <member name="M:Fadd.Components.IComponentManager.AddPrivate``2(System.Action{System.Object},Fadd.Components.Parameter[])">
-            <summary>
-            Add a private component.
-            </summary>
-            <remarks>
-            <para>
-            Private components are created like regular components when their dependencies are met, 
-            the difference between private and regular components are that they are not accessible from anywhere.
-            </para>
-            <para>
-            Private components are typically used to instantiate components that are not used anywhere 
-            but still need to be created when their dependencies have been met.
-            </para>
-            </remarks>
-            <typeparam name="InterfaceType">Interface type, used to request components.</typeparam>
-            <typeparam name="InstanceType">Instance type, used to create component.</typeparam>
-            <param name="constructorParameters">Extra parameters used in the constructor.</param>
-            <param name="componentCreated">A delegate to be invoked when the private component has been instantiated, will be passed the interface of the created component</param>
-        </member>
-        <member name="M:Fadd.Components.IComponentManager.AddPrivate(System.Type,System.Type,Fadd.Components.Parameter[])">
-            <summary>
-            Add a private component.
-            </summary>
-            <remarks>
-            <para>
-            Private components are created like regular components when their dependencies are met, 
-            the difference between private and regular components are that they are not accessible from anywhere.
-            </para>
-            <para>
-            Private components are typically used to instantiate components that are not used anywhere 
-            but still need to be created when their dependencies have been met.
-            </para>
-            </remarks>
-            <param name="interfaceType">Interface type, used to request components.</param>
-            <param name="instanceType">Instance type, used to create component.</param>
-            <param name="constructorParameters">Extra parameters used in the constructor.</param>
-        </member>
-        <member name="M:Fadd.Components.IComponentManager.AddType(System.Type,System.Type,Fadd.Components.Parameter[])">
-            <summary>
-            Add an component
-            </summary>
-            <param name="interfaceType">Interface type, used to request components.</param>
-            <param name="instanceType">Instance type, used to create component.</param>
-            <param name="constructorParameters">Extra parameters used in the constructor.</param>
-            <exception cref="T:System.ArgumentException"></exception>
-        </member>
-        <member name="M:Fadd.Components.IComponentManager.AddInstance(System.Type,System.Object)">
-            <summary>
-            Add an existing instance.
-            </summary>
-            <param name="interfaceType">The type the instance should be added as</param>
-            <param name="instance">The instance to add</param>
-        </member>
-        <member name="M:Fadd.Components.IComponentManager.IsCreated(System.Type)">
-            <summary>
-            Checks whether a certain component is created or not.
-            </summary>
-            <param name="interfaceType">Interface to check</param>
-            <returns>true if component have been created.</returns>
-        </member>
-        <member name="M:Fadd.Components.IComponentManager.IsCreated(System.String)">
-            <summary>
-            Gets if a component have been created or not.
-            </summary>
-            <param name="name">Component name.</param>
-            <returns>true if component have been created.</returns>
-        </member>
-        <member name="P:Fadd.Components.IComponentManager.Item(System.Type)">
-            <summary>
-            Gets a component
-            </summary>
-            <param name="interfaceType">Type of component to get.</param>
-            <returns>Component if found; otherwise null.</returns>
-        </member>
-        <member name="P:Fadd.Components.IComponentManager.Item(System.String)">
-            <summary>
-            Gets a component
-            </summary>
-            <param name="name">Name of component to get.</param>
-            <returns>Component if found; otherwise null.</returns>
-        </member>
-        <member name="M:Fadd.Components.ComponentFactory.Add``2(Fadd.Components.Parameter[])">
-            <summary>
-            Add a component.
-            </summary>
-            <typeparam name="InterfaceType">Interface type, used to request components.</typeparam>
-            <typeparam name="InstanceType">Instance type, used to create component.</typeparam>
-            <param name="constructorParameters">Extra parameters used in the constructor.</param>
-        </member>
-        <member name="M:Fadd.Components.ComponentFactory.AddType(System.Type,System.Type,Fadd.Components.Parameter[])">
-            <summary>
-            Add an component
-            </summary>
-            <param name="interfaceType">Interface type, used to request components.</param>
-            <param name="instanceType">Instance type, used to create component.</param>
-            <param name="constructorParameters">Extra parameters used in the constructor.</param>
-            <exception cref="T:System.ArgumentException">If <paramref name="interfaceType"/> is not an interface, or if <paramref name="instanceType"/> is not an implementation of the interface.</exception>
-        </member>
-        <member name="M:Fadd.Components.ComponentFactory.AddInstance``1(System.Object)">
-            <summary>
-            Add an existing instance.
-            </summary>
-            <param name="instance"></param>
-            <typeparam name="T">Interface type being requested when getting this component</typeparam>
-            <exception cref="T:System.ArgumentException"></exception>
-            <remarks>
-            <see cref="M:Fadd.Components.ComponentFactory.AddInstance``1(System.Object)"/> will also invoke the Created event.
-            </remarks>
-        </member>
-        <member name="M:Fadd.Components.ComponentFactory.AddInstance(System.Type,System.Object)">
-            <summary>
-            Add an existing instance.
-            </summary>
-            <param name="interfaceType">The type the instance should be added as</param>
-            <param name="instance">The instance to add</param>
-            <remarks>
-            <see cref="M:Fadd.Components.ComponentFactory.AddInstance(System.Type,System.Object)"/> will also invoke the Created event.
-            </remarks>
-            <exception cref="T:System.ArgumentException">If <paramref name="interfaceType"/> is not assignable from <paramref name="instance"/> type..</exception>
-        </member>
-        <member name="M:Fadd.Components.ComponentFactory.Contains(System.Type)">
-            <summary>
-            Checks whether a specific type exists (loaded or not loaded)
-            </summary>
-            <param name="interfaceType">Interface to check.</param>
-        </member>
-        <member name="M:Fadd.Components.ComponentFactory.Contains(System.String)">
-            <summary>
-            Checks whether a specific type exists (loaded or not loaded)
-            </summary>
-            <param name="name">Name of component.</param>
-        </member>
-        <member name="M:Fadd.Components.ComponentFactory.IsCreated(System.Type)">
-            <summary>
-            Checks whether a certain component is created or not.
-            </summary>
-            <param name="interfaceType">Interface to check</param>
-            <returns>true if component is created.</returns>
-        </member>
-        <member name="M:Fadd.Components.ComponentFactory.IsCreated(System.String)">
-            <summary>
-            Gets if a component have been created or not.
-            </summary>
-            <param name="name">Component name.</param>
-            <returns>true if component have been created.</returns>
-        </member>
-        <member name="M:Fadd.Components.ComponentFactory.Get``1">
-            <summary>
-            Get a component.
-            </summary>
-            <remarks>
-            The component will be created if needed.
-            </remarks>
-            <typeparam name="T">Type of component (interface)</typeparam>
-            <returns>Component if found; otherwise null.</returns>
-        </member>
-        <member name="M:Fadd.Components.ComponentFactory.AddPrivate``2(Fadd.Components.Parameter[])">
-            <summary>
-            Add a private component.
-            </summary>
-            <typeparam name="InterfaceType">Interface type, used to request components.</typeparam>
-            <typeparam name="InstanceType">Instance type, used to create component.</typeparam>
-            <param name="constructorParameters">Extra parameters used in the constructor.</param>
-            <remarks>
-            	<para>
-            Private components works as regular components, the only difference is that they are not
-            accessible from outside.
-            </para>
-            	<para>
-            Private components are typically used to instantiate components that should not be accessible
-            from anywhere, but they use public components must therefore be loaded when all dependencies
-            have been met.
-            </para>
-            </remarks>
-            <exception cref="T:System.ArgumentException">
-            If: 
-            <list type="bullet">
-                <item>The <typeparamref name="InstanceType"/> is an interface (which obviously cannot be instantiated)</item>
-                <item>The <typeparamref name="InstanceType"/> isn't assignable to <typeparamref name="InterfaceType"/></item>
-                <item>The <typeparamref name="InterfaceType"/> has already been mapped to another instance</item>
-            </list>
-            </exception>
-        </member>
-        <member name="M:Fadd.Components.ComponentFactory.AddPrivate(System.Type,System.Type,Fadd.Components.Parameter[])">
-            <summary>
-            Add a private component.
-            </summary>
-            <param name="interfaceType">Interface type, used to request components.</param>
-            <param name="instanceType">Instance type, used to create component.</param>
-            <param name="constructorParameters">Extra parameters used in the constructor.</param>
-            <remarks>
-            	<para>
-            Private components works as regular components, the only difference is that they are not
-            accessible from outside.
-            </para>
-            	<para>
-            Private components are typically used to instantiate components that should not be accessible
-            from anywhere, but they use public components must therefore be loaded when all dependencies
-            have been met.
-            </para>
-            </remarks>
-            <exception cref="T:System.ArgumentException">
-            <list type="bullet">
-                <item>The <paramref name="instanceType"/> is an interface (which obviously cannot be instantiated)</item>
-                <item>The <paramref name="instanceType"/> isn't assignable to <paramref name="interfaceType"/></item>
-                <item>The <paramref name="interfaceType"/> has already been mapped to another instance</item>
-            </list>
-            </exception>
-        </member>
-        <member name="M:Fadd.Components.ComponentFactory.AddPrivate``2(System.Action{System.Object},Fadd.Components.Parameter[])">
-            <summary>
-            Add a private component.
-            </summary>
-            <typeparam name="InterfaceType">Interface type, used to request components.</typeparam>
-            <typeparam name="InstanceType">Instance type, used to create component.</typeparam>
-            <param name="componentCreated">A delegate to be invoked when the private component has been instantiated, will be passed the interface of the created component</param>
-            <param name="constructorParameters">Extra parameters used in the constructor.</param>
-            <remarks>
-            	<para>
-            Private components are created like regular components when their dependencies are met,
-            the difference between private and regular components are that they are not accessible from anywhere.
-            </para>
-            	<para>
-            Private components are typically used to instantiate components that are not used anywhere
-            but still need to be created when their dependencies have been met.
-            </para>
-            </remarks>
-            <exception cref="T:System.ArgumentException">
-            If: 
-            <list type="bullet">
-                <item>The <typeparamref name="InstanceType"/> is an interface (which obviously cannot be instantiated)</item>
-                <item>The <typeparamref name="InstanceType"/> isn't assignable to <typeparamref name="InterfaceType"/></item>
-                <item>The <typeparamref name="InterfaceType"/> has already been mapped to another instance</item>
-            </list>
-            </exception>
-        </member>
-        <member name="M:Fadd.Components.ComponentFactory.LoadComponent(System.Type,Fadd.Components.ComponentFactory.TypeInformation,System.Collections.Generic.Stack{System.Type})">
-            <summary>
-            Loads a component and adds it to <see cref="F:Fadd.Components.ComponentFactory._instances"/> if successful
-            </summary>
-            <param name="interfaceType">Type what user will request</param>
-            <param name="typeInfo">Type to create</param>
-            <param name="dependenceyStack">Dependency stack, used to find circular dependencies. Type should be <paramref name="interfaceType"/></param>
-            <returns>Instance if created successfully; otherwise false.</returns>
-            <exception cref="T:Fadd.Components.CircularDependenciesException">If a circular dependency was detected.</exception>
-            <exception cref="T:System.InvalidOperationException">If a component have already been loaded.</exception>
-            <exception cref="T:System.Exception">If a component throws any exception during creation.</exception>
-        </member>
-        <member name="M:Fadd.Components.ComponentFactory.FindConstructor(Fadd.Components.ComponentFactory.TypeInformation,System.Collections.Generic.ICollection{System.Object},System.Collections.Generic.Stack{System.Type})">
-            <exception cref="T:Fadd.Components.MissingParametersException"><c>MissingParametersException</c>.</exception>
-            <exception cref="T:Fadd.Components.CircularDependenciesException"><c>CircularDependenciesException</c>.</exception>
-        </member>
-        <member name="M:Fadd.Components.ComponentFactory.CreateAll">
-            <summary>
-            Create all components that have not been created.
-            </summary>
-            <exception cref="T:Fadd.Components.LoadFailedException">If any of the components can't be loaded.</exception>
-        </member>
-        <member name="M:Fadd.Components.ComponentFactory.MovePrivateInstances">
-            <summary>
-            Move all private instances from <see cref="F:Fadd.Components.ComponentFactory._instances"/> to the <see cref="F:Fadd.Components.ComponentFactory._privateInstances"/> dictionary.
-            </summary>
-            <remarks>
-            locks <see cref="F:Fadd.Components.ComponentFactory._instances"/> first, and then <see cref="F:Fadd.Components.ComponentFactory._privateInstances"/>.
-            </remarks>
-        </member>
-        <member name="M:Fadd.Components.ComponentFactory.Get(System.Type)">
-            <summary>
-            Try to get a component.
-            </summary>
-            <param name="interfaceType">Type requested by users.</param>
-            <returns>object if created; otherwise null.</returns>
-            <remarks>
-            should only be used by external components.
-            </remarks>
-        </member>
-        <member name="M:Fadd.Components.ComponentFactory.Get(System.Type,System.Collections.Generic.Stack{System.Type})">
-            <summary>
-            Try to get a component, either loaded or not loaded. Will also try to find missing components.
-            </summary>
-            <param name="interfaceType">Type requested by users.</param>
-            <param name="dependencyStack">Stack to be able to track circular dependencies.</param>
-            <returns>object if created; otherwise null.</returns>
-        </member>
-        <member name="M:Fadd.Components.ComponentFactory.Visit(Fadd.Components.ComponentVisitor)">
-            <summary>
-            Visit all components
-            </summary>
-            <param name="visitor">Delegate to invoke with the found components</param>
-            <remarks>Does not visit private components</remarks>
-        </member>
-        <member name="M:Fadd.Components.ComponentFactory.VisitAll(Fadd.Components.ComponentVisitor)">
-            <summary>
-            Visits all components including private ones
-            </summary>
-            <remarks>
-            Components being added during the visit will not be processed.
-            </remarks>
-            <param name="visitor">Delegate to invoke with the found components</param>
-        </member>
-        <member name="E:Fadd.Components.ComponentFactory.ParametersRequested">
-            <summary>
-            We failed to find all constructor parameters for a certain type. You can use
-            these event to supply the missing parameters.
-            </summary>
-        </member>
-        <member name="P:Fadd.Components.ComponentFactory.NotCreated">
-            <summary>
-            Get all components that have not been created yet.
-            </summary>
-            <returns>I list of all not created components.</returns>
-        </member>
-        <member name="P:Fadd.Components.ComponentFactory.Item(System.Type)">
-            <summary>
-            Get a component
-            </summary>
-            <param name="interfaceType">Type of component to get.</param>
-            <returns>Component if found; otherwise null.</returns>
-        </member>
-        <member name="P:Fadd.Components.ComponentFactory.Fadd#Components#IComponentManager#Item(System.String)">
-            <summary>
-            Gets a component
-            </summary>
-            <param name="name">Name of component to get.</param>
-            <returns>Component if found; otherwise null.</returns>
-        </member>
-        <member name="E:Fadd.Components.ComponentFactory.ComponentMissing">
-            <summary>
-            Invoked when a component is missing.
-            </summary>
-        </member>
-        <member name="E:Fadd.Components.ComponentFactory.Created">
-            <summary>
-            Invoked when a component have been created (or if an instance have been added).
-            </summary>
-        </member>
-        <member name="P:Fadd.Components.ComponentFactory.TypeInformation.Type">
-            <summary>
-            Instance type
-            </summary>
-        </member>
-        <member name="P:Fadd.Components.ComponentFactory.TypeInformation.Dependencies">
-            <summary>
-            Other components that this one is dependent of.
-            </summary>
-            <remarks>
-            Usually used when shutting down components (to be able to shut them down in
-            the correct order).
-            </remarks>
-        </member>
-        <member name="P:Fadd.Components.ComponentFactory.TypeInformation.OnCreated">
-            <summary>
-            Gets a handler to be invoked upon the creation of the component
-            </summary>
-        </member>
-        <member name="T:Fadd.Components.ComponentVisitor">
-            <summary>
-            Used to visit all components.
-            </summary>
-            <param name="interfaceType">component interface.</param>
-            <param name="instance">instance.</param>
-        </member>
-        <member name="T:Fadd.Components.RequestComponentEventArgs">
-            <summary>
-            Arguments for <see cref="E:Fadd.Components.ComponentFactory.ComponentMissing"/>.
-            </summary>
-        </member>
-        <member name="M:Fadd.Components.RequestComponentEventArgs.#ctor(System.Type,System.Collections.Generic.Stack{System.Type})">
-            <summary>
-            Initializes a new instance of the <see cref="T:Fadd.Components.RequestComponentEventArgs"/> class.
-            </summary>
-            <param name="interfaceType">Requested component type.</param>
-            <param name="dependencyStack">The dependency stack.</param>
-        </member>
-        <member name="P:Fadd.Components.RequestComponentEventArgs.InstanceOrType">
-            <summary>
-            A component instance or type of instance to create.
-            </summary>
-            <example>
-            <code>
-            void ComponentMissing(object source, RequestComponentEventArgs args)
-            {
-                if (args.InterfaceType != typeof(IMyManager))
-                    return;
-            
-            #if TEST
-                args.InstanceOrType = new MyManagerStub();
-            #else
-                args.InstanceOrType = typeof(MyManager);
-            #endif    
-            }
-            </code>
-            </example>
-        </member>
-        <member name="P:Fadd.Components.RequestComponentEventArgs.InterfaceType">
-            <summary>
-            Requested component type
-            </summary>
-        </member>
-        <member name="P:Fadd.Components.RequestComponentEventArgs.DependencyStack">
-            <summary>
-            Dependency stack
             </summary>
         </member>
         <member name="T:Fadd.Commands.ICommandDispatcher">
@@ -2398,6 +1727,130 @@
             
             </summary>
         </member>
+        <member name="T:Fadd.Globalization.Yaml.YamlWatcher">
+            <summary>
+            Class to subscribe to change events on a file and update a language hierarchy every time the file changes.
+            </summary>
+            <remarks>
+            If the file being watched is deleted or renamed no more changes will be made to the language node.
+            Also be observant on the fact that the class cannot Remove entries from a <see cref="T:Fadd.Globalization.LanguageNode"/>, only add or modify entries.
+            This restriction is needed because a single YamlWatcher only watches One file and a <see cref="T:Fadd.Globalization.LanguageNode"/> can be connected to several
+            watchers and files, deleting anything could clear things for another file.
+            </remarks>
+        </member>
+        <member name="T:Fadd.Globalization.ILanguageWatcher">
+            <summary>
+            Loads and watches language files on disk.
+            </summary>
+            <remarks>
+            Future version can watch different file types, and load them using different loaders.
+            </remarks>
+        </member>
+        <member name="M:Fadd.Globalization.ILanguageWatcher.Add(System.String)">
+            <summary>
+            Load and watch another file on disk.
+            </summary>
+            <param name="filename">Relative or absolute path to language file.</param>
+            <returns>Node that have been loaded.</returns>
+        </member>
+        <member name="M:Fadd.Globalization.ILanguageWatcher.AddContents(System.String,System.String)">
+            <summary>
+            Parse YAML contents and add any language nodes to the watchers language
+            </summary>
+            <param name="yaml">YAML contents</param>
+            <param name="nodeName">The name of the node to add the contents into</param>
+            <returns>Node that have been loaded.</returns>
+        </member>
+        <member name="P:Fadd.Globalization.ILanguageWatcher.RootNode">
+            <summary>
+            Root language node.
+            </summary>
+        </member>
+        <member name="F:Fadd.Globalization.Yaml.YamlWatcher._filesToReload">
+            <summary>
+            files that need to be reloaded
+            </summary>
+        </member>
+        <member name="F:Fadd.Globalization.Yaml.YamlWatcher._readTimer">
+            <summary>A timer to use as delay if the file is currently in use</summary>
+        </member>
+        <member name="M:Fadd.Globalization.Yaml.YamlWatcher.#ctor(Fadd.Globalization.LanguageNode,System.String)">
+            <summary>
+            Instantiates the class to listen to changes in a file, also reads the file and fills the language node with language entries
+            </summary>
+            <param name="languageNode">Language node to fill</param>
+            <param name="filename">The filename to watch</param>
+            <exception cref="T:System.IO.FileNotFoundException">Thrown if the specified file does not exist</exception>
+        </member>
+        <member name="M:Fadd.Globalization.Yaml.YamlWatcher.Add(System.String)">
+            <summary>
+            Load and watch another file on disk.
+            </summary>
+            <param name="filename">Relative or absolute path to language file.</param>
+            <returns>Node that have been loaded.</returns>
+        </member>
+        <member name="M:Fadd.Globalization.Yaml.YamlWatcher.AddContents(System.String,System.String)">
+            <summary>
+            Parse YAML contents and add any language nodes to the watchers language
+            </summary>
+            <param name="yaml">YAML contents</param>
+            <param name="nodeName">The name of the node to add the contents into</param>
+            <returns>Node that have been loaded.</returns>
+        </member>
+        <member name="M:Fadd.Globalization.Yaml.YamlWatcher.OnTryRead(System.Object,System.Timers.ElapsedEventArgs)">
+            <summary>
+            Callback for when the file should be read again
+            </summary>
+        </member>
+        <member name="M:Fadd.Globalization.Yaml.YamlWatcher.Watch">
+            <summary>
+            Sets the class to watch the specified file
+            </summary>
+        </member>
+        <member name="M:Fadd.Globalization.Yaml.YamlWatcher.OnFileChanged(System.Object,System.IO.FileSystemEventArgs)">
+            <summary>
+            Callback for when the file changes
+            </summary>
+        </member>
+        <member name="M:Fadd.Globalization.Yaml.YamlWatcher.LoadFile(System.String)">
+            <summary>
+            Private loading of file to wrap read failure control
+            </summary>
+        </member>
+        <member name="M:Fadd.Globalization.Yaml.YamlWatcher.LoadFile(System.String,Fadd.Globalization.LanguageNode)">
+            <summary>
+            Fill the root node with languages and categories from the specified file
+            </summary>
+            <param name="fullPath">Full file path</param>
+            <param name="rootNode">The root node to fill</param>
+        </member>
+        <member name="M:Fadd.Globalization.Yaml.YamlWatcher.Dispose">
+            <summary>
+            Function to stop the watcher
+            </summary>
+        </member>
+        <member name="P:Fadd.Globalization.Yaml.YamlWatcher.RootNode">
+            <summary>
+            Root language node.
+            </summary>
+            <value></value>
+        </member>
+        <member name="T:Fadd.Data.Migration.IMigrationModel">
+            <summary>
+            Provides a general view of the model needed for saving migration data in the database
+            </summary>
+            <remarks>
+            The model and mapping must be specified explicitly by the migration user since tables most oftenly
+            should match a certain coding convention. Explicitly declaring the model also allows for saving 
+            extra version data.
+            </remarks>
+        </member>
+        <member name="P:Fadd.Data.Migration.IMigrationModel.VersionNumber">
+            <summary>Gets or sets the version number of the migration</summary>
+        </member>
+        <member name="P:Fadd.Data.Migration.IMigrationModel.UpdateTime">
+            <summary>Gets or sets the date and time for when the database was updated to the migration version</summary>
+        </member>
         <member name="T:Fadd.Data.DataLayerException">
             <summary>
             Main exception in the data layer.
@@ -2498,6 +1951,53 @@
             // will return "'{0}' is required" if the validation failed, else null.
             </code>
             </example>
+        </member>
+        <member name="T:Fadd.Validation.ValidateHexAttribute">
+            <summary>
+            Validates that a string property represents valid Hex value (Value should not either too large or too small for an Int64).
+            </summary>
+        </member>
+        <member name="F:Fadd.Validation.ValidateHexAttribute.Name">
+            <summary>
+            Name of the language item for this validation.
+            </summary>
+        </member>
+        <member name="M:Fadd.Validation.ValidateHexAttribute.Validate(System.Object,System.Object)">
+            <summary>
+            Validate value
+            </summary>
+            <param name="context">Can be used to send a context object to the validation class. Useful if you provide your own validation classes which need to get information from your application. <seealso cref="T:Fadd.Validation.BeforeValidationEventArgs"/></param>
+            <param name="value">value to validate</param>
+            <returns>
+            true if value passed the validation; otherwise false.
+            </returns>
+            <exception cref="T:System.NotSupportedException">Thrown if the value supplied is not a <see cref="T:System.String"/></exception>
+        </member>
+        <member name="M:Fadd.Validation.ValidateHexAttribute.Format(System.String,Fadd.Globalization.ILanguageNode)">
+            <summary>
+            Localize error if validation failed.
+            </summary>
+            <param name="fieldName">Localized field name.</param>
+            <param name="validationLanguage">Language node with all validation translations.</param>
+            <returns>
+            A localized error message if the validation failed; otherwise null.
+            </returns>
+            <example>
+            	<code>
+            attribute.Localize("FirstName", "'{0}' is required");
+            // will return "'{0}' is required" if the validation failed, else null.
+            </code>
+            </example>
+        </member>
+        <member name="M:Fadd.Validation.ValidateHexAttribute.SupportsType(System.Type)">
+            <summary>
+            Determines if the validation class support the specified type.
+            </summary>
+            <param name="type">Property/Value type.</param>
+            <returns>true if the type is supported.</returns>
+            <remarks>
+            Used when validation objects are generated.
+            </remarks>
         </member>
         <member name="T:Fadd.Validation.ObjectValidator">
             <summary>
@@ -2625,203 +2125,6 @@
         <member name="P:Fadd.Plugins.IPluginInfo.Copyright">
             <summary>
             Copyright owner of this plugin.
-            </summary>
-        </member>
-        <member name="T:Fadd.Logging.TextFileLogger">
-            <summary>
-            Writes log entries to a text file.
-            </summary>
-        </member>
-        <member name="M:Fadd.Logging.TextFileLogger.Trace(System.String)">
-            <summary>
-            Very detailed log messages, potentially of a high frequency and volume
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.TextFileLogger.Trace(System.String,System.Exception)">
-            <summary>
-            Very detailed log messages, potentially of a high frequency and volume
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="M:Fadd.Logging.TextFileLogger.Debug(System.String)">
-            <summary>
-            Less detailed and/or less frequent debugging messages
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.TextFileLogger.Debug(System.String,System.Exception)">
-            <summary>
-            Less detailed and/or less frequent debugging messages
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="M:Fadd.Logging.TextFileLogger.Info(System.String)">
-            <summary>
-            Informational messages
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.TextFileLogger.Info(System.String,System.Exception)">
-            <summary>
-            Informational messages
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="M:Fadd.Logging.TextFileLogger.Warning(System.String)">
-            <summary>
-            Warnings which don't appear to the user of the application
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.TextFileLogger.Warning(System.String,System.Exception)">
-            <summary>
-            Warnings which don't appear to the user of the application
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="M:Fadd.Logging.TextFileLogger.Error(System.String)">
-            <summary>
-            Error messages
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.TextFileLogger.Error(System.String,System.Exception)">
-            <summary>
-            Error messages
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="M:Fadd.Logging.TextFileLogger.Fatal(System.String)">
-            <summary>
-            Fatal error messages. After a fatal error, the application usually terminates. 
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.TextFileLogger.Fatal(System.String,System.Exception)">
-            <summary>
-            Fatal error messages. After a fatal error, the application usually terminates. 
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="P:Fadd.Logging.TextFileLogger.LoggerConfiguration">
-            <summary>
-            Gets the configuration used for the logger
-            </summary>
-            <value></value>
-        </member>
-        <member name="T:Fadd.Logging.LogProvider">
-            <summary>
-            Contains all configuration settings for the logs and provide the
-            requested loggers to the <see cref="T:Fadd.Logging.LogManager"/> when a log is requested.
-            </summary>
-        </member>
-        <member name="M:Fadd.Logging.LogProvider.GetLogger(System.String)">
-            <summary>
-            Get a logger with the specified name.
-            </summary>
-            <param name="name"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Fadd.Logging.LogProvider.GetCurrentClassLogger">
-            <summary>
-            Get logger for current class.
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="T:Fadd.Logging.ILoggerConfiguration">
-            <summary>
-            This class contains the general configuration for <see cref="T:Fadd.Logging.ILogger"/>, while each logger has it's
-            own specific configuration on top of this interface.
-            </summary>
-        </member>
-        <member name="M:Fadd.Logging.ILoggerConfiguration.Deserialize(System.IO.Stream)">
-            <summary>
-            Load a configuration from an XML stream
-            </summary>
-            <param name="stream">XML stream to read from</param>
-        </member>
-        <member name="M:Fadd.Logging.ILoggerConfiguration.Serialize(System.IO.Stream)">
-            <summary>
-            Write configuration into a XML stream.
-            </summary>
-            <param name="stream">XML stream to write to</param>
-        </member>
-        <member name="P:Fadd.Logging.ILoggerConfiguration.Name">
-            <summary>
-            Name of this logging configuration.
-            </summary>
-            <remarks>
-            Used in the configuration files (section loggers) to map a logger to a log.
-            </remarks>
-        </member>
-        <member name="P:Fadd.Logging.ILoggerConfiguration.MinLevel">
-            <summary>
-            The lowest level that can be written to all logs that have this <see cref="T:Fadd.Logging.ILogger"/> attached.
-            </summary>
-        </member>
-        <member name="P:Fadd.Logging.ILoggerConfiguration.MaxLevel">
-            <summary>
-            The max level that can be written to all logs that has this l<see cref="T:Fadd.Logging.ILogger"/>ogger attached.
-            </summary>
-        </member>
-        <member name="P:Fadd.Logging.ILoggerConfiguration.StackFrameCount">
-            <summary>
-            Number of stack frames to include in the logging
-            </summary>
-        </member>
-        <member name="P:Fadd.Logging.ILoggerConfiguration.StackFrameStart">
-            <summary>
-            Which stack frame to start with.
-            </summary>
-            <remarks>To skip all logging frames, specify 5 as start.</remarks>
-        </member>
-        <member name="P:Fadd.Logging.ILoggerConfiguration.Formatter">
-            <summary>
-            Formatter used to transform logging information into text (or binary formats).
-            </summary>
-        </member>
-        <member name="T:Fadd.Logging.LogLevel">
-            <summary>
-            Log levels
-            </summary>
-        </member>
-        <member name="F:Fadd.Logging.LogLevel.Trace">
-            <summary>
-            Very detailed logs useful when trying to find bugs.
-            </summary>
-        </member>
-        <member name="F:Fadd.Logging.LogLevel.Info">
-            <summary>
-            Information such as state changes etc.
-            </summary>
-        </member>
-        <member name="F:Fadd.Logging.LogLevel.Debug">
-            <summary>
-            Information useful during debugging
-            </summary>
-        </member>
-        <member name="F:Fadd.Logging.LogLevel.Warning">
-            <summary>
-            Something did go as expected, but it's nothing serious and
-            executing can continue without any problems.
-            </summary>
-        </member>
-        <member name="F:Fadd.Logging.LogLevel.Error">
-            <summary>
-            Something went wrong, but we can handle it, alhtough the execution
-            cannot continue as expected.
-            </summary>
-        </member>
-        <member name="F:Fadd.Logging.LogLevel.Fatal">
-            <summary>
-            Something went wrong and we can't really handle it.
             </summary>
         </member>
         <member name="T:Fadd.Globalization.MemLanguageNode">
@@ -3145,65 +2448,67 @@
             Gets all primary keys
             </summary>
         </member>
-        <member name="T:Fadd.Components.CreatedEventArgs">
+        <member name="T:Fadd.Data.Mappings.ColumnType">
             <summary>
-            Arguments for <see cref="E:Fadd.Components.ComponentFactory.Created"/>.
+            SQL92 column types.
             </summary>
         </member>
-        <member name="M:Fadd.Components.CreatedEventArgs.#ctor(System.Type,System.Object,Fadd.Components.CreateMode,System.Collections.Generic.Stack{System.Type})">
+        <member name="F:Fadd.Data.Mappings.ColumnType.Bit">
             <summary>
-            Initializes a new instance of the <see cref="T:Fadd.Components.CreatedEventArgs"/> class.
-            </summary>
-            <param name="interfaceType">Type of the interface used to request instance.</param>
-            <param name="instance">Instance being returned when <see cref="P:Fadd.Components.CreatedEventArgs.InterfaceType"/> is being requested..</param>
-            <param name="createMode">How the component was created</param>
-            <param name="dependencyStack">Current dependency stack</param>
-        </member>
-        <member name="M:Fadd.Components.CreatedEventArgs.#ctor(System.Type,System.Object,Fadd.Components.CreateMode)">
-            <summary>
-            Initializes a new instance of the <see cref="T:Fadd.Components.CreatedEventArgs"/> class.
-            </summary>
-            <param name="interfaceType">Type of the interface used to request instance.</param>
-            <param name="instance">Instance being returned when <see cref="P:Fadd.Components.CreatedEventArgs.InterfaceType"/> is being requested..</param>
-            <param name="createMode">How the component was created</param>
-        </member>
-        <member name="P:Fadd.Components.CreatedEventArgs.InterfaceType">
-            <summary>
-            Type of the interface used to request instance
+            One bit
             </summary>
         </member>
-        <member name="P:Fadd.Components.CreatedEventArgs.Instance">
+        <member name="F:Fadd.Data.Mappings.ColumnType.String">
             <summary>
-            Instance being returned when <see cref="P:Fadd.Components.CreatedEventArgs.InterfaceType"/> is being requested.
+            Short string
             </summary>
         </member>
-        <member name="P:Fadd.Components.CreatedEventArgs.CreateMode">
+        <member name="F:Fadd.Data.Mappings.ColumnType.Double">
             <summary>
-            How the component was created.
+            floating point
             </summary>
         </member>
-        <member name="P:Fadd.Components.CreatedEventArgs.DependencyStack">
+        <member name="F:Fadd.Data.Mappings.ColumnType.Integer">
             <summary>
-            An hiearchy to where the component is created.
-            </summary>
-            <remarks>
-            null if an instance was added.
-            </remarks>
-        </member>
-        <member name="T:Fadd.Components.CreateMode">
-            <summary>
-            How the component was created.
+            Int column
             </summary>
         </member>
-        <member name="F:Fadd.Components.CreateMode.InstanceAdded">
+        <member name="F:Fadd.Data.Mappings.ColumnType.DateTime">
             <summary>
-            an instance was added.
+            DateTime / Timestamp
             </summary>
         </member>
-        <member name="F:Fadd.Components.CreateMode.Created">
+        <member name="F:Fadd.Data.Mappings.ColumnType.Date">
             <summary>
-            Created normally
+            Date only
             </summary>
+        </member>
+        <member name="F:Fadd.Data.Mappings.ColumnType.Time">
+            <summary>
+            Time only
+            </summary>
+        </member>
+        <member name="F:Fadd.Data.Mappings.ColumnType.Boolean">
+            <summary>
+            Bool, int(1)
+            </summary>
+        </member>
+        <member name="F:Fadd.Data.Mappings.ColumnType.Text">
+            <summary>
+            Long string
+            </summary>
+        </member>
+        <member name="T:Fadd.Data.Mappings.ColumnHelper">
+            <summary>
+            Common operations for columns
+            </summary>
+        </member>
+        <member name="M:Fadd.Data.Mappings.ColumnHelper.ToType(Fadd.Data.Mappings.ColumnType)">
+            <summary>
+            Convert a column type to a .Net type
+            </summary>
+            <param name="type">column type to convert</param>
+            <returns></returns>
         </member>
         <member name="T:Fadd.Commands.ObjectProxyMethod">
             <summary>
@@ -3304,9 +2609,20 @@
             <param name="tree"><see cref="T:Fadd.Parser.ParseTree"/> that is being built..</param>
             <returns>true if more tokens can be parsed on the current leaf; false if we should continue to next leaf (parse no more children).</returns>
         </member>
+        <member name="T:Fadd.IGenericLogger">
+            <summary>
+            Generic logger interface.
+            </summary>
+            <remarks>
+            <para>Used since we do not want to force everyone to use the Fadd.Logging framework.
+            Implement your own proxy to use your favorite logging mechanism
+            </para>
+            </remarks>
+        </member>
         <member name="T:Fadd.MapHierarchy`2">
             <summary>
-            A dictionary mapping not only values but also sub nodes of the same <see cref="T:Fadd.MapHierarchy`2"/> type
+            A dictionary mapping not only values but also sub nodes of the same 
+            <see cref="T:Fadd.MapHierarchy`2"/> type
             </summary>
         </member>
         <member name="M:Fadd.MapHierarchy`2.#ctor">
@@ -3451,37 +2767,6 @@
             Retrieves any parent to the map, is null if no parent is set
             </summary>
         </member>
-        <member name="T:Fadd.Components.ComponentAttribute">
-            <summary>
-            This attribute can be put on a component to let the system find and load it.
-            </summary>
-        </member>
-        <member name="M:Fadd.Components.ComponentAttribute.#ctor(System.Type)">
-            <summary>
-            Initializes a new instance of the <see cref="T:Fadd.Components.ComponentAttribute"/> class.
-            </summary>
-            <param name="interfaceType">Type of the interface used to access this component.</param>
-        </member>
-        <member name="M:Fadd.Components.ComponentAttribute.#ctor(System.Type,System.Boolean)">
-            <summary>
-            Initializes a new instance of the <see cref="T:Fadd.Components.ComponentAttribute"/> class.
-            </summary>
-            <param name="interfaceType">Type of the interface used to access this component.</param>
-            <param name="isPrivate">Component is private, and cannot therefore not be accessed from <see cref="T:Fadd.Components.IComponentManager"/>.</param>
-        </member>
-        <member name="P:Fadd.Components.ComponentAttribute.IsPrivate">
-            <summary>
-            Gets whether component is private.
-            </summary>
-            <remarks>
-            Private components cannot be accessed from <see cref="T:Fadd.Components.IComponentManager"/>.
-            </remarks>
-        </member>
-        <member name="P:Fadd.Components.ComponentAttribute.InterfaceType">
-            <summary>
-            Interface type used to access the component.
-            </summary>
-        </member>
         <member name="T:Fadd.Validation.ValidateEmailAttribute">
             <summary>
             Validates that a string property is an correct email.
@@ -3533,6 +2818,7 @@
             <returns>
             true if value passed the validation; otherwise false.
             </returns>
+            <exception cref="T:System.NotSupportedException">Thrown if the object isn't a string</exception>
         </member>
         <member name="T:Fadd.Commands.IRemote">
             <summary>
@@ -3800,6 +3086,22 @@
             </returns>
             <filterpriority>2</filterpriority>
         </member>
+        <member name="T:Fadd.Parser.SimpleSQL.Tokens.IsNotNull">
+            <summary>
+            Corresponds to "IS NOT NULL".
+            </summary>
+        </member>
+        <member name="M:Fadd.Parser.SimpleSQL.Tokens.IsNotNull.ToString">
+            <summary>
+            " IS NOT NULL"
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:Fadd.Parser.SimpleSQL.Tokens.IsNotNull.TokenIdentifier">
+            <summary>
+            Used to determine the kind of this token
+            </summary>
+        </member>
         <member name="T:Fadd.Parser.SimpleSQL.Tokens.Equal">
             <summary>
             =
@@ -3875,6 +3177,37 @@
             Name of property
             </summary>
         </member>
+        <member name="T:Fadd.Data.Migration.MigrationXmlException">
+            <summary>Specific exception for errors occured during xml handling</summary>
+        </member>
+        <member name="T:Fadd.Data.Migration.MigrationException">
+            <summary>Describes an exception occured during migration of database</summary>
+        </member>
+        <member name="M:Fadd.Data.Migration.MigrationException.#ctor(System.String)">
+            <summary>Initializes the exception with a message</summary>
+            <param name="message">The exception message describing the error occured</param>
+        </member>
+        <member name="M:Fadd.Data.Migration.MigrationException.#ctor(System.String,System.Exception)">
+            <summary>Initializes the exception with a message</summary>
+            <param name="message">The exception message describing the error occured</param>
+            <param name="innerException">The exception triggering the throwing of this exception</param>
+        </member>
+        <member name="M:Fadd.Data.Migration.MigrationXmlException.#ctor(System.String)">
+            <summary>Initializes the <see cref="T:Fadd.Data.Migration.MigrationXmlException"/></summary>
+            <param name="message">Error message to display</param>
+        </member>
+        <member name="M:Fadd.Data.Migration.MigrationXmlException.#ctor(System.String,System.Exception)">
+            <summary>Initializes the <see cref="T:Fadd.Data.Migration.MigrationXmlException"/></summary>
+            <param name="message">Error message to display</param>
+            <param name="innerException">Exception that brought the throwing of the xml exception</param>
+        </member>
+        <member name="M:Fadd.Data.Migration.MigrationXmlException.#ctor(System.String[])">
+            <summary>Initializes the <see cref="T:Fadd.Data.Migration.MigrationXmlException"/></summary>
+            <param name="messages">Error messages to display</param>
+        </member>
+        <member name="P:Fadd.Data.Migration.MigrationXmlException.OriginalMessage">
+            <summary>Retrieves the error messages not prepended with readable error string</summary>
+        </member>
         <member name="T:Fadd.Data.ConnectionHelpers.SqlServerHelper">
             <summary>
             Connection helper for SQL Server.
@@ -3892,28 +3225,29 @@
             <returns>An open database connection.</returns>
             <exception cref="T:Fadd.Data.DataLayerException">If connection fails.</exception>
         </member>
-        <member name="M:Fadd.Data.IConnectionHelper.GetNextSequenceValue(System.Data.IDbConnection,System.String)">
+        <member name="M:Fadd.Data.IConnectionHelper.GetNextSequenceValue(System.Data.IDbCommand,System.String)">
             <summary>
-            Try to get 
+            Try to get next sequence value.
             </summary>
-            <param name="connection">Connection to use.</param>
+            <param name="command">A command to perform actions with, we pass commands since they might be in a transaction.</param>
             <param name="sequenceName">Name of the sequence/generator.</param>
             <returns>A generated value.</returns>
             <exception cref="T:Fadd.Data.DataLayerException">If something failed </exception>
         </member>
-        <member name="M:Fadd.Data.IConnectionHelper.GetAutoIncrementValue(System.Data.IDbConnection,System.String)">
+        <member name="M:Fadd.Data.IConnectionHelper.GetAutoIncrementValue(System.Data.IDbCommand,System.String)">
             <summary>
             Gets the latest auto incremented value from the database.
             </summary>
-            <param name="connection">Connection used when the object was saved.</param>
+            <param name="command">A command to perform actions with, we pass commands since they might be in a transaction..</param>
             <param name="columnName">Name of the column that the auto incremented value is for.</param>
             <returns>auto incremented value</returns>
             <exception cref="T:Fadd.Data.DataLayerException">If something failed </exception>
         </member>
-        <member name="M:Fadd.Data.IConnectionHelper.Paging(System.String,System.Int32,System.Int32)">
+        <member name="M:Fadd.Data.IConnectionHelper.Paging(Fadd.Data.Mappings.IMapping,System.String,System.Int32,System.Int32)">
             <summary>
             Modifies the SQL statement to include paging.
             </summary>
+            <param name="mapping">Database mapping</param>
             <param name="sqlStatement">SQL statement generated by the DAL.</param>
             <param name="page">0 based index</param>
             <param name="pageSize">number of entries per page</param>
@@ -3929,6 +3263,16 @@
             Connection string
             </summary>
         </member>
+        <member name="P:Fadd.Data.IConnectionHelper.ParameterPrefix">
+            <summary>
+            Gets the paramter prefix
+            </summary>
+            <example>
+            For SQL @
+            For MySQL ?
+            For Oracle :
+            </example>
+        </member>
         <member name="M:Fadd.Data.ConnectionHelpers.SqlServerHelper.#ctor(System.String)">
             <summary>
             Initializes a new instance of the <see cref="T:Fadd.Data.ConnectionHelpers.SqlServerHelper"/> class.
@@ -3942,28 +3286,30 @@
             <returns>An open database connection.</returns>
             <exception cref="T:Fadd.Data.DataLayerException">If connection fails.</exception>
         </member>
-        <member name="M:Fadd.Data.ConnectionHelpers.SqlServerHelper.GetNextSequenceValue(System.Data.IDbConnection,System.String)">
+        <member name="M:Fadd.Data.ConnectionHelpers.SqlServerHelper.GetNextSequenceValue(System.Data.IDbCommand,System.String)">
             <summary>
             Try to get
             </summary>
-            <param name="connection">Connection to use.</param>
+            <param name="command">A command to perform actions with, we pass commands since they might be in a transaction.</param>
             <param name="sequenceName">Name of the sequence/generator.</param>
             <returns>A generated value.</returns>
+            <exception cref="T:Fadd.Data.DataLayerException">If something failed </exception>
             <exception cref="T:System.NotSupportedException">SQL Server do not support sequences.</exception>
         </member>
-        <member name="M:Fadd.Data.ConnectionHelpers.SqlServerHelper.GetAutoIncrementValue(System.Data.IDbConnection,System.String)">
+        <member name="M:Fadd.Data.ConnectionHelpers.SqlServerHelper.GetAutoIncrementValue(System.Data.IDbCommand,System.String)">
             <summary>
             Gets the latest auto incremented value from the database.
             </summary>
-            <param name="connection">Connection used when the object was saved.</param>
+            <param name="command">A command to perform actions with, we pass commands since they might be in a transaction..</param>
             <param name="columnName">Name of the column that the auto incremented value is for.</param>
             <returns>auto incremented value</returns>
             <exception cref="T:Fadd.Data.DataLayerException">If something failed </exception>
         </member>
-        <member name="M:Fadd.Data.ConnectionHelpers.SqlServerHelper.Paging(System.String,System.Int32,System.Int32)">
+        <member name="M:Fadd.Data.ConnectionHelpers.SqlServerHelper.Paging(Fadd.Data.Mappings.IMapping,System.String,System.Int32,System.Int32)">
             <summary>
             Modifies the SQL statement to include paging.
             </summary>
+            <param name="mapping">Used to generate SQL Servers wierd paging method.</param>
             <param name="sqlStatement">SQL statement generated by the DAL.</param>
             <param name="page">0 based index</param>
             <param name="pageSize">number of entries per page</param>
@@ -3973,6 +3319,9 @@
             helper.Paging("SELECT * FROM users", 5, 10); // --&gt; "SELECT * FROM users LIMIT 10 OFFSET 50"
             </code>
             </example>
+            <remarks>
+            Only SQL Server 2005 and above is supported.
+            </remarks>
         </member>
         <member name="P:Fadd.Data.ConnectionHelpers.SqlServerHelper.ConnectionString">
             <summary>
@@ -3980,45 +3329,11 @@
             </summary>
             <value></value>
         </member>
-        <member name="T:Fadd.Components.ComponentLoader">
+        <member name="P:Fadd.Data.ConnectionHelpers.SqlServerHelper.ParameterPrefix">
             <summary>
-            This class can scan dependencies to find components and load them.
+            Gets the paramter prefix
             </summary>
-            <remarks>
-            How do we know the interface that a component want to register with?
-            </remarks>
-        </member>
-        <member name="M:Fadd.Components.ComponentLoader.AddAllComponents(Fadd.Components.IComponentManager)">
-            <summary>
-            Add all componentManager to the specified component manager.
-            </summary>
-            <param name="componentManager"></param>
-        </member>
-        <member name="M:Fadd.Components.ComponentLoader.AddComponents(System.Collections.Generic.List{System.Reflection.Assembly})">
-            <summary>
-            Add all components found in the specified assemblies.
-            </summary>
-            <param name="assemblies"></param>
-        </member>
-        <member name="M:Fadd.Components.ComponentLoader.Find(System.String)">
-            <summary>
-            Find components in the specified path.
-            </summary>
-            <param name="fullPath">Path and wild cards.</param>
-            <exception cref="T:System.Reflection.ReflectionTypeLoadException"></exception>
-            <exception cref="T:System.TypeLoadException"></exception>
-        </member>
-        <member name="M:Fadd.Components.ComponentLoader.FindInternal(System.String)">
-            <summary>
-            Finds the specified full path.
-            </summary>
-            <param name="fullPath">Path and wild cards.</param>
-            <exception cref="T:System.TypeLoadException"></exception>
-        </member>
-        <member name="P:Fadd.Components.ComponentLoader.Components">
-            <summary>
-            Information about all found components.
-            </summary>
+            <value>Will return a @</value>
         </member>
         <member name="T:Fadd.Validation.ValidateAlphaNumericAttribute">
             <summary>
@@ -4097,6 +3412,7 @@
             <returns>
             true if value passed the validation; otherwise false.
             </returns>
+            <exception cref="T:System.NotSupportedException">Only strings are valid for this type.</exception>
         </member>
         <member name="M:Fadd.Validation.ValidateLettersAndDigitsAttribute.Format(System.String,Fadd.Globalization.ILanguageNode)">
             <summary>
@@ -4588,6 +3904,15 @@
             <param name="statement">Statement specifying which elements to get.</param>
             <returns>A list of elements.</returns>
         </member>
+        <member name="M:Fadd.Data.IDataLayer.FindBySQL``1(System.String,System.Object[])">
+            <summary>
+            Execute a custom SQL query (Object SQL can not be used yet).
+            </summary>
+            <typeparam name="T">type of items to get.</typeparam>
+            <param name="query">SQL query.</param>
+            <param name="parameters">Parameters used in the query.</param>
+            <returns>A list of elements.</returns>
+        </member>
         <member name="M:Fadd.Data.IDataLayer.Save(System.Object)">
             <summary>
             Save or update an object in the database (1. Checks if the PK is empty. 2. Checks if the object exists in the db).
@@ -4642,6 +3967,34 @@
             <exception cref="T:Fadd.Data.Mappings.MappingException">If the class/table mapping is incorrect.</exception>
             <exception cref="T:Fadd.Data.DataLayerException">If data layer fails.</exception>
         </member>
+        <member name="M:Fadd.Data.IDataLayer.Count``1(System.String,System.Object[])">
+            <summary>
+            Count number of items.
+            </summary>
+            <typeparam name="T">Type of object to check.</typeparam>
+            <param name="conditions">Conditions.</param>
+            <param name="arguments">Arguments used in the conditions.</param>
+            <returns>true if object is stored in the database; otherwise false.</returns>
+            <exception cref="T:Fadd.Data.Mappings.MappingException">If the class/table mapping is incorrect.</exception>
+            <exception cref="T:Fadd.Data.DataLayerException">If data layer fails.</exception>
+        </member>
+        <member name="M:Fadd.Data.IDataLayer.Count``1">
+            <summary>
+            Count number of items.
+            </summary>
+            <typeparam name="T">Type of object to check.</typeparam>
+            <returns>true if object is stored in the database; otherwise false.</returns>
+            <exception cref="T:Fadd.Data.Mappings.MappingException">If the class/table mapping is incorrect.</exception>
+            <exception cref="T:Fadd.Data.DataLayerException">If data layer fails.</exception>
+        </member>
+        <member name="M:Fadd.Data.IDataLayer.CountBySQL(System.String)">
+            <summary>
+            Counts by SQL. Write the whole statement yourself.
+            </summary>
+            <param name="sql">The statement.</param>
+            <returns>Number of returned rows</returns>
+            <exception cref="T:Fadd.Data.DataLayerException">If data layer fails.</exception>
+        </member>
         <member name="M:Fadd.Data.IDataLayer.RemoveById``1(System.Object)">
             <summary>
             Removes an object by using it's id property.
@@ -4659,6 +4012,11 @@
         <member name="P:Fadd.Data.IDataLayer.MappingProviders">
             <summary>
             Gets class that takes care of all providers.
+            </summary>
+        </member>
+        <member name="P:Fadd.Data.IDataLayer.Logger">
+            <summary>
+            Gets logger instance.
             </summary>
         </member>
         <member name="M:Fadd.Data.ITransaction.Cancel">
@@ -4692,6 +4050,13 @@
             <param name="sql">SQL statement.</param>
             <param name="properties">Properties that have been selected. null if no properties have been specified.</param>
             <param name="arguments">Arguments used in the SQL statement..</param>
+        </member>
+        <member name="M:Fadd.Data.CompiledStatement.CreateWrapper(System.String)">
+            <summary>
+            Create a new statement with specialized SQL.
+            </summary>
+            <param name="sql">SQL string</param>
+            <returns>New statement.</returns>
         </member>
         <member name="P:Fadd.Data.CompiledStatement.Arguments">
             <summary>
@@ -4759,30 +4124,6 @@
             <summary>
             Assembly public key in byte format.
             </summary>
-        </member>
-        <member name="T:Fadd.Components.LoadFailedException">
-            <summary>
-            thrown when components can't be loaded.
-            </summary>
-        </member>
-        <member name="M:Fadd.Components.LoadFailedException.#ctor(System.Collections.Generic.Dictionary{System.Type,System.Type})">
-            <summary>
-            Initializes a new instance of the <see cref="T:Fadd.Components.LoadFailedException"/> class.
-            </summary>
-            <param name="notLoadedComponents">The not loaded components.</param>
-        </member>
-        <member name="P:Fadd.Components.LoadFailedException.Message">
-            <summary>
-            Gets a message that describes the current exception.
-            </summary>
-            <value></value>
-            <returns>The error message that explains the reason for the exception, or an empty string("").</returns>
-        </member>
-        <member name="P:Fadd.Components.LoadFailedException.Components">
-            <summary>
-            Gets the not loaded components.
-            </summary>
-            <value>The not loaded components.</value>
         </member>
         <member name="T:Fadd.Commands.Net.DisconnectedEventArgs">
             <summary>
@@ -5061,6 +4402,19 @@
             </summary>
             <param name="connectionHelper">The connection helper.</param>
         </member>
+        <member name="M:Fadd.Data.DataLayerImp.#ctor(Fadd.Data.DataLayerImp)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Fadd.Data.DataLayer"/> class.
+            </summary>
+            <param name="dataLayerImp">Another implementation.</param>
+        </member>
+        <member name="M:Fadd.Data.DataLayerImp.#ctor(Fadd.Data.IConnectionHelper,Fadd.IGenericLogger)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Fadd.Data.DataLayer"/> class.
+            </summary>
+            <param name="helper">The connection helper.</param>
+            <param name="logger">Logger interface.</param>
+        </member>
         <member name="M:Fadd.Data.DataLayerImp.Query``1(System.String,System.Object[])">
             <summary>
             Get a single object.
@@ -5111,6 +4465,14 @@
             <returns>object if found; otherwise null.</returns>
             <exception cref="T:Fadd.Data.Mappings.MappingException">If the class/table mapping is incorrect.</exception>
             <exception cref="T:Fadd.Data.DataLayerException">If data layer fails.</exception>
+        </member>
+        <member name="M:Fadd.Data.DataLayerImp.SetPropertyValue(System.Object,System.String,System.Object)">
+            <summary>
+            Used to assign a property with a value
+            </summary>
+            <param name="instance">Object containing the property.</param>
+            <param name="name">Name of the property.</param>
+            <param name="value">Value to set.</param>
         </member>
         <member name="M:Fadd.Data.DataLayerImp.Save(System.Object)">
             <summary>
@@ -5188,7 +4550,17 @@
             Creates a complete database command with the help of the compiled statement.
             </summary>
             <param name="connection">Used to create the command</param>
-            <param name="statement">statement to execute</param>
+            <param name="statement">Statement to execute</param>
+            <param name="parameters">parameters used in the statement</param>
+            <returns>A filled command</returns>
+            <exception cref="T:System.ArgumentException">Parameter count doesn't match argument count in the statement.</exception>
+        </member>
+        <member name="M:Fadd.Data.DataLayerImp.CreateCommand(System.Data.IDbConnection,System.String,System.Collections.Generic.IList{System.Object})">
+            <summary>
+            Creates a complete database command with the help of the compiled statement.
+            </summary>
+            <param name="connection">Used to create the command</param>
+            <param name="sql">Custom sql to execute</param>
             <param name="parameters">parameters used in the statement</param>
             <returns>A filled command</returns>
             <exception cref="T:System.ArgumentException">Parameter count doesn't match argument count in the statement.</exception>
@@ -5208,6 +4580,15 @@
             </summary>
             <typeparam name="T">Type of item to get.</typeparam>
             <returns>A list of objects; or an empty list</returns>
+        </member>
+        <member name="M:Fadd.Data.DataLayerImp.FindBySQL``1(System.String,System.Object[])">
+            <summary>
+            Execute a custom SQL query (Object SQL can not be used yet).
+            </summary>
+            <typeparam name="T">type of items to get.</typeparam>
+            <param name="query">SQL query.</param>
+            <param name="parameters">Parameters used in the query.</param>
+            <returns>A list of elements.</returns>
         </member>
         <member name="M:Fadd.Data.DataLayerImp.Find``1(Fadd.Data.Statement)">
             <summary>
@@ -5230,6 +4611,35 @@
             Removes an object by using it's id property.
             </summary>
             <typeparam name="T">Type of object to remove.</typeparam>
+            <exception cref="T:Fadd.Data.DataLayerException">Data layer failed.</exception>
+        </member>
+        <member name="M:Fadd.Data.DataLayerImp.Count``1(System.String,System.Object[])">
+            <summary>
+            Count number of items.
+            </summary>
+            <typeparam name="T">Type of object to check.</typeparam>
+            <param name="conditions">Conditions.</param>
+            <param name="arguments">Arguments used in the conditions.</param>
+            <returns>true if object is stored in the database; otherwise false.</returns>
+            <exception cref="T:Fadd.Data.Mappings.MappingException">If the class/table mapping is incorrect.</exception>
+            <exception cref="T:Fadd.Data.DataLayerException">If data layer fails.</exception>
+        </member>
+        <member name="M:Fadd.Data.DataLayerImp.Count``1">
+            <summary>
+            Count number of items.
+            </summary>
+            <typeparam name="T">Type of object to check.</typeparam>
+            <returns>true if object is stored in the database; otherwise false.</returns>
+            <exception cref="T:Fadd.Data.Mappings.MappingException">If the class/table mapping is incorrect.</exception>
+            <exception cref="T:Fadd.Data.DataLayerException">If data layer fails.</exception>
+        </member>
+        <member name="M:Fadd.Data.DataLayerImp.CountBySQL(System.String)">
+            <summary>
+            Counts by SQL. Write the whole statement yourself.
+            </summary>
+            <param name="sql">The statement.</param>
+            <returns>Number of returned rows</returns>
+            <exception cref="T:Fadd.Data.DataLayerException">If data layer fails.</exception>
         </member>
         <member name="M:Fadd.Data.DataLayerImp.CreateConnection">
             <summary>
@@ -5245,6 +4655,16 @@
             <param name="connection">Connection used to create the command</param>
             <returns>A <see cref="T:System.Data.IDbCommand"/></returns>
         </member>
+        <member name="P:Fadd.Data.DataLayerImp.Logger">
+            <summary>
+            Gets or sets logger instance.
+            </summary>
+        </member>
+        <member name="P:Fadd.Data.DataLayerImp.IsTransaction">
+            <summary>
+            Determines if we are a transaction.
+            </summary>
+        </member>
         <member name="P:Fadd.Data.DataLayerImp.MappingProviders">
             <summary>
             Gets class that takes care of all providers.
@@ -5255,12 +4675,12 @@
             
             </summary>
         </member>
-        <member name="M:Fadd.Data.Transaction.#ctor(Fadd.Data.IConnectionHelper,System.Data.IsolationLevel)">
+        <member name="M:Fadd.Data.Transaction.#ctor(Fadd.Data.DataLayerImp,System.Data.IsolationLevel)">
             <summary>
             Initializes a new instance of the <see cref="T:Fadd.Data.DataLayer"/> class.
             </summary>
         </member>
-        <member name="M:Fadd.Data.Transaction.#ctor(Fadd.Data.IConnectionHelper)">
+        <member name="M:Fadd.Data.Transaction.#ctor(Fadd.Data.DataLayerImp)">
             <summary>
             Initializes a new instance of the <see cref="T:Fadd.Data.DataLayer"/> class.
             </summary>
@@ -5312,6 +4732,11 @@
                                 Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
             </summary>
             <filterpriority>2</filterpriority>
+        </member>
+        <member name="P:Fadd.Data.Transaction.IsTransaction">
+            <summary>
+            Determines if we are a transaction.
+            </summary>
         </member>
         <member name="E:Fadd.Data.Transaction.Committing">
             <summary>
@@ -5382,6 +4807,9 @@
             <param name="objectSql">SQL statement with classes/properties instead of tables/columns.</param>
             <param name="parameters"></param>
             <returns></returns>
+            <exception cref="T:System.FormatException">If SQL is malformed.</exception>
+            <exception cref="T:Fadd.Data.Mappings.MappingException">Failed to find mapping file.</exception>
+            <exception cref="T:System.ArgumentNullException"><c>key</c> or <c>objectSql</c> is null.</exception>
         </member>
         <member name="M:Fadd.Data.StatementCompiler.ParseToken(Fadd.Parser.Token,Fadd.Data.Mappings.IMapping)">
             <summary>
@@ -5405,6 +4833,38 @@
             <param name="key">Key used to store statement for future use.</param>
             <param name="objectSql">ObjectSQL that should be compiled into plain sql.</param>
             <returns>Compiled statement.</returns>
+        </member>
+        <member name="T:Fadd.ValueChecker">
+            <summary>
+            Checks whether a column is empty or not.
+            </summary>
+        </member>
+        <member name="M:Fadd.ValueChecker.AddChecker(System.Type,Fadd.IValueCheck)">
+            <summary>
+            Add a class that determines if a certain type is empty or not.
+            </summary>
+            <param name="type">Type to check</param>
+            <param name="check">Object checking values.</param>
+            <exception cref="T:System.InvalidOperationException">Type have already been mapped.</exception>
+        </member>
+        <member name="M:Fadd.ValueChecker.IsEmpty(System.Object)">
+            <summary>
+            Determines if an object is empty.
+            </summary>
+            <param name="value">object to check</param>
+            <returns>true if empty; otherwise false.</returns>
+        </member>
+        <member name="T:Fadd.IValueCheck">
+            <summary>
+            Implementation checking if a value is empty.
+            </summary>
+        </member>
+        <member name="M:Fadd.IValueCheck.IsEmpty(System.Object)">
+            <summary>
+            Determines if an object is empty.
+            </summary>
+            <param name="value">object to check</param>
+            <returns>true if empty; otherwise false.</returns>
         </member>
         <member name="T:Fadd.Validation.ValidateMinAttribute">
             <summary>
@@ -5523,6 +4983,10 @@
             <returns>
             true if value passed the validation; otherwise false.
             </returns>
+            <exception cref="T:System.NotSupportedException">If the specified object is not supported.</exception>
+            <remarks>
+            Supports basetypes and all types that implements IComparable (passing an int)
+            </remarks>
         </member>
         <member name="M:Fadd.Validation.ValidateMaxAttribute.Format(System.String,Fadd.Globalization.ILanguageNode)">
             <summary>
@@ -5549,21 +5013,6 @@
             <summary>
             Max length
             </summary>
-        </member>
-        <member name="T:Fadd.Logging.LogFormatter">
-            <summary>
-            Used to format log output.
-            </summary>
-        </member>
-        <member name="M:Fadd.Logging.LogFormatter.Format(Fadd.Logging.LogLevel,System.String,System.Exception,System.String[])">
-            <summary>
-            Format a long message
-            </summary>
-            <param name="logLevel">Importance of the current message.</param>
-            <param name="message">Message being written</param>
-            <param name="exception">Exception, or null</param>
-            <param name="methodNames">Method names from the call stack.</param>
-            <returns>Formatted log entry.</returns>
         </member>
         <member name="T:Fadd.Commands.ObjectProxyReceiver">
             <summary>
@@ -5701,6 +5150,20 @@
             <param name="tree"><see cref="T:Fadd.Parser.ParseTree"/> that is being built..</param>
             <returns>true if more tokens can be parsed on the current leaf; false if we should continue to next leaf (parse no more children).</returns>
         </member>
+        <member name="M:Fadd.Parser.SimpleSQL.ParseTreeTokens.IsNotNullToken.Match(Fadd.Parser.Tokenizer,Fadd.Parser.ParseTree)">
+            <summary>
+            Check if the current position is the start of this token
+            </summary>
+            <returns>true if our token is the next one.</returns>
+        </member>
+        <member name="M:Fadd.Parser.SimpleSQL.ParseTreeTokens.IsNotNullToken.Parse(Fadd.Parser.Tokenizer,Fadd.Parser.ParseTree)">
+            <summary>
+            Parses the data in the specified <see cref="T:Fadd.Parser.Tokenizer"/>.
+            </summary>
+            <param name="tokenizer">The <see cref="T:Fadd.Parser.Tokenizer"/> containing the data to parse.</param>
+            <param name="tree"><see cref="T:Fadd.Parser.ParseTree"/> that is being built..</param>
+            <returns>true if more tokens can be parsed on the current leaf; false if we should continue to next leaf (parse no more children).</returns>
+        </member>
         <member name="T:Fadd.Parser.Evaluator.ParseTreeTokens.StopContext">
             <summary>
             Parse ), which is end of subcontext / nesting.
@@ -5787,104 +5250,6 @@
              </summary>
             <param name="source">PluginManager that loaded the plugin.</param>
             <param name="args">Plugin information.</param>
-        </member>
-        <member name="T:Fadd.Logging.ConsoleConfiguration">
-            <summary>
-            How logs should be displayed in the console.
-            </summary>
-        </member>
-        <member name="T:Fadd.Logging.LoggerConfiguration">
-            <summary>
-            Default implementation of <see cref="T:Fadd.Logging.ILoggerConfiguration"/>.
-            </summary>
-        </member>
-        <member name="M:Fadd.Logging.LoggerConfiguration.Deserialize(System.IO.Stream)">
-            <summary>
-            Load configuration from an XML stream.
-            </summary>
-            <param name="stream">XML reader to be used</param>
-        </member>
-        <member name="M:Fadd.Logging.LoggerConfiguration.Serialize(System.IO.Stream)">
-            <summary>
-            Write configuration into a XML stream.
-            </summary>
-            <param name="stream">Writer to write to</param>
-        </member>
-        <member name="P:Fadd.Logging.LoggerConfiguration.Name">
-            <summary>
-            Name of this logging configuration.
-            </summary>
-            <remarks>
-            Used in the configuration files (section loggers) to map a logger to a log.
-            </remarks>
-        </member>
-        <member name="P:Fadd.Logging.LoggerConfiguration.MinLevel">
-            <summary>
-            The lowest level that can be written to all logs that have this <see cref="T:Fadd.Logging.ILogger"/> attached.
-            </summary>
-        </member>
-        <member name="P:Fadd.Logging.LoggerConfiguration.MaxLevel">
-            <summary>
-            The max level that can be written to all logs that has this l<see cref="T:Fadd.Logging.ILogger"/>ogger attached.
-            </summary>
-        </member>
-        <member name="P:Fadd.Logging.LoggerConfiguration.StackFrameCount">
-            <summary>
-            Number of stack frames to include in the logging
-            </summary>
-        </member>
-        <member name="P:Fadd.Logging.LoggerConfiguration.StackFrameStart">
-            <summary>
-            Which stack frame to start with.
-            </summary>
-            <remarks>To skip all logging frames, specify 5 as start.</remarks>
-        </member>
-        <member name="P:Fadd.Logging.LoggerConfiguration.Formatter">
-            <summary>
-            Formatter used to tranform logging information into text (or binary formats).
-            </summary>
-        </member>
-        <member name="M:Fadd.Logging.ConsoleConfiguration.Deserialize(System.IO.Stream)">
-            <summary>
-            Load configuration from an XML stream.
-            </summary>
-            <param name="reader">XML reader to be used</param>
-        </member>
-        <member name="M:Fadd.Logging.ConsoleConfiguration.Serialize(System.IO.Stream)">
-            <summary>
-            Write configuration into a XML stream.
-            </summary>
-            <param name="writer">Writer to write to</param>
-        </member>
-        <member name="P:Fadd.Logging.ConsoleConfiguration.TraceColor">
-            <summary>
-            Color on trace messages.
-            </summary>
-        </member>
-        <member name="P:Fadd.Logging.ConsoleConfiguration.DebugColor">
-            <summary>
-            Debug color
-            </summary>
-        </member>
-        <member name="P:Fadd.Logging.ConsoleConfiguration.FatalColor">
-            <summary>
-            Fatal color
-            </summary>
-        </member>
-        <member name="P:Fadd.Logging.ConsoleConfiguration.ErrorColor">
-            <summary>
-            Color on errors
-            </summary>
-        </member>
-        <member name="P:Fadd.Logging.ConsoleConfiguration.WarningColor">
-            <summary>
-            Color on warnings
-            </summary>
-        </member>
-        <member name="P:Fadd.Logging.ConsoleConfiguration.InfoColor">
-            <summary>
-            Color on info messages
-            </summary>
         </member>
         <member name="T:Fadd.Commands.FilterHandler">
             <summary>
@@ -6696,122 +6061,6 @@
             All found plugins
             </summary>
         </member>
-        <member name="T:Fadd.Logging.Logger">
-            <summary>
-            Logger base class (provides helpers for stack frames)
-            </summary>
-        </member>
-        <member name="M:Fadd.Logging.Logger.#ctor(Fadd.Logging.LogFormatter,Fadd.Logging.ILoggerConfiguration)">
-            <summary>
-            Initializes a new instance of the <see cref="T:Fadd.Logging.Logger"/> class.
-            </summary>
-            <param name="formatter">used to format log entries.</param>
-            <param name="configuration">Configures a logger.</param>
-        </member>
-        <member name="M:Fadd.Logging.Logger.GetStackFrames">
-            <summary>
-            Get a certain amount of stack frames.
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Fadd.Logging.Logger.GetStackNames">
-            <summary>
-            Get an array with class.method names from the stack trace.
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Fadd.Logging.Logger.FormatEntry(System.String,System.Exception)">
-            <summary>
-            Format a log entry.
-            </summary>
-            <param name="message"></param>
-            <param name="error"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Fadd.Logging.Logger.Trace(System.String)">
-            <summary>
-            Very detailed log messages, potentially of a high frequency and volume
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.Logger.Trace(System.String,System.Exception)">
-            <summary>
-            Very detailed log messages, potentially of a high frequency and volume
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="M:Fadd.Logging.Logger.Debug(System.String)">
-            <summary>
-            Less detailed and/or less frequent debugging messages
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.Logger.Debug(System.String,System.Exception)">
-            <summary>
-            Less detailed and/or less frequent debugging messages
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="M:Fadd.Logging.Logger.Info(System.String)">
-            <summary>
-            Informational messages
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.Logger.Info(System.String,System.Exception)">
-            <summary>
-            Informational messages
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="M:Fadd.Logging.Logger.Warning(System.String)">
-            <summary>
-            Warnings which don't appear to the user of the application
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.Logger.Warning(System.String,System.Exception)">
-            <summary>
-            Warnings which don't appear to the user of the application
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="M:Fadd.Logging.Logger.Error(System.String)">
-            <summary>
-            Error messages
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.Logger.Error(System.String,System.Exception)">
-            <summary>
-            Error messages
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="M:Fadd.Logging.Logger.Fatal(System.String)">
-            <summary>
-            Fatal error messages. After a fatal error, the application usually terminates. 
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.Logger.Fatal(System.String,System.Exception)">
-            <summary>
-            Fatal error messages. After a fatal error, the application usually terminates. 
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="P:Fadd.Logging.Logger.LoggerConfiguration">
-            <summary>
-            Gets the configuration used for the logger
-            </summary>
-            <value></value>
-        </member>
         <member name="T:Fadd.Commands.Net.CommandPacket">
             <summary>
             Packet sent through the channel. Keeps track of a command and its reply.
@@ -6911,6 +6160,21 @@
             <param name="tokenizer">The <see cref="T:Fadd.Parser.Tokenizer"/> containing the data to parse.</param>
             <param name="tree"><see cref="T:Fadd.Parser.ParseTree"/> that is being built..</param>
             <returns>true if more tokens can be parsed on the current leaf; false if we should continue to next leaf (parse no more children).</returns>
+        </member>
+        <member name="T:Fadd.Globalization.Yaml.YamlLight">
+            <summary>
+            An implementation of YAML that only support those things that is needed by the Language loader.
+            </summary>
+        </member>
+        <member name="M:Fadd.Globalization.Yaml.YamlLight.ParseData(System.String,System.Int32,System.Int32@,System.IO.TextReader)">
+            <summary>
+             Parses a line
+            </summary>
+            <param name="line">row in text file</param>
+            <param name="offset">where to start the parsing (initial white spaces are excluded)</param>
+            <param name="lineNumber">line number in file</param>
+            <param name="reader">used if more lines should be read</param>
+            <exception cref="T:System.IO.InvalidDataException"></exception>
         </member>
         <member name="T:Fadd.Data.Mappings.XmlLoader">
             <summary>
@@ -7032,7 +6296,7 @@
             <param name="context">Can be used to send a context object to the validation class. Useful if you provide your own validation classes which need to get information from your application. <seealso cref="T:Fadd.Validation.BeforeValidationEventArgs"/></param>
             <param name="value">value to validate</param>
             <returns>
-            true if value passed the validation; otherwise false.
+            true if value passed the validation or if value is empty; otherwise false.
             </returns>
         </member>
         <member name="M:Fadd.Validation.ValidateRegularExpression.Format(System.String,Fadd.Globalization.ILanguageNode)">
@@ -7698,6 +6962,69 @@
             </summary>
             <value></value>
         </member>
+        <member name="T:Fadd.Data.Migration.SqlXmlMigrator`1">
+            <summary>
+            As the name implies the migrator uses sql specified for a certain driver to update the database.
+            The sql is loaded using manifest resource xml files named xxxxx.fdmig.xml (fadd data migration)
+            </summary>
+            <remarks>
+            The fdmig file should look like the following
+            <![CDATA[
+            <?xml version="1.0" encoding="utf-8" ?>
+            <migrations>
+                <migration name="My migration" version="0002">
+                    <description>
+                        An optional description of the migration.
+                    </description>
+            
+                    <sql driver="MySql 1.0">
+                        alter table myTable rename column myColumn to myColumnValues;
+                    </sql>
+            
+                    <sql driver="SqlServer">
+                        alter table myTable rename column myColumn to myColumnValues;
+                    </sql>
+                </migration>
+            
+                <migration name="My next migration" version="0003" description="A short description">
+                    <!-- default driver will be used if specified and db doesn't match any other driver -->
+                    <sql driver="default">
+                        INSERT INTO myTable (myId, myValue) VALUES (13, '23123');
+                    </sql>
+                </migration>
+                
+            </migrations>
+            ]]>
+            </remarks>
+        </member>
+        <member name="T:Fadd.Data.Migration.IMigrator">
+            <summary>
+            Inteface for a handler of database updating
+            </summary>
+        </member>
+        <member name="M:Fadd.Data.Migration.IMigrator.Migrate(Fadd.Data.DataLayer)">
+            <summary>If changes has been made the migrator should update the database accordingly</summary>
+            <param name="dataLayer">Used for saving migration data to the database</param>
+        </member>
+        <member name="M:Fadd.Data.Migration.SqlXmlMigrator`1.#ctor(System.Reflection.Assembly[])">
+            <summary>Initializes the <see cref="T:Fadd.Data.Migration.SqlXmlMigrator`1"/></summary>
+            <param name="assemblies">Assemblies to look for fdmig.xml files in</param>
+        </member>
+        <member name="M:Fadd.Data.Migration.SqlXmlMigrator`1.FetchMigrations">
+            <summary>Reads all manifest files ending with fdmig.xml and creates migrations from them</summary>
+        </member>
+        <member name="M:Fadd.Data.Migration.SqlXmlMigrator`1.ParseMigration(System.Xml.XmlTextReader)">
+            <summary>Parses the current 'migration' element in the reader and adds its value to the collection of migrations</summary>
+            <param name="reader">The reader to parse the migration from</param>
+            <exception cref="T:System.ArgumentNullException">If <paramref name="reader"/> is null</exception>
+            <exception cref="T:Fadd.Data.Migration.MigrationXmlException">Throw if parsing failes due to invalid data in xml</exception>
+        </member>
+        <member name="T:Fadd.Data.Migration.SqlMigration">
+            <summary>Holds information about a specific migration</summary>
+        </member>
+        <member name="F:Fadd.Data.Migration.SqlMigration._sql">
+            <summary>Sql for migration keyed by driver name (or default)</summary>
+        </member>
         <member name="T:Fadd.CurrentCulture">
             <summary>
             Class to provide transparent retrieval of LCID for silverlight and normal .Net projects
@@ -7706,36 +7033,6 @@
         <member name="P:Fadd.CurrentCulture.LCID">
             <summary>
             Gets the LCID for the current thread
-            </summary>
-        </member>
-        <member name="T:Fadd.Components.MissingParametersException">
-            <summary>
-            Thrown when we cant find all parameters for a component.
-            </summary>
-        </member>
-        <member name="M:Fadd.Components.MissingParametersException.#ctor(System.Type,System.Collections.Generic.Dictionary{System.String,System.Object})">
-            <summary>
-            Initializes a new instance of the <see cref="T:Fadd.Components.MissingParametersException"/> class.
-            </summary>
-            <param name="type">Type that we are missing parameters for.</param>
-            <param name="parameters">Parameters that have been specified.</param>
-        </member>
-        <member name="M:Fadd.Components.MissingParametersException.#ctor(System.Type,System.Collections.Generic.Dictionary{System.String,System.Object},System.Collections.Generic.Dictionary{System.Reflection.ConstructorInfo,System.Reflection.ParameterInfo})">
-            <summary>
-            Initializes a new instance of the <see cref="T:Fadd.Components.MissingParametersException"/> class.
-            </summary>
-            <param name="type">Type that we are missing parameters for.</param>
-            <param name="missingParameters">The parameters missing for specified constructors</param>
-            <param name="suppliedParameters">Parameters supplied through configuration</param>
-        </member>
-        <member name="P:Fadd.Components.MissingParametersException.InterfaceType">
-            <summary>
-            Type that we are missing parameters for.
-            </summary>
-        </member>
-        <member name="P:Fadd.Components.MissingParametersException.SuppliedParameters">
-            <summary>
-            Paramaters that have been specified.
             </summary>
         </member>
         <member name="T:Fadd.Validation.ValidateDigitsAttribute">
@@ -7824,11 +7121,6 @@
             Gets or sets the item.
             </summary>
             <value>The item.</value>
-        </member>
-        <member name="T:Fadd.Components.Test.Mixed">
-            <summary>
-            Tests both cascaded creation (since extensionmgr needs to create usermgr) and extra parameters.
-            </summary>
         </member>
         <member name="T:Fadd.Commands.ObjectProxyTypeNameGenerator">
             <summary>
@@ -8169,12 +7461,20 @@
             </summary>
             <param name="connectionHelper">The connection helper.</param>
         </member>
+        <member name="M:Fadd.Data.DataLayer.#ctor(Fadd.Data.IConnectionHelper,Fadd.IGenericLogger)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Fadd.Data.DataLayer"/> class.
+            </summary>
+            <param name="connectionHelper">The connection helper.</param>
+            <param name="logger">Assign logger to everything.</param>
+        </member>
         <member name="M:Fadd.Data.DataLayer.CreateConnection">
             <summary>
             Creates a connection, we use this method instead of the one in
             the connection helper to be able to use transactions (with a single connection).
             </summary>
             <returns>A database connection.</returns>
+            <exception cref="T:Fadd.Data.DataLayerException">Failed to create the connection.</exception>
         </member>
         <member name="M:Fadd.Data.DataLayer.CreateCommand(System.Data.IDbConnection)">
             <summary>
@@ -8201,6 +7501,11 @@
             Once the transaction has completed, you must explicitly commit or roll back the transaction by using the Commit or Rollback methods.
             </remarks>
         </member>
+        <member name="P:Fadd.Data.DataLayer.IsTransaction">
+            <summary>
+            Determines if we are a transaction.
+            </summary>
+        </member>
         <member name="T:Fadd.Validation.ValidationError">
             <summary>
             An validation error.
@@ -8222,67 +7527,6 @@
             <summary>
             Kind of validation that failed
             </summary>
-        </member>
-        <member name="T:Fadd.Validation.ValidateHex">
-            <summary>
-            Validates that a string property represents valid Hex value (Value should not either too large or too small for an Int64).
-            </summary>
-        </member>
-        <member name="F:Fadd.Validation.ValidateHex.Name">
-            <summary>
-            Name of the language item for this validation.
-            </summary>
-        </member>
-        <member name="M:Fadd.Validation.ValidateHex.Validate(System.Object,System.Object)">
-            <summary>
-            Validate value
-            </summary>
-            <param name="context">Can be used to send a context object to the validation class. Useful if you provide your own validation classes which need to get information from your application. <seealso cref="T:Fadd.Validation.BeforeValidationEventArgs"/></param>
-            <param name="value">value to validate</param>
-            <returns>
-            true if value passed the validation; otherwise false.
-            </returns>
-        </member>
-        <member name="M:Fadd.Validation.ValidateHex.Format(System.String,Fadd.Globalization.ILanguageNode)">
-            <summary>
-            Localize error if validation failed.
-            </summary>
-            <param name="fieldName">Localized field name.</param>
-            <param name="validationLanguage">Language node with all validation translations.</param>
-            <returns>
-            A localized error message if the validation failed; otherwise null.
-            </returns>
-            <example>
-            	<code>
-            attribute.Localize("FirstName", "'{0}' is required");
-            // will return "'{0}' is required" if the validation failed, else null.
-            </code>
-            </example>
-        </member>
-        <member name="M:Fadd.Validation.ValidateHex.SupportsType(System.Type)">
-            <summary>
-            Determines if the validation class support the specified type.
-            </summary>
-            <param name="type">Property/Value type.</param>
-            <returns>true if the type is supported.</returns>
-            <remarks>
-            Used when validation objects are generated.
-            </remarks>
-        </member>
-        <member name="T:Fadd.Logging.ILogFormatter">
-            <summary>
-            Used to format log entries.
-            </summary>
-        </member>
-        <member name="M:Fadd.Logging.ILogFormatter.Format(Fadd.Logging.LogLevel,System.String,System.Exception,System.String[])">
-            <summary>
-            Format a long message
-            </summary>
-            <param name="logLevel">Importance of the current message.</param>
-            <param name="message">Message being written</param>
-            <param name="exception">Exception, or null</param>
-            <param name="methodNames">Method names from the call stack.</param>
-            <returns>Formatted log entry.</returns>
         </member>
         <member name="T:Fadd.Commands.PropagationHandler">
             <summary>
@@ -8444,6 +7688,22 @@
             <returns>" IN"</returns>
         </member>
         <member name="P:Fadd.Parser.SimpleSQL.Tokens.In.TokenIdentifier">
+            <summary>
+            Used to determine the kind of this token
+            </summary>
+        </member>
+        <member name="T:Fadd.Parser.SimpleSQL.Tokens.Count">
+            <summary>
+            COUNT(*) SQL clause
+            </summary>
+        </member>
+        <member name="M:Fadd.Parser.SimpleSQL.Tokens.Count.ToString">
+            <summary>
+            Returns SQL
+            </summary>
+            <returns>" COUNT(*) "</returns>
+        </member>
+        <member name="P:Fadd.Parser.SimpleSQL.Tokens.Count.TokenIdentifier">
             <summary>
             Used to determine the kind of this token
             </summary>
@@ -8618,82 +7878,46 @@
             Gets all primary keys
             </summary>
         </member>
-        <member name="T:Fadd.Components.ComponentTypeInfo">
+        <member name="T:Fadd.Validation.ValidateContainsAttribute">
             <summary>
-            A found plugin and which of the requested types that it implements.
+            Attribute to specify that a property might only contain the specified letters (does not fail if the string is null or empty)
             </summary>
         </member>
-        <member name="M:Fadd.Components.ComponentTypeInfo.#ctor(System.String,System.Byte[],System.Type,System.Type)">
+        <member name="F:Fadd.Validation.ValidateContainsAttribute.Name">
             <summary>
-            Initializes a new instance of the <see cref="T:Fadd.Components.ComponentTypeInfo"/> class.
-            </summary>
-            <param name="assemblyLocation">assembly that the plugin resides in.</param>
-            <param name="publicKey">assemblies public key. should be used to decide the amount of access for the module.</param>
-            <param name="instanceType">Type to create</param>
-            <param name="interfaceType">Type used when fetching the component</param>
-            <exception cref="T:System.ArgumentNullException">types or assembly location is null.</exception>
-        </member>
-        <member name="M:Fadd.Components.ComponentTypeInfo.#ctor(System.String,System.Byte[],System.Type,System.Type,System.Boolean)">
-            <summary>
-            Initializes a new instance of the <see cref="T:Fadd.Components.ComponentTypeInfo"/> class.
-            </summary>
-            <param name="assemblyLocation">assembly that the plugin resides in.</param>
-            <param name="publicKey">assemblies public key. should be used to decide the amount of access for the module.</param>
-            <param name="instanceType">Type to create</param>
-            <param name="interfaceType">Type used when fetching the component</param>
-            <param name="isPrivate">Component is private</param>
-            <exception cref="T:System.ArgumentNullException">types or assembly location is null.</exception>
-        </member>
-        <member name="P:Fadd.Components.ComponentTypeInfo.PublicKey">
-            <summary>
-            Gets the assembly's public key (if signed).
+            The language node item name for the attribute, should be in the form 'Parameter {0} has invalid characters, allowed characters are {1}'
             </summary>
         </member>
-        <member name="P:Fadd.Components.ComponentTypeInfo.Location">
+        <member name="M:Fadd.Validation.ValidateContainsAttribute.#ctor(System.String)">
             <summary>
-            Gets location of DLL.
+            Initializes a new instance of the <see cref="T:Fadd.Validation.ValidateContainsAttribute"/> class.
             </summary>
+            <param name="allowedLetters">The allowed letters</param>
         </member>
-        <member name="P:Fadd.Components.ComponentTypeInfo.PublicKeyRaw">
+        <member name="M:Fadd.Validation.ValidateContainsAttribute.Validate(System.Object,System.Object)">
             <summary>
-            Gets assembly public key in byte format.
+            Validate value
             </summary>
+            <param name="context">Can be used to send a context object to the validation class. Useful if you provide your own validation classes which need to get information from your application. <seealso cref="T:Fadd.Validation.BeforeValidationEventArgs"/></param>
+            <param name="value">value to validate</param>
+            <returns>
+            true if value passed the validation; otherwise false.
+            </returns>
+            <exception cref="T:System.NotSupportedException">If a value not of <see cref="T:System.String"/> type was supplied</exception>
         </member>
-        <member name="P:Fadd.Components.ComponentTypeInfo.InterfaceType">
+        <member name="M:Fadd.Validation.ValidateContainsAttribute.Format(System.String,Fadd.Globalization.ILanguageNode)">
             <summary>
-            Gets a the type used when accessing the component.
+            Localize error if validation failed.
             </summary>
+            <param name="fieldName">Localized field name.</param>
+            <param name="validationLanguage">Language node with all validation translations.</param>
         </member>
-        <member name="P:Fadd.Components.ComponentTypeInfo.InstanceType">
+        <member name="M:Fadd.Validation.ValidateContainsAttribute.SupportsType(System.Type)">
             <summary>
-            Gets the type to create
+            Determines if the validation class support the specified type.
             </summary>
-        </member>
-        <member name="P:Fadd.Components.ComponentTypeInfo.IsPrivate">
-            <summary>
-            Gets a value indicating whether the component is private.
-            </summary>
-            <value>
-            	<c>true</c> if the component is private; otherwise, <c>false</c>.
-            </value>
-        </member>
-        <member name="T:Fadd.Logging.ConsoleLogProvider">
-            <summary>
-            Temporary class to get logging during development.
-            </summary>
-        </member>
-        <member name="M:Fadd.Logging.ConsoleLogProvider.GetLogger(System.String)">
-            <summary>
-            Get a logger with the specified name.
-            </summary>
-            <param name="name"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Fadd.Logging.ConsoleLogProvider.GetCurrentClassLogger">
-            <summary>
-            Get logger for current class.
-            </summary>
-            <returns></returns>
+            <param name="type">Property/Value type.</param>
+            <returns>true if the type is a string</returns>
         </member>
         <member name="T:Fadd.Property">
             <summary>
@@ -8719,6 +7943,7 @@
             <exception cref="T:System.ArgumentException">If value is not correct (i.e. null when null is not accepted etc)</exception>
             <exception cref="T:System.InvalidOperationException">If assigner object could not be generated.</exception>
             <exception cref="T:System.InvalidCastException">If assigner object can't cast to the correct type.</exception>
+            <exception cref="T:System.ArgumentNullException">values is null and it's not allowed for the specified type.</exception>
         </member>
         <member name="M:Fadd.Property.Get(System.Object,System.String)">
             <summary>
@@ -8759,6 +7984,20 @@
             <param name="instance"></param>
             <param name="propertyName"></param>
             <returns></returns>
+        </member>
+        <member name="M:Fadd.Parser.SimpleSQL.ParseTreeTokens.CountToken.Match(Fadd.Parser.Tokenizer,Fadd.Parser.ParseTree)">
+            <summary>
+            Check if the current position is the start of this token
+            </summary>
+            <returns>true if our token is the next one.</returns>
+        </member>
+        <member name="M:Fadd.Parser.SimpleSQL.ParseTreeTokens.CountToken.Parse(Fadd.Parser.Tokenizer,Fadd.Parser.ParseTree)">
+            <summary>
+            Parses the data in the specified <see cref="T:Fadd.Parser.Tokenizer"/>.
+            </summary>
+            <param name="tokenizer">The <see cref="T:Fadd.Parser.Tokenizer"/> containing the data to parse.</param>
+            <param name="tree"><see cref="T:Fadd.Parser.ParseTree"/> that is being built..</param>
+            <returns>true if more tokens can be parsed on the current leaf; false if we should continue to next leaf (parse no more children).</returns>
         </member>
         <member name="T:Fadd.Parser.Evaluator.ParseTreeTokens.NotEqualToken">
             <summary>
@@ -8815,97 +8054,6 @@
             Add an assembly in which we can look for mappings.
             </summary>
             <param name="assembly">An assembly</param>
-        </member>
-        <member name="T:Fadd.Logging.NullLogger">
-            <summary>
-            Logger that doesnt log at all.
-            (Used in classes that got log member var but no logger. 
-            the option would have been a lot of if statements).
-            </summary>
-        </member>
-        <member name="M:Fadd.Logging.NullLogger.Trace(System.String)">
-            <summary>
-            Very detailed log messages, potentially of a high frequency and volume
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.NullLogger.Trace(System.String,System.Exception)">
-            <summary>
-            Very detailed log messages, potentially of a high frequency and volume
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="M:Fadd.Logging.NullLogger.Debug(System.String)">
-            <summary>
-            Less detailed and/or less frequent debugging messages
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.NullLogger.Debug(System.String,System.Exception)">
-            <summary>
-            Less detailed and/or less frequent debugging messages
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="M:Fadd.Logging.NullLogger.Info(System.String)">
-            <summary>
-            Informational messages
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.NullLogger.Info(System.String,System.Exception)">
-            <summary>
-            Informational messages
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="M:Fadd.Logging.NullLogger.Warning(System.String)">
-            <summary>
-            Warnings which don't appear to the user of the application
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.NullLogger.Warning(System.String,System.Exception)">
-            <summary>
-            Warnings which don't appear to the user of the application
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="M:Fadd.Logging.NullLogger.Error(System.String)">
-            <summary>
-            Error messages
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.NullLogger.Error(System.String,System.Exception)">
-            <summary>
-            Error messages
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="M:Fadd.Logging.NullLogger.Fatal(System.String)">
-            <summary>
-            Fatal error messages. After a fatal error, the application usually terminates. 
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.NullLogger.Fatal(System.String,System.Exception)">
-            <summary>
-            Fatal error messages. After a fatal error, the application usually terminates. 
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="P:Fadd.Logging.NullLogger.LoggerConfiguration">
-            <summary>
-            Gets the configuration used for the logger
-            </summary>
-            <value></value>
         </member>
         <member name="T:Fadd.Commands.UnhandledExceptionDelegate">
             <summary>
@@ -9139,124 +8287,6 @@
             <param name="source"><see cref="T:Fadd.Plugins.PluginManager`1"/></param>
             <param name="args">Arguments.</param>
         </member>
-        <member name="T:Fadd.Logging.ConsoleLogger">
-            <summary>
-            The console logger is used to display logging in the console window.
-            Different priorities are shown in different color, instead of showing the priority text.
-            </summary>
-        </member>
-        <member name="M:Fadd.Logging.ConsoleLogger.#ctor(Fadd.Logging.LogFormatter,Fadd.Logging.ILoggerConfiguration)">
-            <summary>
-            Initializes a new instance of the <see cref="T:Fadd.Logging.ConsoleLogger"/> class.
-            </summary>
-            <param name="logFormatter">The log formatter.</param>
-            <param name="configuration">Configuration for the logger.</param>
-        </member>
-        <member name="M:Fadd.Logging.ConsoleLogger.Trace(System.String)">
-            <summary>
-            Very detailed log messages, potentially of a high frequency and volume
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.ConsoleLogger.Trace(System.String,System.Exception)">
-            <summary>
-            Very detailed log messages, potentially of a high frequency and volume
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="M:Fadd.Logging.ConsoleLogger.Debug(System.String)">
-            <summary>
-            Less detailed and/or less frequent debugging messages
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.ConsoleLogger.Debug(System.String,System.Exception)">
-            <summary>
-            Less detailed and/or less frequent debugging messages
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="M:Fadd.Logging.ConsoleLogger.Info(System.String)">
-            <summary>
-            Informational messages
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.ConsoleLogger.Info(System.String,System.Exception)">
-            <summary>
-            Informational messages
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="M:Fadd.Logging.ConsoleLogger.Warning(System.String)">
-            <summary>
-            Warnings which don't appear to the user of the application
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.ConsoleLogger.Warning(System.String,System.Exception)">
-            <summary>
-            Warnings which don't appear to the user of the application
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="M:Fadd.Logging.ConsoleLogger.Error(System.String)">
-            <summary>
-            Error messages
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.ConsoleLogger.Error(System.String,System.Exception)">
-            <summary>
-            Error messages
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="M:Fadd.Logging.ConsoleLogger.Fatal(System.String)">
-            <summary>
-            Fatal error messages. After a fatal error, the application usually terminates. 
-            </summary>
-            <param name="message">message written to the log.</param>
-        </member>
-        <member name="M:Fadd.Logging.ConsoleLogger.Fatal(System.String,System.Exception)">
-            <summary>
-            Fatal error messages. After a fatal error, the application usually terminates. 
-            </summary>
-            <param name="message">message written to the log.</param>
-            <param name="exception">an exception.</param>
-        </member>
-        <member name="T:Fadd.Components.ParametersRequestedEventArgs">
-            <summary>
-            Used to retreive parameters.
-            </summary>
-        </member>
-        <member name="M:Fadd.Components.ParametersRequestedEventArgs.#ctor(System.Type,System.Type)">
-            <summary>
-            Initializes a new instance of the <see cref="T:Fadd.Components.ParametersRequestedEventArgs"/> class.
-            </summary>
-            <param name="interfaceType">Interface used to fetch the component.</param>
-            <param name="instanceType">Type used to create the component (the type that we need constructor parameters for).</param>
-        </member>
-        <member name="P:Fadd.Components.ParametersRequestedEventArgs.InstanceType">
-            <summary>
-            Type used to create the component (the type that we need constructor parameters for).
-            </summary>
-        </member>
-        <member name="P:Fadd.Components.ParametersRequestedEventArgs.InterfaceType">
-            <summary>
-            Interface used to fetch the component
-            </summary>
-        </member>
-        <member name="P:Fadd.Components.ParametersRequestedEventArgs.Parameters">
-            <summary>
-            Constructor parameters.
-            </summary>
-        </member>
         <member name="T:Fadd.Parser.SimpleSQL.Tokens.Insert">
             <summary>
             INSERT INTO clause
@@ -9316,26 +8346,6 @@
         <member name="F:Fadd.Parser.Evaluator.EvaluatorTokenIds.EndNesting">
             <summary>
             )
-            </summary>
-        </member>
-        <member name="T:Fadd.Globalization.ILanguageWatcher">
-            <summary>
-            Loads and watches language files on disk.
-            </summary>
-            <remarks>
-            Future version can watch different file types, and load them using different loaders.
-            </remarks>
-        </member>
-        <member name="M:Fadd.Globalization.ILanguageWatcher.Add(System.String)">
-            <summary>
-            Load and watch another file on disk.
-            </summary>
-            <param name="filename">Relative or absolute path to language file.</param>
-            <returns>Node that have been loaded.</returns>
-        </member>
-        <member name="P:Fadd.Globalization.ILanguageWatcher.RootNode">
-            <summary>
-            Root language node.
             </summary>
         </member>
         <member name="T:Fadd.Data.Statement">
@@ -10082,29 +9092,30 @@
             <returns>An open database connection.</returns>
             <exception cref="T:Fadd.Data.DataLayerException">If connection fails.</exception>
         </member>
-        <member name="M:Fadd.Data.ConnectionHelpers.PostgreSqlHelper.GetNextSequenceValue(System.Data.IDbConnection,System.String)">
+        <member name="M:Fadd.Data.ConnectionHelpers.PostgreSqlHelper.GetNextSequenceValue(System.Data.IDbCommand,System.String)">
             <summary>
-            Try to get
+            Try to get next sequence value.
             </summary>
-            <param name="connection">Connection to use.</param>
+            <param name="command">A command to perform actions with, we pass commands since they might be in a transaction.</param>
             <param name="sequenceName">Name of the sequence/generator.</param>
             <returns>A generated value.</returns>
             <exception cref="T:Fadd.Data.DataLayerException">If something failed </exception>
         </member>
-        <member name="M:Fadd.Data.ConnectionHelpers.PostgreSqlHelper.GetAutoIncrementValue(System.Data.IDbConnection,System.String)">
+        <member name="M:Fadd.Data.ConnectionHelpers.PostgreSqlHelper.GetAutoIncrementValue(System.Data.IDbCommand,System.String)">
             <summary>
             Gets the latest auto incremented value from the database.
             </summary>
-            <param name="connection">Connection used when the object was saved.</param>
+            <param name="command">A command to perform actions with, we pass commands since they might be in a transaction..</param>
             <param name="columnName">Name of the column that the auto incremented value is for.</param>
             <returns>auto incremented value</returns>
             <exception cref="T:Fadd.Data.DataLayerException">If something failed </exception>
             <exception cref="T:System.NotSupportedException">Not supported by PostgreSQL</exception>
         </member>
-        <member name="M:Fadd.Data.ConnectionHelpers.PostgreSqlHelper.Paging(System.String,System.Int32,System.Int32)">
+        <member name="M:Fadd.Data.ConnectionHelpers.PostgreSqlHelper.Paging(Fadd.Data.Mappings.IMapping,System.String,System.Int32,System.Int32)">
             <summary>
             Modifies the SQL statement to include paging.
             </summary>
+            <param name="mapping">Mapping used by certain implementations (but not by this one).</param>
             <param name="sqlStatement">SQL statement generated by the DAL.</param>
             <param name="page">0 based index</param>
             <param name="pageSize">number of entries per page</param>
@@ -10120,22 +9131,6 @@
             Connection string
             </summary>
             <value></value>
-        </member>
-        <member name="T:Fadd.Components.ComponentNameAttribute">
-            <summary>
-            Used to specify a name for a component.
-            </summary>
-        </member>
-        <member name="M:Fadd.Components.ComponentNameAttribute.#ctor(System.String)">
-            <summary>
-            Initializes a new instance of the <see cref="T:Fadd.Components.ComponentNameAttribute"/> class.
-            </summary>
-            <param name="name">Name of the component.</param>
-        </member>
-        <member name="P:Fadd.Components.ComponentNameAttribute.Name">
-            <summary>
-            Name of the component.
-            </summary>
         </member>
     </members>
 </doc>

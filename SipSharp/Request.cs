@@ -239,7 +239,7 @@ namespace SipSharp
 			// the generation of tags are defined in Section 19.3.
 			response.To = To;
 			if (To.Parameters["Tag"] != null)
-			{'
+			{
 				// RFC3261 Section 17.2.1:
 				// The 100 (Trying) response is constructed
 				// according to the procedures in Section 8.2.6, except that the

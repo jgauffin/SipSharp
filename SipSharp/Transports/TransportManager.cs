@@ -16,6 +16,18 @@ namespace SipSharp.Transports
         void Send(EndPoint remoteEndPoint, IRequest request);
 
         /// <summary>
+        /// Send a request to the remote end.
+        /// </summary>
+        /// <param name="request">Request to send.</param>
+        /// <remarks>
+        /// <para>
+        /// The headers are inspected to get the destination
+        /// of the request.
+        /// </para>
+        /// </remarks>
+        void Send(IRequest request);
+
+        /// <summary>
         /// A response have been received from an end point.
         /// </summary>
         event EventHandler<ResponseEventArgs> ResponseReceived;
@@ -80,6 +92,16 @@ namespace SipSharp.Transports
             _transports["udp"].Send(remoteEndPoint, buffer, 0, buffer.Length);
         }
 
+        public void Send(IRequest request)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Convert a package to bytes and send it.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         private byte[] Serialize(IRequest request)
         {
             Stream stream = GetStream();
@@ -88,7 +110,7 @@ namespace SipSharp.Transports
             stream.Seek(0, SeekOrigin.Begin);
             if (stream.Length > UdpMaxSize)
             {
-                
+                //TODO: Switch to TCP
             }
             byte[] buffer = new byte[stream.Length];
             stream.Read(buffer, 0, (int)stream.Length);

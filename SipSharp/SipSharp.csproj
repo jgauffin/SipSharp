@@ -93,6 +93,8 @@
     <Compile Include="Transactions\ClientInviteTransaction.cs" />
     <Compile Include="Transactions\ClientNonInviteTransaction.cs" />
     <Compile Include="Transactions\IClientTransaction.cs" />
+    <Compile Include="Transactions\ITransaction.cs" />
+    <Compile Include="Transactions\ServerInviteTransaction.cs" />
     <Compile Include="Transactions\ServerTransaction.cs" />
     <Compile Include="Transactions\TransactionEventArgs.cs" />
     <Compile Include="Transactions\TransactionManager.cs" />

@@ -6,7 +6,10 @@ using SipSharp.Transports;
 
 namespace SipSharp.Transactions
 {
-	internal class ClientTransaction
+    /// <summary>
+    /// Client transaction for all messages but Invite.
+    /// </summary>
+	public class ClientTransaction
 	{
 		private readonly ITransportManager _transportManager;
 		private IDialog _dialog;
@@ -65,7 +68,10 @@ namespace SipSharp.Transactions
 			_state = TransactionState.Trying;
 			_timerF = new Timer(OnTimeout, null, TransactionManager.T1*64, Timeout.Infinite);
 			if (request.Via.First.Protocol == "UDP")
-				_timerE = new Timer(OnRetransmission, null, _timerEValue, Timeout.Infinite);
+			{
+			    _timerEValue = TransactionManager.T1;
+                _timerE = new Timer(OnRetransmission, null, _timerEValue, Timeout.Infinite);
+            }
 			_transportManager.Send(_endPoint, request);
 		}
 
@@ -117,6 +123,7 @@ namespace SipSharp.Transactions
                    reset with a value of T2 seconds.  
                  */
 			_timerEValue = Math.Min(_timerEValue*2, TransactionManager.T2);
+            _timerE.Change(_timerEValue, Timeout.Infinite);
 			_transportManager.Send(_endPoint, _request);
 		}
 

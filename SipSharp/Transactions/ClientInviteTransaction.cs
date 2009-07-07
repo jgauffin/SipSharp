@@ -1,10 +1,18 @@
 ﻿using System;
+using System.Net;
 using System.Threading;
 using SipSharp.Headers;
 using SipSharp.Transports;
 
 namespace SipSharp.Transactions
 {
+    /// <summary>
+    /// Client transaction for INVITE message
+    /// </summary>
+    /// <remarks>
+    /// <para>A INVITE message is being sent by the client,
+    /// track it and make sure that it gets a FINAL response.</para>
+    /// </remarks>
 	public class ClientInviteTransaction
 	{
 		private readonly IRequest _request;
@@ -33,7 +41,7 @@ namespace SipSharp.Transactions
 		/// <summary>
 		/// Controls transaction timeouts
 		/// </summary>
-		private Timer _timerB;
+		private readonly Timer _timerB;
 
 		public ClientInviteTransaction(ITransportManager transportManager, IMessage message)
 		{
@@ -47,7 +55,7 @@ namespace SipSharp.Transactions
 				throw new SipSharpException("Can only be used with invite transactions.");
 
 			_state = TransactionState.Calling;
-			_transportManager.Send(_endPoint, request);
+			_transportManager.Send(request);
 			_request = request;
 
 			// If an unreliable transport is being used, the client transaction MUST 
@@ -79,6 +87,8 @@ namespace SipSharp.Transactions
 
 		private void OnTimeout(object state)
 		{
+		    _timerB.Change(Timeout.Infinite, Timeout.Infinite);
+
 			// If the client transaction is still in the "Calling" state when timer
 			// B fires, the client transaction SHOULD inform the TU that a timeout has occurred.
 			if (_state == TransactionState.Calling)
@@ -111,11 +121,11 @@ namespace SipSharp.Transactions
 
 			_timerAValue *= 2;
 			_timerA.Change(_timerAValue, Timeout.Infinite);
-			_transportManager.Send(_endPoint, _request);
+			_transportManager.Send(_request);
 		}
 
 
-		public void ProcessResponse(IResponse response)
+		public void ProcessResponse(IResponse response, EndPoint endPoint)
 		{
 			if (_state == TransactionState.Terminated)
 				return; // Ignore everything in terminated until we get disposed.
@@ -159,7 +169,7 @@ namespace SipSharp.Transactions
 					changeTimerD = true;
 				}
 
-				ResponseReceived(this, new ResponseEventArgs(response, _endPoint));
+				ResponseReceived(this, new ResponseEventArgs(response, endPoint));
 
 				//triggering it here instead of in the if clause to make sure
 				// that response have been processed successfully first.
@@ -181,7 +191,7 @@ namespace SipSharp.Transactions
 
 		private void SendAck(IResponse response)
 		{
-			_transportManager.Send(_endPoint, CreateAck(response));
+			_transportManager.Send(CreateAck(response));
 		}
 
 		protected virtual IRequest CreateAck(IResponse response)
