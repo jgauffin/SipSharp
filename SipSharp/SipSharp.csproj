@@ -1,0 +1,138 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{E9ED153F-72FA-4143-A2B8-C6C94AE561C8}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SipSharp</RootNamespace>
+    <AssemblyName>SipSharp</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Test|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Test\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;TEST</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Fadd, Version=1.0.0.0, Culture=neutral, PublicKeyToken=41411ef5f05a116f, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\dlls\Fadd.dll</HintPath>
+    </Reference>
+    <Reference Include="Fadd.Globalization.Yaml, Version=1.0.0.0, Culture=neutral, PublicKeyToken=41411ef5f05a116f, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\dlls\Fadd.Globalization.Yaml.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="xunit, Version=1.0.3.1299, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\dlls\xunit.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BackToBackUserAgent.cs" />
+    <Compile Include="BadRequestException.cs" />
+    <Compile Include="Class1.cs" />
+    <Compile Include="IUserAgent.cs" />
+    <Compile Include="Dialogs\DialogManager.cs" />
+    <Compile Include="Dialogs\DialogState.cs" />
+    <Compile Include="Dialogs\IDialog.cs" />
+    <Compile Include="Headers\Contact.cs" />
+    <Compile Include="Headers\CSeq.cs" />
+    <Compile Include="Headers\HeaderFactory.cs" />
+    <Compile Include="Headers\IHeader.cs" />
+    <Compile Include="Headers\MultiHeader.cs" />
+    <Compile Include="Headers\Route.cs" />
+    <Compile Include="Headers\RouteEntry.cs" />
+    <Compile Include="Headers\Via.cs" />
+    <Compile Include="Headers\ViaEntry.cs" />
+    <Compile Include="HeaderValue.cs" />
+    <Compile Include="ILogWriter.cs" />
+    <Compile Include="IMessage.cs" />
+    <Compile Include="IRequest.cs" />
+    <Compile Include="IResponse.cs" />
+    <Compile Include="Request.cs" />
+    <Compile Include="Response.cs" />
+    <Compile Include="SDP\SessionDescriptionProtocol.cs" />
+    <Compile Include="SipException.cs" />
+    <Compile Include="Transactions\ClientInviteTransaction.cs" />
+    <Compile Include="Transactions\ClientNonInviteTransaction.cs" />
+    <Compile Include="Transactions\IClientTransaction.cs" />
+    <Compile Include="Transactions\ServerTransaction.cs" />
+    <Compile Include="Transactions\TransactionEventArgs.cs" />
+    <Compile Include="Transactions\TransactionManager.cs" />
+    <Compile Include="Transactions\TransactionState.cs" />
+    <Compile Include="Transports\BufferPool.cs" />
+    <Compile Include="Transports\ITransport.cs" />
+    <Compile Include="Transports\Parser\BodyEventArgs.cs" />
+    <Compile Include="Transports\Parser\HeaderEventArgs.cs" />
+    <Compile Include="Transports\Parser\IMessageParser.cs" />
+    <Compile Include="Transports\Parser\ParserManager.cs" />
+    <Compile Include="Transports\Parser\RequestLineEventArgs.cs" />
+    <Compile Include="Transports\Parser\SipParser.cs" />
+    <Compile Include="Transports\Parser\SipParserTest.cs" />
+    <Compile Include="Transports\Parser\ResponseLineEventArgs.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReadOnlySipUri.cs" />
+    <Compile Include="SipMethod.cs" />
+    <Compile Include="SipSharpException.cs" />
+    <Compile Include="SipUri.cs" />
+    <Compile Include="StatusCode.cs" />
+    <Compile Include="Tests\TestMessages.cs" />
+    <Compile Include="Tools\StringReader.cs" />
+    <Compile Include="Transports\MessageSerializer.cs" />
+    <Compile Include="RequestEventArgs.cs" />
+    <Compile Include="ResponseEventArgs.cs" />
+    <Compile Include="Transports\TcpChannel.cs" />
+    <Compile Include="Transports\TcpTransport.cs" />
+    <Compile Include="Transports\TransportManager.cs" />
+    <Compile Include="Transports\UdpChannel.cs" />
+    <Compile Include="Transports\UdpTransport.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Channels\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
