@@ -36,6 +36,8 @@ namespace SipSharp.Transports
         /// A request have been received from an end point.
         /// </summary>
         event EventHandler<RequestEventArgs> RequestReceived;
+
+        void Send(IResponse response);
     }
 
     /// <summary>
@@ -93,6 +95,11 @@ namespace SipSharp.Transports
         }
 
         public void Send(IRequest request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Send(IResponse response)
         {
             throw new NotImplementedException();
         }

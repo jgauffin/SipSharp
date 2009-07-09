@@ -1,22 +1,43 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using SipSharp.Transports;
 
 namespace SipSharp.Transactions
 {
-    class ServerInviteTransaction
+    internal class ServerInviteTransaction : IServerTransaction
     {
-        private TransactionState _state;
-        private TransportManager _transport;
-        private IRequest _request;
+        /// <summary>
+        /// Retransmission timer.
+        /// </summary>
+        private readonly Timer _timerG;
 
-        public ServerInviteTransaction(TransportManager transportManager, IRequest request)
+        /// <summary>
+        /// Timeout, the amount of time UAC tries to resend the request.
+        /// </summary>
+        private readonly Timer _timerH;
+
+        /// <summary>
+        /// When to switch to terminated state.
+        /// </summary>
+        private readonly Timer _timerI;
+
+        private readonly ITransportManager _transport;
+        private IRequest _request;
+        private IResponse _response;
+        private TransactionState _state;
+
+        private int _timerGValue;
+
+
+        public ServerInviteTransaction(ITransportManager transportManager, IRequest request)
         {
             _transport = transportManager;
             _state = TransactionState.Proceeding;
             _request = request;
+            _timerG = new Timer(OnRetransmit);
+            _timerH = new Timer(OnTimeout);
+            _timerI = new Timer(OnTerminated);
+            _timerGValue = TransactionManager.T1;
 
             if (request.Method == "ACK")
                 throw new InvalidOperationException("Expected any other type than ACK and INVITE");
@@ -28,13 +49,86 @@ namespace SipSharp.Transactions
             Send(request.CreateResponse(StatusCode.Trying, "We are trying here..."));
         }
 
+        private void OnRetransmit(object state)
+        {
+            _timerGValue = Math.Min(_timerGValue*2, TransactionManager.T2);
+            _timerG.Change(_timerGValue, Timeout.Infinite);
+            _transport.Send(_response);
+        }
+
+        private void OnTerminated(object state)
+        {
+            Terminate();
+        }
+
+        private void OnTimeout(object state)
+        {
+            // If timer H fires while in the "Completed" state, it implies that the
+            // ACK was never received.  In this case, the server transaction MUST
+            // transition to the "Terminated" state, and MUST indicate to the TU
+            // that a transaction failure has occurred.
+            Terminate();
+            //TODO: Should we have a TimedOut event too?
+        }
+
+        private void Terminate()
+        {
+            _state = TransactionState.Terminated;
+            Terminated(this, EventArgs.Empty);
+            _timerG.Change(Timeout.Infinite, Timeout.Infinite);
+            _timerH.Change(Timeout.Infinite, Timeout.Infinite);
+            _timerI.Change(Timeout.Infinite, Timeout.Infinite);
+        }
+
+        #region IServerTransaction Members
+
+        /// <summary>
+        /// The request have been retransmitted by the UA.
+        /// </summary>
+        /// <param name="request"></param>
+        public void OnRequest(IRequest request)
+        {
+            if (_response == null)
+                return; //ops. maybe show an error?
+            if (_state == TransactionState.Terminated)
+                return;
+
+            // If an ACK is received while the server transaction is in the
+            // "Completed" state, the server transaction MUST transition to the
+            // "Confirmed" state.  As Timer G is ignored in this state, any
+            // retransmissions of the response will cease.
+            if (request.Method == "ACK")
+            {
+                if (_state == TransactionState.Completed)
+                    _state = TransactionState.Confirmed;
+                _timerG.Change(Timeout.Infinite, Timeout.Infinite);
+                _timerI.Change(TransactionManager.T4, Timeout.Infinite);
+            }
+
+            // If a request
+            // retransmission is received while in the "Proceeding" state, the most
+            // recent provisional response that was received from the TU MUST be
+            // passed to the transport layer for retransmission.
+            if (_state == TransactionState.Proceeding)
+                _transport.Send(_response);
+
+            // Furthermore,
+            // while in the "Completed" state, if a request retransmission is
+            // received, the server SHOULD pass the response to the transport for
+            // retransmission.
+            if (_state == TransactionState.Completed)
+            {
+            }
+        }
 
         public void Send(IResponse response)
         {
             // Any other final responses passed by the TU to the server
             // transaction MUST be discarded while in the "Completed" state.
-            if (_state == TransactionState.Completed)
+            if (_state == TransactionState.Completed || _state == TransactionState.Terminated)
                 return;
+
+            _response = response;
 
             // While in the "Trying" state, if the TU passes a provisional response
             // to the server transaction, the server transaction MUST enter the
@@ -53,23 +147,33 @@ namespace SipSharp.Transactions
             // be passed to the transport layer for transmission.
             if (_state == TransactionState.Proceeding)
             {
-                _transport.Send(response);
-
+                if (StatusCodeHelper.Is2xx(response))
+                {
+                    _transport.Send(response);
+                    _state = TransactionState.Terminated;
+                }
+                else if (StatusCodeHelper.Is3456xx(response))
+                {
+                    _transport.Send(response);
+                    _state = TransactionState.Completed;
+                    if (response.Via.First.Protocol == "UDP")
+                        _timerG.Change(TransactionManager.T1, Timeout.Infinite);
+                    _timerH.Change(64*TransactionManager.T1, Timeout.Infinite);
+                }
                 if (!StatusCodeHelper.Is1xx(response))
                 {
                     _state = TransactionState.Completed;
-                    // When the server transaction enters the "Completed" state, it MUST set
-                    // Timer J to fire in 64*T1 seconds for unreliable transports, and zero
-                    // seconds for reliable transports.  
-                    if (_timerIJ == null)
-                        _timerIJ = new Timer(OnTerminate);
-                    _timerIJ.Change(TransactionManager.T1 * 64, Timeout.Infinite);
                 }
             }
 
             _response = response;
         }
 
+        #endregion
 
+        /// <summary>
+        /// Ack was never received from client.
+        /// </summary>
+        public event EventHandler Terminated = delegate { };
     }
 }
