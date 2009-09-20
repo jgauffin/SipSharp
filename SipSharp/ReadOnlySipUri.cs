@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Specialized;
 
 namespace SipSharp
 {
@@ -47,7 +46,7 @@ namespace SipSharp
         /// <param name="domain">The domain.</param>
         /// <param name="port">The port.</param>
         /// <param name="values">The values.</param>
-        public ReadOnlySipUri(string protocol, string userName, string password, string domain, int port, NameValueCollection values) : base(protocol, userName, password, domain, port, values)
+        public ReadOnlySipUri(string protocol, string userName, string password, string domain, int port, IKeyValueCollection values) : base(protocol, userName, password, domain, port, values)
         {
         }
 
@@ -73,9 +72,9 @@ namespace SipSharp
         /// </summary>
         /// <value></value>
         /// <exception cref="InvalidOperationException">SipUri is read-only.</exception>
-        public override NameValueCollection Parameters
+        public override IKeyValueCollection Parameters
         {
-            get { return new NameValueCollection(Parameters); }
+            get { return (IKeyValueCollection)Parameters.AsReadOnly(); }
             set { throw new InvalidOperationException("SipUri is read-only."); }
         }
 
@@ -116,9 +115,9 @@ namespace SipSharp
         /// Usually is 'SIP' or 'SIPS'.
         /// </remarks>
         /// <exception cref="InvalidOperationException">SipUri is read-only.</exception>
-        public override string Protocol
+        public override string Scheme
         {
-            get { return base.Protocol; }
+            get { return base.Scheme; }
             set { throw new InvalidOperationException("SipUri is read-only."); }
         }
 

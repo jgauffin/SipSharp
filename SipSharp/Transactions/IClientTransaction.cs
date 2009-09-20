@@ -8,13 +8,19 @@ namespace SipSharp.Transactions
 {
 	public interface IClientTransaction : ITransaction
 	{
-		/// <summary>
-		/// Checks whether the response belongs to our request
-		/// </summary>
-		/// <param name="response">Response to check</param>
-		/// <returns></returns>
-		bool IsOurResponse(IResponse response);
+        /// <summary>
+        /// Process a response to the request.
+        /// </summary>
+        /// <param name="response">Received response</param>
+        /// <param name="endPoint">End point that the response was received from.</param>
+        /// <returns><c>true</c> if response was handled; otherwise <c>false</c>.</returns>
+        bool Process(IResponse response, EndPoint endPoint);
 
-        string ProcessResponse(IResponse response, EndPoint endPoint);
+
+        /// <summary>
+        /// We like to reuse transaction objects. Remove all references
+        /// to the transaction and reset all parameters.
+        /// </summary>
+	    void Cleanup();
 	}
 }

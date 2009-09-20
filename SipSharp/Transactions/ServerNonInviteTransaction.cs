@@ -1,5 +1,4 @@
 ﻿using System.Threading;
-using SipSharp.Transports;
 
 namespace SipSharp.Transactions
 {
@@ -7,36 +6,35 @@ namespace SipSharp.Transactions
     {
         private readonly IRequest _request;
         private readonly Timer _timerJ;
-        private readonly ITransportManager _transport;
+        private readonly ISipStack _sipStack;
         private IResponse _response;
-        private TransactionState _state;
 
-        public ServerNonInviteTransaction(ITransportManager transport, IRequest request)
+        public ServerNonInviteTransaction(ISipStack sipStack, IRequest request)
         {
             _timerJ = new Timer(OnTerminate);
 
-            _transport = transport;
+            _sipStack = sipStack;
             _request = request;
-            _state = TransactionState.Trying;
+            State = TransactionState.Trying;
         }
 
         private void OnTerminate(object state)
         {
-            _state = TransactionState.Terminated;
+            State = TransactionState.Terminated;
         }
 
         #region IServerTransaction Members
 
-        public void OnRequest(IRequest request)
+        public void Process(IRequest request)
         {
             // Once in the "Trying" state, any further request
             // retransmissions are discarded.
-            if (_state == TransactionState.Trying)
+            if (State == TransactionState.Trying)
                 return;
 
-            if (_state == TransactionState.Proceeding)
+            if (State == TransactionState.Proceeding)
             {
-                _transport.Send(_response);
+                _sipStack.Send(_response);
             }
         }
 
@@ -44,35 +42,44 @@ namespace SipSharp.Transactions
         {
             // Any other final responses passed by the TU to the server
             // transaction MUST be discarded while in the "Completed" state
-            if (!StatusCodeHelper.Is1xx(response) && _state == TransactionState.Completed)
+            if (!StatusCodeHelper.Is1xx(response) && State == TransactionState.Completed)
                 return;
-            if (_state == TransactionState.Terminated)
+            if (State == TransactionState.Terminated)
                 return;
 
             _response = response;
-            if (_state == TransactionState.Trying)
+            if (State == TransactionState.Trying)
             {
                 if (StatusCodeHelper.Is1xx(response))
                 {
-                    _state = TransactionState.Proceeding;
+                    State = TransactionState.Proceeding;
                 }
             }
-            else if (_state == TransactionState.Proceeding)
+            else if (State == TransactionState.Proceeding)
             {
                 if (StatusCodeHelper.Is1xx(response))
-                    _transport.Send(response);
+                    _sipStack.Send(response);
                 else
                 {
-                    _state = TransactionState.Completed;
+                    State = TransactionState.Completed;
                     if (_request.Via.First.Protocol == "UDP")
                         _timerJ.Change(TransactionManager.T1*64, Timeout.Infinite);
                     else
                         _timerJ.Change(0, Timeout.Infinite);
                 }
             }
-            _transport.Send(response);
+            _sipStack.Send(response);
         }
 
         #endregion
+
+        /// <summary>
+        /// Gets dialog that the transaction belongs to
+        /// </summary>
+        //IDialog Dialog { get; }
+        /// <summary>
+        /// Gets current transaction state
+        /// </summary>
+        public TransactionState State { get; private set; }
     }
 }

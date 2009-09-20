@@ -7,6 +7,11 @@ namespace SipSharp.Dialogs
 {
     class DialogManager
     {
+        public IDialog Create(IRequest request)
+        {
+            return null;
+        }
+
         public IDialog Create(IResponse response)
         {
             return null;

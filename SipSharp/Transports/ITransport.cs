@@ -5,7 +5,7 @@ namespace SipSharp.Transports
 {
     /// <summary>
     /// A transport is responsible of sending and receiving connections
-    /// using a specific protocol.
+    /// using a specific protocol and EndPoint.
     /// </summary>
     public interface ITransport
     {
@@ -34,9 +34,32 @@ namespace SipSharp.Transports
         /// </summary>
         string Protocol { get; }
 
+
+        /// <summary>
+        /// Gets of protocol is message based.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Message based protocols like UDP should only receive one (and a complete) message
+        /// in each receive. While packet based protocols like TCP can receive partial, complete or multiple
+        /// messages in one packet.
+        /// </para>
+        /// <para>This property should be used to </para>
+        /// </remarks>
+        //string IsMessageBasedProtocl{ get;}
+
+
 		/// <summary>
 		/// A exception was unhandled in a worker thread.
 		/// </summary>
     	event UnhandledExceptionEventHandler UnhandledException;
+    }
+
+    public class ReceivedEventArgs : EventArgs
+    {
+        public ReceivedEventArgs(byte[] buffer, int offset, int count)
+        {
+            
+        }
     }
 }

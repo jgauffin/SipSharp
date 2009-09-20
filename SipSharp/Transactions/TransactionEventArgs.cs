@@ -5,8 +5,16 @@ using System.Text;
 
 namespace SipSharp.Transactions
 {
-    class TransactionEventArgs : EventArgs
+    /// <summary>
+    /// Something have happened with a transaction
+    /// </summary>
+    public class TransactionEventArgs : EventArgs
     {
+        public ITransaction Transaction { get; private set; }
 
+        public TransactionEventArgs(ITransaction transaction)
+        {
+            Transaction = transaction;
+        }
     }
 }

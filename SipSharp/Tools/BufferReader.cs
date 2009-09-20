@@ -1,35 +1,37 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 
 namespace SipSharp.Tools
 {
     /// <summary>
-    /// Used to read from a string object.
+    /// Reads strings from a byte array.
     /// </summary>
-    public class StringReader : ITextReader
+    public class BufferReader : ITextReader
     {
-        private string _buffer;
+        private readonly Encoding _encoding;
+        private byte[] _buffer;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="StringReader"/> class.
+        /// Initializes a new instance of the <see cref="BufferReader"/> class.
         /// </summary>
-        /// <param name="buffer">Buffer to process.</param>
-        public StringReader(string buffer)
+        public BufferReader()
         {
-            Assign(buffer);
+            _encoding = Encoding.ASCII;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="StringReader"/> class.
+        /// Initializes a new instance of the <see cref="BufferReader"/> class.
         /// </summary>
-        public StringReader()
+        /// <param name="encoding">Encoding to use when converting byte array to strings.</param>
+        public BufferReader(Encoding encoding)
         {
-            
+            _encoding = encoding;
         }
 
         private string GetString(int startIndex, int endIndex)
         {
-            return _buffer.Substring(startIndex, endIndex - startIndex);
+            return _encoding.GetString(_buffer, startIndex, endIndex - startIndex);
         }
 
         private string GetString(int startIndex, int endIndex, bool trimEnd)
@@ -41,7 +43,7 @@ namespace SipSharp.Tools
                     --endIndex;
                 ++endIndex;
             }
-            return _buffer.Substring(startIndex, endIndex - startIndex);
+            return _encoding.GetString(_buffer, startIndex, endIndex - startIndex);
         }
 
         #region ITextReader Members
@@ -52,13 +54,12 @@ namespace SipSharp.Tools
         /// <param name="buffer">Buffer to process.</param>
         /// <param name="offset">Where to start process buffer</param>
         /// <param name="count">Buffer length</param>
-        /// <remarks><paramref name="buffer"/> MUST be of type <see cref="string"/>.</remarks>
         public void Assign(object buffer, int offset, int count)
         {
-            if (!(buffer is string))
-                throw new ArgumentException("buffer needs to be of type string", "buffer");
+            if (!(buffer is byte[]))
+                throw new ArgumentException("Buffer needs to be a byte array", "buffer");
 
-            _buffer = (string) buffer;
+            _buffer = (byte[]) buffer;
             Index = offset;
             Length = count;
         }
@@ -67,16 +68,15 @@ namespace SipSharp.Tools
         /// Assign a new buffer
         /// </summary>
         /// <param name="buffer">Buffer to process</param>
-        /// <remarks><paramref name="buffer"/> MUST be of type <see cref="string"/>.</remarks>
         public void Assign(object buffer)
         {
-            if (!(buffer is string))
-                throw new ArgumentException("buffer needs to be of type string", "buffer");
-            _buffer = (string) buffer;
+            if (!(buffer is byte[]))
+                throw new ArgumentException("Buffer needs to be a byte array", "buffer");
+
+            _buffer = (byte[]) buffer;
             Index = 0;
             Length = _buffer.Length;
         }
-
 
         /// <summary>
         /// Gets or sets line number.
@@ -107,7 +107,7 @@ namespace SipSharp.Tools
         /// <value><see cref="char.MinValue"/> if end of buffer.</value>
         public char Peek
         {
-            get { return Index < Length - 1 ? _buffer[Index + 1] : char.MinValue; }
+            get { return Index < Length - 1 ? (char) _buffer[Index + 1] : char.MinValue; }
         }
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace SipSharp.Tools
         /// <value><see cref="char.MinValue"/> if end of buffer.</value>
         public char Current
         {
-            get { return HasMore ? _buffer[Index] : char.MinValue; }
+            get { return HasMore ? (char) _buffer[Index] : char.MinValue; }
         }
 
         /// <summary>
@@ -170,7 +170,7 @@ namespace SipSharp.Tools
 
             Consume(); // eat \n too.
 
-            string thisLine = _buffer.Substring(startIndex, Index - startIndex - 2);
+            string thisLine = _encoding.GetString(_buffer, startIndex, Index - startIndex - 2);
 
             // Multi line message?
             if (Current == '\t' || Current == ' ')
@@ -217,7 +217,6 @@ namespace SipSharp.Tools
                         buffer += Current;
                         break;
                 }
-                ++Index;
             }
 
             Index = startPos;
@@ -228,7 +227,12 @@ namespace SipSharp.Tools
         /// Read until end of string, or to one of the delimiters are found.
         /// </summary>
         /// <param name="delimiters">characters to stop at</param>
-        /// <returns>A string (can be <see cref="string.Empty"/>).</returns>
+        /// <returns>
+        /// A string (can be <see cref="string.Empty"/>).
+        /// </returns>
+        /// <remarks>
+        /// Will not consume the delimiter.
+        /// </remarks>
         public string ReadToEnd(string delimiters)
         {
             if (EOF)
@@ -243,7 +247,7 @@ namespace SipSharp.Tools
                     return GetString(startIndex, Index);
 
                 if (delimiters.IndexOf(Current) != -1)
-                    return GetString(startIndex, Index, true);
+                    return GetString(startIndex, Index - 1, true);
 
                 // Delimiter is not new line and we got one.
                 if (isDelimitersNewLine && Current == '\r' || Current == '\n')
@@ -265,14 +269,19 @@ namespace SipSharp.Tools
         {
             int index = Index;
             Index = Length;
-            return _buffer.Substring(index);
+            return _encoding.GetString(_buffer, index, Length - index);
         }
 
         /// <summary>
         /// Read to end of buffer, or until specified delimiter is found.
         /// </summary>
         /// <param name="delimiter">Delimiter to find.</param>
-        /// <returns>A string (can be <see cref="string.Empty"/>).</returns>
+        /// <returns>
+        /// A string (can be <see cref="string.Empty"/>).
+        /// </returns>
+        /// <remarks>
+        /// Will not consume the delimiter.
+        /// </remarks>
         public string ReadToEnd(char delimiter)
         {
             if (EOF)
@@ -286,7 +295,7 @@ namespace SipSharp.Tools
                     return GetString(startIndex, Index);
 
                 if (Current == delimiter)
-                    return GetString(startIndex, Index, true);
+                    return GetString(startIndex, Index - 1, true);
 
                 // Delimiter is not new line and we got one.
                 if (delimiter != '\r' && delimiter != '\n' && Current == '\r' || Current == '\n')
@@ -312,7 +321,16 @@ namespace SipSharp.Tools
         /// </summary>
         public void ConsumeWhiteSpaces()
         {
-            Consume('\t', ' ');
+            Consume(' ', '\t');
+        }
+
+        /// <summary>
+        /// Consume horizontal white spaces and the specified character.
+        /// </summary>
+        /// <param name="extraCharacter">Extra character to consume</param>
+        public void ConsumeWhiteSpaces(char extraCharacter)
+        {
+            Consume(' ', '\t', extraCharacter);
         }
 
         /// <summary>
@@ -323,10 +341,8 @@ namespace SipSharp.Tools
         /// </returns>
         public char Read()
         {
-            return _buffer[Index++];
+            return (char) _buffer[Index++];
         }
-
-
 
         /// <summary>
         /// Will read until specified delimiter is found.
@@ -336,9 +352,7 @@ namespace SipSharp.Tools
         /// A string if the delimiter was found; otherwise <c>null</c>.
         /// </returns>
         /// <remarks>
-        /// Will trim away spaces and tabs from the end.
-        /// Will not consume the delimiter.
-        /// </remarks>
+        /// Will trim away spaces and tabs from the end.</remarks>
         public string ReadUntil(char delimiter)
         {
             if (EOF)
@@ -407,21 +421,10 @@ namespace SipSharp.Tools
         /// <summary>
         /// Read until a horizontal white space occurs.
         /// </summary>
-        /// <returns>
-        /// A string if a white space was found; otherwise <c>null</c>.
-        /// </returns>
+        /// <returns>A string if a white space was found; otherwise <c>null</c>.</returns>
         public string ReadWord()
         {
             return ReadUntil(" \t");
-        }
-
-        /// <summary>
-        /// Consume horizontal white spaces and the specified character.
-        /// </summary>
-        /// <param name="extraCharacter">Extra character to consume</param>
-        public void ConsumeWhiteSpaces(char extraCharacter)
-        {
-            Consume('\t', ' ', extraCharacter);
         }
 
         /// <summary>

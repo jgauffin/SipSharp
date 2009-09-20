@@ -1,64 +1,54 @@
-﻿#if TEST
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
-using System.Threading;
 using SipSharp.Tests;
+using SipSharp.Transports.Parser;
 using Xunit;
 
-namespace SipSharp.Transports.Parser
+namespace SipSharp.Parser
 {
-    /// <summary>
-    /// Tests for <see cref="RequestParser"/>.
-    /// </summary>
     public class SipParserTest
     {
-        private IMessageParser _parser;
-        private ResponseLineEventArgs _responseLineEventArgs;
-        private RequestLineEventArgs _requestLineArgs;
+        private SipParser _parser;
         private NameValueCollection _headers = new NameValueCollection();
         private MemoryStream _body = new MemoryStream();
-        private ManualResetEvent _completed = new ManualResetEvent(false);
+        private bool _isComplete;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RequestParserTest"/> class.
-        /// </summary>
         public SipParserTest()
         {
             _parser = new SipParser();
+            _parser.HeaderParsed += OnHeader;
             _parser.BodyBytesReceived += OnBody;
-            _parser.HeaderReceived += OnHeader;
-            _parser.MessageCompleted += OnMessageComplete;
-            _parser.RequestLineReceived += OnRequestLine;
-            _parser.ResponseLineReceived += OnResponseLine;
-            _parser.LogWriter = ConsoleLogWriter.Instance;
+            _parser.MessageComplete += OnComplete;
         }
 
-        private void OnResponseLine(object sender, ResponseLineEventArgs e)
+        private void OnComplete(object sender, EventArgs e)
         {
-            _responseLineEventArgs = e;
-        }
-
-        private void OnRequestLine(object sender, RequestLineEventArgs e)
-        {
-            _requestLineArgs = e;
-        }
-
-        private void OnMessageComplete(object sender, EventArgs e)
-        {
-            _completed.Set();
-        }
-
-        private void OnHeader(object sender, HeaderEventArgs e)
-        {
-            _headers.Add(e.Name, e.Value);
+            _body.Flush();
+            _body.Seek(0, SeekOrigin.Begin);
+            StreamReader reader = new StreamReader(_body);
+            Debug.WriteLine(reader.ReadToEnd());
+            _isComplete = true;
         }
 
         private void OnBody(object sender, BodyEventArgs e)
         {
             _body.Write(e.Buffer, e.Offset, e.Count);
         }
+
+
+
+        private void OnHeader(object sender, HeaderEventArgs e)
+        {
+            Debug.WriteLine(e.Name + "= " + e.Value);
+            _headers.Add(e.Name, e.Value);
+        }
+
+
 
         /// <summary>
         /// TODO: SipParser header values with colon and stuff.
@@ -71,8 +61,8 @@ namespace SipSharp.Transports.Parser
             byte[] bytes = Encoding.ASCII.GetBytes(TestMessages.AShortTortuousINVITE);
             _parser.Parse(bytes, 0, bytes.Length);
             Assert.Equal("sip:vivekg@chair-dnrc.example.com ;   tag    = 1918181833n", _headers["to"]);
-            Assert.Equal(@"""J Rosenberg \\\""""       <sip:jdrosen@example.com>  ;  tag = 98asjd8", _headers["from"]);
-            Assert.Equal("0009  INVITE", _headers["cseq"]);
+            Assert.Equal(@"""J Rosenberg \\\""""       <sip:jdrosen@example.com> ; tag = 98asjd8", _headers["from"]);
+            Assert.Equal("0009 INVITE", _headers["cseq"]);
 
             _body.Seek(0, SeekOrigin.Begin);
             StreamReader reader = new StreamReader(_body);
@@ -82,7 +72,11 @@ namespace SipSharp.Transports.Parser
         [Fact]
         private void TestSpanningHeader()
         {
-            byte[] test = Encoding.UTF8.GetBytes("INVITE sip:vivekg@chair-dnrc.example.com SIP/2.0\r\nHeader  \t: Spanning\r\n over multiple lines.\r\n");
+            byte[] test = Encoding.UTF8.GetBytes(@"INVITE sip:vivekg@chair-dnrc.example.com SIP/2.0
+Header  : 
+	Spanning
+	 over multiple lines.
+");
             _parser.Parse(test, 0, test.Length);
             Assert.Equal("Spanning over multiple lines.", _headers["Header"]);
         }
@@ -92,10 +86,10 @@ namespace SipSharp.Transports.Parser
         {
             byte[] test = Encoding.UTF8.GetBytes(@"INVITE sip:vivekg@chair-dnrc.example.com SIP/2.0
 Header  	: Spanning
- over multiple lines.
+  over multiple lines.
 Another:header
 Yet: a third
-	one.
+	 one.
 ");
             _parser.Parse(test, 0, test.Length);
             Assert.Equal("Spanning over multiple lines.", _headers["Header"]);
@@ -108,13 +102,13 @@ Yet: a third
         {
             byte[] test = Encoding.UTF8.GetBytes(@"INVITE sip:vivekg@chair-dnrc.example.com SIP/2.0
 Header  	: Spanning
- over multiple lines.
+  over multiple lines.
 Another:header
 Yet: a third
-	one.
+	 one.
 ");
-            _parser.Parse(test, 0, 10);
-            _parser.Parse(test, 10, test.Length - 10);
+            int index = _parser.Parse(test, 0, 10);
+            _parser.Parse(test, index, test.Length);
             Assert.Equal("Spanning over multiple lines.", _headers["Header"]);
             Assert.Equal("header", _headers["Another"]);
             Assert.Equal("a third one.", _headers["Yet"]);
@@ -130,8 +124,8 @@ Another:header
 Yet: a third
 	one.
 ");
-            _parser.Parse(test, 0, 50);
-            _parser.Parse(test, 50, test.Length - 50);
+            int index = _parser.Parse(test, 0, 50);
+            _parser.Parse(test, index, test.Length);
             Assert.Equal("Spanning over multiple lines.", _headers["Header"]);
             Assert.Equal("header", _headers["Another"]);
             Assert.Equal("a third one.", _headers["Yet"]);
@@ -139,4 +133,3 @@ Yet: a third
 
     }
 }
-#endif

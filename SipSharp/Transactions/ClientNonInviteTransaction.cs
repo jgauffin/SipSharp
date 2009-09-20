@@ -2,41 +2,31 @@
 using System.Net;
 using System.Threading;
 using SipSharp.Dialogs;
-using SipSharp.Transports;
+using SipSharp.Messages;
 
 namespace SipSharp.Transactions
 {
     /// <summary>
     /// Client transaction for all messages but Invite.
     /// </summary>
-    public class ClientTransaction
+    public class ClientNonInviteTransaction : IClientTransaction
     {
         /// <summary>
         /// Retransmit timer for Non-Invite transactions.
         /// </summary>
         private readonly Timer _timerE;
 
-        private readonly ITransportManager _transportManager;
-        private IDialog _dialog;
+        private readonly ISipStack _sipStack;
         private EndPoint _endPoint;
         private IRequest _request;
-        private TransactionState _state;
-        private Timer _timer1;
-
-        /// <summary>
-        /// Controls request retransmissions
-        /// </summary>
-        private Timer _timerA;
-
-        private int _timerAValue;
-
+        private readonly Timer _timer1;
 
         private int _timerEValue = TransactionManager.T1*2;
 
         /// <summary>
         /// Timeout timer for Non-Invite transactions.
         /// </summary>
-        private Timer _timerF;
+        private readonly Timer _timerF;
 
         /// <summary>
         /// Time in completed state timer
@@ -49,13 +39,13 @@ namespace SipSharp.Transactions
 
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ClientTransaction"/> class.
+        /// Initializes a new instance of the <see cref="ClientNonInviteTransaction"/> class.
         /// </summary>
-        /// <param name="transportManager">Used to transport messages.</param>
+        /// <param name="sipStack">Used to transport messages.</param>
         /// <param name="message">Request to process.</param>
-        public ClientTransaction(ITransportManager transportManager, IMessage message)
+        public ClientNonInviteTransaction(ISipStack sipStack, IMessage message)
         {
-            _transportManager = transportManager;
+            _sipStack = sipStack;
 
             if (!(message is IRequest))
             {
@@ -65,20 +55,14 @@ namespace SipSharp.Transactions
             if (request.Method == "INVITE")
                 throw new SipSharpException("Use ClientInviteTransaction for invite requests.");
 
-            _state = TransactionState.Trying;
+            State = TransactionState.Trying;
             _timerF = new Timer(OnTimeout, null, TransactionManager.T1*64, Timeout.Infinite);
             if (request.Via.First.Protocol == "UDP")
             {
                 _timerEValue = TransactionManager.T1;
                 _timerE = new Timer(OnRetransmission, null, _timerEValue, Timeout.Infinite);
             }
-            _transportManager.Send(_endPoint, request);
-        }
-
-        public void AddMessage(IMessage message)
-        {
-            var response = (IResponse) message;
-            ProcessResponse(response);
+            _sipStack.Send(request);
         }
 
         /// <summary>
@@ -127,7 +111,7 @@ namespace SipSharp.Transactions
                  */
             _timerEValue = Math.Min(_timerEValue*2, TransactionManager.T2);
             _timerE.Change(_timerEValue, Timeout.Infinite);
-            _transportManager.Send(_endPoint, _request);
+            _sipStack.Send(_request);
         }
 
         private void OnTerminate(object state)
@@ -135,28 +119,29 @@ namespace SipSharp.Transactions
             /* If timer D fires while the client transaction is in the "Completed"
              * state, the client transaction MUST move to the terminated state.
              */
-            if (_state == TransactionState.Completed)
+            if (State == TransactionState.Completed)
             {
-                _state = TransactionState.Terminated;
+                State = TransactionState.Terminated;
+                Terminated(this, EventArgs.Empty);
             }
         }
 
         private void OnTimeout(object state)
         {
-            _state = TransactionState.Terminated;
+            State = TransactionState.Terminated;
 
             /* If Timer F fires while the client transaction is still in the
                  * "Trying" state, the client transaction SHOULD inform the TU about the
                  * timeout, and then it SHOULD enter the "Terminated" state                
                  */
-            if (_state == TransactionState.Trying)
+            if (State == TransactionState.Trying)
                 TimeoutTriggered(this, EventArgs.Empty);
         }
 
-        private void ProcessResponse(IResponse response)
+        public bool Process(IResponse response, EndPoint endPoint)
         {
-            if (_state == TransactionState.Terminated)
-                return;
+            if (State == TransactionState.Terminated)
+                return false;
 
             /* If a provisional response is received while in the "Trying" state, the
              * response MUST be passed to the TU, and then the client transaction
@@ -164,7 +149,7 @@ namespace SipSharp.Transactions
              */
             if (StatusCodeHelper.Is1xx(response))
             {
-                _state = TransactionState.Proceeding;
+                State = TransactionState.Proceeding;
             }
 
                 /* If a final response (status codes 200-699) is received while in the "Trying" state,
@@ -175,7 +160,7 @@ namespace SipSharp.Transactions
              */
             else
             {
-                _state = TransactionState.Completed;
+                State = TransactionState.Completed;
 
                 // Once the client transaction enters the "Completed" state, it MUST set
                 // Timer K to fire in T4 seconds for unreliable transports, and zero
@@ -186,16 +171,13 @@ namespace SipSharp.Transactions
             }
 
             ResponseReceived(this, new ResponseEventArgs(response, _endPoint));
+            return true;
         }
 
-
-        private void Setup(IRequest request)
-        {
-        }
 
         public void TriggerTransportFailed()
         {
-            _state = TransactionState.Terminated;
+            State = TransactionState.Terminated;
             TransportFailed(this, EventArgs.Empty);
         }
 
@@ -221,5 +203,50 @@ namespace SipSharp.Transactions
         /// Event used to dispose transaction or to re-use it.
         /// </remarks>
         public event EventHandler Terminated = delegate { };
+
+        /// <summary>
+        /// We like to reuse transaction objects. Remove all references
+        /// to the transaction and reset all parameters.
+        /// </summary>
+        public void Cleanup()
+        {
+            _timer1.Change(Timeout.Infinite, Timeout.Infinite);
+            _timerE.Change(Timeout.Infinite, Timeout.Infinite);
+            _timerF.Change(Timeout.Infinite, Timeout.Infinite);
+            _timerK.Change(Timeout.Infinite, Timeout.Infinite);
+            _endPoint = null;
+            _request = null;
+        }
+
+        /// <summary>
+        /// Gets dialog that the transaction belongs to
+        /// </summary>
+        //IDialog Dialog { get; }
+
+        /// <summary>
+        /// Gets transaction identifier.
+        /// </summary>
+        public string Id
+        {
+            get {
+                string token = _request.Via.First.Branch;
+                token += _request.Via.First.SentBy;
+
+                if (_request.Method == SipMethod.ACK)
+                    token += SipMethod.INVITE;
+                else
+                    token += _request.Method;
+                return token;
+            }
+        }
+
+        /// <summary>
+        /// Gets dialog that the transaction belongs to
+        /// </summary>
+        //IDialog Dialog { get; }
+        /// <summary>
+        /// Gets current transaction state
+        /// </summary>
+        public TransactionState State { get; private set; }
     }
 }

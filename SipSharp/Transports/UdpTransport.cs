@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using SipSharp.Logging;
+using SipSharp.Messages;
 using SipSharp.Transports.Parser;
 
 namespace SipSharp.Transports
 {
     internal class UdpTransport : ITransport
     {
-        private readonly ILogWriter _logWriter = LogFactory.CreateLogger(typeof (UdpTransport));
+        private readonly ILogger _logger = LogFactory.CreateLogger(typeof (UdpTransport));
         private Socket _socket;
         private readonly BufferPool _bufferPool;
-        private readonly ParserManager _parsers;
+        private readonly MessageFactory _parsers;
         private EndPoint _serverEndPoint;
 
         /// <summary>
@@ -18,7 +20,7 @@ namespace SipSharp.Transports
         /// </summary>
         /// <param name="bufferPool">The buffer pool.</param>
         /// <param name="parsers">The parsers.</param>
-        public UdpTransport(BufferPool bufferPool, ParserManager parsers)
+        public UdpTransport(BufferPool bufferPool, MessageFactory parsers)
         {
             _bufferPool = bufferPool;
             _parsers = parsers;
@@ -40,9 +42,13 @@ namespace SipSharp.Transports
             _socket.BeginReceiveFrom(newBuffer, 0, newBuffer.Length, SocketFlags.None,
                                             ref _serverEndPoint, OnRead, newBuffer);
 
-            // and parse current packet.
-            _parsers.Parse(endPoint, buffer, 0, bytesRead);
+            MessageBuilder builder = _parsers.CreateNewContext();
+            int offset = builder.Parse(buffer, 0, bytesRead);
+            if (offset != bytesRead)
+                _logger.Error("Failed to parse complete message");
+
             _bufferPool.Enqueue(buffer);
+            _parsers.Release(builder);
         }
 
         
@@ -53,7 +59,7 @@ namespace SipSharp.Transports
             int bytesSent = _socket.EndSendTo(ar);
             if (context.buffer.Length != bytesSent)
             {
-                _logWriter.Write(this, LogLevel.Warning, "Failed to send whole UDP message, " + bytesSent +
+                _logger.Warning("Failed to send whole UDP message, " + bytesSent +
                                                          " of " + context.buffer.Length + " bytes to " + context.endPoint);
             }
             _bufferPool.Enqueue(context.buffer);
@@ -110,5 +116,7 @@ namespace SipSharp.Transports
         {
             get { return "UDP"; }
         }
+
+        public event UnhandledExceptionEventHandler UnhandledException = delegate{};
     }
 }

@@ -35,7 +35,7 @@ namespace SipSharp.Transports.Parser
         /// <summary>
         /// Gets or sets buffer that contains the received bytes.
         /// </summary>
-        public byte[] Buffer { get; set; }
+        public byte[] Buffer { get; internal set; }
         /*
         /// <summary>
         /// Gets or sets number of bytes used by the request.
@@ -45,7 +45,7 @@ namespace SipSharp.Transports.Parser
         /// <summary>
         /// Gets or sets number of bytes from <see cref="Offset"/> that should be parsed.
         /// </summary>
-        public int Count { get; set; }
+        public int Count { get; internal set; }
         /*
         /// <summary>
         /// Gets or sets whether the body is complete.
@@ -55,6 +55,14 @@ namespace SipSharp.Transports.Parser
         /// <summary>
         /// Gets or sets offset in buffer where to start processing.
         /// </summary>
-        public int Offset { get; set; }
+        public int Offset { get; internal set; }
+
+        internal void AssignInternal(byte[] bytes, int offset, int count)
+        {
+            Buffer = bytes;
+            Offset = offset;
+            Count = count;
+        }
+
     }
 }

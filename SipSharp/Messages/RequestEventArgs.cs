@@ -28,5 +28,7 @@ namespace SipSharp
         /// End point that the message was received from.
         /// </summary>
         public EndPoint RemoteEndPoint { get; private set; }
+
+        internal 
     }
 }

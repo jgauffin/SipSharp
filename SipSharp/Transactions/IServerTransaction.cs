@@ -3,7 +3,7 @@
     /// <summary>
     /// A server transaction.
     /// </summary>
-    public interface IServerTransaction
+    public interface IServerTransaction : ITransaction
     {
         /// <summary>
         /// Send a new response.
@@ -15,6 +15,6 @@
         /// The request have been retransmitted by the UA.
         /// </summary>
         /// <param name="request"></param>
-        void OnRequest(IRequest request);
+        void Process(IRequest request);
     }
 }

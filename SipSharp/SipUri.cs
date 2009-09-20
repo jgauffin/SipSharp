@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Specialized;
-using SipSharp.Tools;
-using Xunit;
+using System.Collections.Generic;
 
 namespace SipSharp
 {
@@ -19,7 +17,7 @@ namespace SipSharp
     {
         public static readonly SipUri Empty = new ReadOnlySipUri();
         private string _domain = string.Empty;
-        private NameValueCollection _parameters;
+        private IKeyValueCollection _parameters;
         private string _password = string.Empty;
         private int _port;
         private string _protocol = string.Empty;
@@ -30,7 +28,7 @@ namespace SipSharp
         /// </summary>
         public SipUri()
         {
-            _parameters = new NameValueCollection();
+            _parameters = new KeyValueCollection();
         }
 
         /// <summary>
@@ -46,7 +44,7 @@ namespace SipSharp
             _userName = userName;
             _domain = domain;
             _port = port;
-            _parameters = new NameValueCollection();
+            _parameters = new KeyValueCollection();
         }
 
         /// <summary>
@@ -73,7 +71,7 @@ namespace SipSharp
         /// <param name="port">The port.</param>
         /// <param name="values">The values.</param>
         public SipUri(string protocol, string userName, string password, string domain, int port,
-                      NameValueCollection values)
+                      IKeyValueCollection values)
         {
             _protocol = protocol;
             _userName = userName;
@@ -101,7 +99,7 @@ namespace SipSharp
         /// <summary>
         /// Gets or sets optional parameters.
         /// </summary>
-        public virtual NameValueCollection Parameters
+        public virtual IKeyValueCollection Parameters
         {
             get { return _parameters; }
             set { _parameters = value; }
@@ -133,12 +131,12 @@ namespace SipSharp
         }
 
         /// <summary>
-        /// Gets or sets protocol.
+        /// Gets or sets uri scheme
         /// </summary>
         /// <remarks>
         /// Usually is 'SIP' or 'SIPS'.
         /// </remarks>
-        public virtual string Protocol
+        public virtual string Scheme
         {
             get { return _protocol; }
             set { _protocol = value; }
@@ -170,84 +168,6 @@ namespace SipSharp
             set { _userName = value; }
         }
 
-        /// <summary>
-        /// Parse a URI.
-        /// </summary>
-        /// <param name="uri">String to parse</param>
-        /// <returns><see cref="SipUri"/> if string could be parsed. Otherwise null.</returns>
-        /// <example>
-        /// sip:jonas@somwhere.com:5060
-        /// jonas@somwhere.com:5060
-        /// jonas:mypassword@somwhere.com
-        /// sip:jonas@somwhere.com
-        /// mailto:jonas@somwhere.com
-        /// </example>
-        public static SipUri Parse(string uri)
-        {
-            var reader = new StringReader(uri);
-            string protocol = reader.Read(':', '@'); // position should be reseted
-            if (reader.Current == ':')
-                reader.MoveNext(); // skip delimiter
-            string userName = reader.Read('@', ':');
-            if (reader.Current == '@')
-                reader.MoveNext(); // skip delimiter
-            string password = null;
-            if (userName == null)
-                userName = reader.Read('@');
-            else
-                password = reader.Read('@');
-            string domain = reader.ReadToEnd(":;");
-            if (userName == null || domain == null)
-                return null;
-
-            // We got a port.
-            int port = 0;
-            if (reader.Current == ':')
-            {
-                if (!reader.MoveNext())
-                    return null;
-                string portStr = reader.ReadToEnd(';');
-                if (portStr != null)
-                {
-                    if (!int.TryParse(portStr, out port))
-                        return null;
-                }
-            }
-
-            // parse parameters
-            NameValueCollection values = null;
-            if (reader.Current == ';')
-            {
-                values = new NameValueCollection();
-                reader.ParseParameters(values);
-            }
-
-            return new SipUri(protocol, userName, password, domain, port, values);
-        }
-
-#if TEST
-
-        /// <exception cref="InvalidOperationException"><c>InvalidOperationException</c>.</exception>
-        private static void Test(string uriString)
-        {
-            SipUri uri = Parse(uriString);
-            if (uri == null)
-                throw new InvalidOperationException("Failed to parse: " + uriString);
-
-            Assert.Equal(uriString, uri.ToString());
-        }
-
-        [Fact]
-        private static void TestCombined()
-        {
-            Test("sip:caller@example.net;tag=134161461246");
-            Test("sip:jonas@somwhere.com:5060");
-            Test("jonas@somwhere.com:5060");
-            Test("sip:jonas@somwhere.com");
-            Test("mailto:jonas@somwhere.com");
-            Test("sip:jonas@somwhere.com;lr");
-        }
-#endif
 
         /// <summary>
         /// Will only add protocol and port if specified.
@@ -262,8 +182,13 @@ namespace SipSharp
             if (_port != 0)
                 temp += ":" + _port;
 
-            foreach (string key in _parameters)
-                temp += ';' + key + '=' + _parameters[key];
+            foreach (KeyValuePair<string, string> pair in _parameters)
+            {
+                if (string.IsNullOrEmpty(pair.Value))
+                    temp += ';' + pair.Key;
+                else
+                    temp += ';' + pair.Key + '=' + pair.Value;
+            }
 
             return temp;
         }
@@ -280,11 +205,7 @@ namespace SipSharp
         ///<filterpriority>2</filterpriority>
         public object Clone()
         {
-            var uri = new SipUri(_protocol, _userName, _password, _domain, _port);
-            for (int i = 0; i < _parameters.Count; ++i)
-                uri.Parameters.Add(_parameters.Keys[i], _parameters[i]);
-
-            return uri;
+            return new SipUri(_protocol, _userName, _password, _domain, _port, (IKeyValueCollection)_parameters.Clone());
         }
 
         #endregion

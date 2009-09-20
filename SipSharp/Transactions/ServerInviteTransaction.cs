@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Threading;
-using SipSharp.Transports;
 
 namespace SipSharp.Transactions
 {
     internal class ServerInviteTransaction : IServerTransaction
     {
+        private readonly ISipStack _sipStack;
+
         /// <summary>
         /// Retransmission timer.
         /// </summary>
@@ -21,18 +22,16 @@ namespace SipSharp.Transactions
         /// </summary>
         private readonly Timer _timerI;
 
-        private readonly ITransportManager _transport;
         private IRequest _request;
         private IResponse _response;
-        private TransactionState _state;
 
         private int _timerGValue;
 
 
-        public ServerInviteTransaction(ITransportManager transportManager, IRequest request)
+        public ServerInviteTransaction(ISipStack sipStack, IRequest request)
         {
-            _transport = transportManager;
-            _state = TransactionState.Proceeding;
+            _sipStack = sipStack;
+            State = TransactionState.Proceeding;
             _request = request;
             _timerG = new Timer(OnRetransmit);
             _timerH = new Timer(OnTimeout);
@@ -46,14 +45,14 @@ namespace SipSharp.Transactions
             // (Trying) response unless it knows that the TU will generate a
             // provisional or final response within 200 ms, in which case it MAY
             // generate a 100 (Trying) response
-            Send(request.CreateResponse(StatusCode.Trying, "We are trying here..."));
+            // Send(request.CreateResponse(StatusCode.Trying, "We are trying here..."));
         }
 
         private void OnRetransmit(object state)
         {
             _timerGValue = Math.Min(_timerGValue*2, TransactionManager.T2);
             _timerG.Change(_timerGValue, Timeout.Infinite);
-            _transport.Send(_response);
+            _sipStack.Send(_response);
         }
 
         private void OnTerminated(object state)
@@ -73,7 +72,7 @@ namespace SipSharp.Transactions
 
         private void Terminate()
         {
-            _state = TransactionState.Terminated;
+            State = TransactionState.Terminated;
             Terminated(this, EventArgs.Empty);
             _timerG.Change(Timeout.Infinite, Timeout.Infinite);
             _timerH.Change(Timeout.Infinite, Timeout.Infinite);
@@ -86,11 +85,11 @@ namespace SipSharp.Transactions
         /// The request have been retransmitted by the UA.
         /// </summary>
         /// <param name="request"></param>
-        public void OnRequest(IRequest request)
+        public void Process(IRequest request)
         {
             if (_response == null)
                 return; //ops. maybe show an error?
-            if (_state == TransactionState.Terminated)
+            if (State == TransactionState.Terminated)
                 return;
 
             // If an ACK is received while the server transaction is in the
@@ -99,8 +98,8 @@ namespace SipSharp.Transactions
             // retransmissions of the response will cease.
             if (request.Method == "ACK")
             {
-                if (_state == TransactionState.Completed)
-                    _state = TransactionState.Confirmed;
+                if (State == TransactionState.Completed)
+                    State = TransactionState.Confirmed;
                 _timerG.Change(Timeout.Infinite, Timeout.Infinite);
                 _timerI.Change(TransactionManager.T4, Timeout.Infinite);
             }
@@ -109,23 +108,22 @@ namespace SipSharp.Transactions
             // retransmission is received while in the "Proceeding" state, the most
             // recent provisional response that was received from the TU MUST be
             // passed to the transport layer for retransmission.
-            if (_state == TransactionState.Proceeding)
-                _transport.Send(_response);
+            if (State == TransactionState.Proceeding)
+                _sipStack.Send(_response);
 
             // Furthermore,
             // while in the "Completed" state, if a request retransmission is
             // received, the server SHOULD pass the response to the transport for
             // retransmission.
-            if (_state == TransactionState.Completed)
-            {
-            }
+            if (State == TransactionState.Completed)
+                _sipStack.Send(_response);
         }
 
         public void Send(IResponse response)
         {
             // Any other final responses passed by the TU to the server
             // transaction MUST be discarded while in the "Completed" state.
-            if (_state == TransactionState.Completed || _state == TransactionState.Terminated)
+            if (State == TransactionState.Completed || State == TransactionState.Terminated)
                 return;
 
             _response = response;
@@ -133,8 +131,8 @@ namespace SipSharp.Transactions
             // While in the "Trying" state, if the TU passes a provisional response
             // to the server transaction, the server transaction MUST enter the
             // "Proceeding" state.  
-            if (_state == TransactionState.Trying && StatusCodeHelper.Is1xx(response))
-                _state = TransactionState.Proceeding;
+            if (State == TransactionState.Trying && StatusCodeHelper.Is1xx(response))
+                State = TransactionState.Proceeding;
 
             // The response MUST be passed to the transport
             // layer for transmission.  Any further provisional responses that are
@@ -145,29 +143,38 @@ namespace SipSharp.Transactions
             // codes 200-699) to the server while in the "Proceeding" state, the
             // transaction MUST enter the "Completed" state, and the response MUST
             // be passed to the transport layer for transmission.
-            if (_state == TransactionState.Proceeding)
+            if (State == TransactionState.Proceeding)
             {
                 if (StatusCodeHelper.Is2xx(response))
                 {
-                    _transport.Send(response);
-                    _state = TransactionState.Terminated;
+                    _sipStack.Send(response);
+                    State = TransactionState.Terminated;
                 }
                 else if (StatusCodeHelper.Is3456xx(response))
                 {
-                    _transport.Send(response);
-                    _state = TransactionState.Completed;
+                    _sipStack.Send(response);
+                    State = TransactionState.Completed;
                     if (response.Via.First.Protocol == "UDP")
                         _timerG.Change(TransactionManager.T1, Timeout.Infinite);
                     _timerH.Change(64*TransactionManager.T1, Timeout.Infinite);
                 }
                 if (!StatusCodeHelper.Is1xx(response))
                 {
-                    _state = TransactionState.Completed;
+                    State = TransactionState.Completed;
                 }
             }
 
             _response = response;
         }
+
+        /// <summary>
+        /// Gets dialog that the transaction belongs to
+        /// </summary>
+        //IDialog Dialog { get; }
+        /// <summary>
+        /// Gets current transaction state
+        /// </summary>
+        public TransactionState State { get; private set; }
 
         #endregion
 
