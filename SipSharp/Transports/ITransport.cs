@@ -34,6 +34,10 @@ namespace SipSharp.Transports
         /// </summary>
         string Protocol { get; }
 
+        /// <summary>
+        /// Gets port that the point is listening on.
+        /// </summary>
+        int Port{ get;}
 
         /// <summary>
         /// Gets of protocol is message based.

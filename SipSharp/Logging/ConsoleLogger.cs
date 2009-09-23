@@ -12,12 +12,12 @@ namespace SipSharp.Logging
     /// and includes a 3-level stack trace (in debug mode)
     /// </remarks>
     /// <seealso cref="ILogger"/>
-    public sealed class ConsoleLogWriter : ILogger
+    public sealed class ConsoleLogger : ILogger
     {
         /// <summary>
         /// The actual instance of this class.
         /// </summary>
-        public static readonly ConsoleLogWriter Instance = new ConsoleLogWriter();
+        public static readonly ConsoleLogger Instance = new ConsoleLogger();
 
         /// <summary>
         /// Get color for the specified log level

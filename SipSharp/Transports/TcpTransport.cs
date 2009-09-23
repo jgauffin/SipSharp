@@ -185,6 +185,14 @@ namespace SipSharp.Transports
         }
 
         /// <summary>
+        /// Gets port that the point is listening on.
+        /// </summary>
+        public int Port
+        {
+            get; set;
+        }
+
+        /// <summary>
         /// A exception that was not handled by a worker thread.
         /// </summary>
         public event UnhandledExceptionEventHandler UnhandledException = delegate { };
@@ -195,7 +203,7 @@ namespace SipSharp.Transports
 
         protected struct ClientContext
         {
-            public ClientContext(Socket socket, byte[] buffer, MessageBuilder parser)
+            public ClientContext(Socket socket, byte[] buffer, MessageFactoryContext parser)
                 : this()
             {
                 Socket = socket;
@@ -207,7 +215,7 @@ namespace SipSharp.Transports
             public byte[] Buffer { get; private set; }
 
             public int Offset { get; set; }
-            public MessageBuilder Parser { get; private set; }
+            public MessageFactoryContext Parser { get; private set; }
             public Socket Socket { get; private set; }
         }
 

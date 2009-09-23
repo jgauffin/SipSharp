@@ -89,7 +89,11 @@ namespace SipSharp
         /// <returns>value if found; otherwise <c>null</c>.</returns>
         public string this[string key]
         {
-            get { return _items[key]; }
+            get
+            {
+                string value;
+                return _items.TryGetValue(key, out value) ? value : null;
+            }
             set { _items[key] = value; }
         }
 

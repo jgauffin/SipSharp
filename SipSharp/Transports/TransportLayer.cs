@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using SipSharp.Headers;
+using SipSharp.Logging;
 using SipSharp.Messages;
 using SipSharp.Tools;
-using SipSharp.Transports.Parser;
 
 namespace SipSharp.Transports
 {
@@ -30,12 +30,14 @@ namespace SipSharp.Transports
     /// </remarks>
     internal class TransportLayer : ITransportLayer
     {
-        readonly MessageSerializer _serializer = new MessageSerializer();
-        private readonly ObjectPool<Stream> _serializerStreams = new ObjectPool<Stream>(() => new MemoryStream());
         public const int UdpMaxSize = 65507;
+        private readonly ILogger _logger = LogFactory.CreateLogger(typeof (TransportLayer));
         private readonly MessageFactory _messageFactory;
+        private readonly MessageSerializer _serializer = new MessageSerializer();
+        private readonly ObjectPool<Stream> _serializerStreams = new ObjectPool<Stream>(() => new MemoryStream());
         private readonly Dictionary<string, ITransport> _transports = new Dictionary<string, ITransport>();
         private bool _isStarted;
+        private string _domainName;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TransportLayer"/> class.
@@ -47,19 +49,30 @@ namespace SipSharp.Transports
             _messageFactory.ResponseReceived += OnResponse;
         }
 
-        private void OnResponse(object sender, ResponseEventArgs e)
-        {
-            /* 3261 18.1.2
-               When a response is received, the client transport examines the top
-               Via header field value.  If the value of the "sent-by" parameter in
-               that header field value does not correspond to a value that the
-               client transport is configured to insert into requests, the response
-               MUST be silently discarded.
-             */
-        }
-
         private void OnRequest(object sender, RequestEventArgs e)
         {
+            /* RFC 3581 4. 
+                When a server compliant to this specification (which can be a proxy
+                or UAS) receives a request, it examines the topmost Via header field
+                value.  If this Via header field value contains an "rport" parameter
+                with no value, it MUST set the value of the parameter to the source
+                port of the request.  This is analogous to the way in which a server
+                will insert the "received" parameter into the topmost Via header
+                field value.  In fact, the server MUST insert a "received" parameter
+                containing the source IP address that the request came from, even if
+                it is identical to the value of the "sent-by" component.  Note that
+                this processing takes place independent of the transport protocol.
+            */
+
+            ViaEntry via = e.Request.Via.First;
+            var ep = e.RemoteEndPoint as IPEndPoint;
+            if (ep != null)
+            {
+                via.Received = ep.Address.ToString();
+                if (via.RportWanted)
+                    via.Rport = ep.Port;
+            }
+
 
             /* RFC 3261 18.2.1.
                 When the server transport receives a request over any transport, it
@@ -84,37 +97,17 @@ namespace SipSharp.Transports
                 matching server transaction, and based on this rule, the ACK is
                 passed to the UAS core, where it is processed.
             */
-
-            /* RFC 3581 4. 
-                When a server compliant to this specification (which can be a proxy
-                or UAS) receives a request, it examines the topmost Via header field
-                value.  If this Via header field value contains an "rport" parameter
-                with no value, it MUST set the value of the parameter to the source
-                port of the request.  This is analogous to the way in which a server
-                will insert the "received" parameter into the topmost Via header
-                field value.  In fact, the server MUST insert a "received" parameter
-                containing the source IP address that the request came from, even if
-                it is identical to the value of the "sent-by" component.  Note that
-                this processing takes place independent of the transport protocol.
-            */
-
-            ViaEntry via = e.Request.Via.First;
-            IPEndPoint ep = e.RemoteEndPoint as IPEndPoint;
-            if (ep != null)
-            {
-                via.Received = ep.Address.ToString();
-                if (via.RportWanted)
-                    via.Rport = ep.Port;
-            }
-
         }
 
-        /// <summary>
-        /// Start layer.
-        /// </summary>
-        public void Start()
+        private void OnResponse(object sender, ResponseEventArgs e)
         {
-            _isStarted = true;
+            /* 3261 18.1.2
+               When a response is received, the client transport examines the top
+               Via header field value.  If the value of the "sent-by" parameter in
+               that header field value does not correspond to a value that the
+               client transport is configured to insert into requests, the response
+               MUST be silently discarded.
+             */
         }
 
         /// <summary>
@@ -130,29 +123,6 @@ namespace SipSharp.Transports
             _transports.Add(transport.Protocol, transport);
         }
 
-        /// <summary>
-        /// Send a request to the remote end.
-        /// </summary>
-        /// <param name="remoteEndPoint">Remote end point.</param>
-        /// <param name="request">Request to send.</param>
-        public void Send(EndPoint remoteEndPoint, IRequest request)
-        {
-            byte[] buffer = Serialize(request);
-            _transports["udp"].Send(remoteEndPoint, buffer, 0, buffer.Length);
-        }
-
-        public void Send(IRequest request)
-        {
-            throw new NotImplementedException();
-        }
-
-        public event EventHandler<ResponseEventArgs> ResponseReceived;
-        public event EventHandler<RequestEventArgs> RequestReceived;
-
-        public void Send(IResponse response)
-        {
-            throw new NotImplementedException();
-        }
 
         /// <summary>
         /// Convert a package to bytes and send it.
@@ -169,17 +139,163 @@ namespace SipSharp.Transports
             {
                 //TODO: Switch to TCP
             }
-            byte[] buffer = new byte[stream.Length];
-            stream.Read(buffer, 0, (int)stream.Length);
+            var buffer = new byte[stream.Length];
+            stream.Read(buffer, 0, (int) stream.Length);
 
             _serializerStreams.Enqueue(stream);
             return buffer;
         }
 
+        /// <summary>
+        /// Convert a package to bytes and send it.
+        /// </summary>
+        /// <param name="response"></param>
+        /// <returns></returns>
+        private byte[] Serialize(IResponse response)
+        {
+            Stream stream = _serializerStreams.Dequeue();
 
-    	public void Send(EndPoint point, IResponse response)
-    	{
-    		
-    	}
+            _serializer.Serialize(response, stream);
+            stream.Seek(0, SeekOrigin.Begin);
+            if (stream.Length > UdpMaxSize)
+            {
+                //TODO: Switch to TCP
+            }
+            var buffer = new byte[stream.Length];
+            stream.Read(buffer, 0, (int) stream.Length);
+
+            _serializerStreams.Enqueue(stream);
+            return buffer;
+        }
+
+        /// <summary>
+        /// Start layer.
+        /// </summary>
+        public void Start()
+        {
+            _isStarted = true;
+        }
+
+        #region ITransportLayer Members
+
+        public void Send(IRequest request)
+        {
+            /*
+                Before a request is sent, the client transport MUST insert a value of
+                the "sent-by" field into the Via header field.  This field contains
+                an IP address or host name, and port.  The usage of an FQDN is
+                RECOMMENDED.  This field is used for sending responses under certain
+                conditions, described below.  If the port is absent, the default
+                value depends on the transport.  It is 5060 for UDP, TCP and SCTP,
+                5061 for TLS.
+             */
+
+            ITransport transport = _transports[request.Via.First.Protocol];
+            request.Via.First.SentBy = _domainName + ":" + transport.Port;
+
+            /*
+                If a request is within 200 bytes of the path MTU, or if it is larger
+                than 1300 bytes and the path MTU is unknown, the request MUST be sent
+                using an RFC 2914 [43] congestion controlled transport protocol, such
+                as TCP. If this causes a change in the transport protocol from the
+                one indicated in the top Via, the value in the top Via MUST be
+                changed.  This prevents fragmentation of messages over UDP and
+                provides congestion control for larger messages.  However,
+                implementations MUST be able to handle messages up to the maximum
+                datagram packet size.  For UDP, this size is 65,535 bytes, including
+                IP and UDP headers.
+            */
+            byte[] message = Serialize(request);
+            if (message.Length > 65335)
+            {
+                //Serialize again with new sent-by header.
+                transport = _transports["TCP"];
+                request.Via.First.SentBy = _domainName + ":" + transport.Port;
+                message = Serialize(request);
+            }
+
+            string domain = request.Uri.Domain;
+            IPHostEntry entry = Dns.GetHostEntry(domain);
+            if (entry.AddressList.Length == 0)
+            {
+                _logger.Warning("Failed to find " + domain);
+                return;
+            }
+
+            int port = request.Uri.Scheme == "sips" ? 5061 : 5060;
+
+            byte[] buffer = Serialize(request);
+            transport.Send(new IPEndPoint(entry.AddressList[0], port), buffer, 0, buffer.Length);
+        }
+
+        public void Send(IResponse response)
+        {
+            /*
+               The server transport uses the value of the top Via header field in
+               order to determine where to send a response.  It MUST follow the
+               following process:
+
+                  o  If the "sent-protocol" is a reliable transport protocol such as
+                     TCP or SCTP, or TLS over those, the response MUST be sent using
+                     the existing connection to the source of the original request
+                     that created the transaction, if that connection is still open.
+                     This requires the server transport to maintain an association
+                     between server transactions and transport connections.  If that
+                     connection is no longer open, the server SHOULD open a
+                     connection to the IP address in the "received" parameter, if
+                     present, using the port in the "sent-by" value, or the default
+                     port for that transport, if no port is specified.  If that
+                     connection attempt fails, the server SHOULD use the procedures
+                     in [4] for servers in order to determine the IP address and
+                     port to open the connection and send the response to.
+
+                  o  Otherwise, if the Via header field value contains a "maddr"
+                     parameter, the response MUST be forwarded to the address listed
+                     there, using the port indicated in "sent-by", or port 5060 if
+                     none is present.  If the address is a multicast address, the
+                     response SHOULD be sent using the TTL indicated in the "ttl"
+                     parameter, or with a TTL of 1 if that parameter is not present.
+
+                  o  Otherwise (for unreliable unicast transports), if the top Via
+                     has a "received" parameter, the response MUST be sent to the
+                     address in the "received" parameter, using the port indicated
+                     in the "sent-by" value, or using port 5060 if none is specified
+                     explicitly.  If this fails, for example, elicits an ICMP "port
+                     unreachable" response, the procedures of Section 5 of [4]
+                     SHOULD be used to determine where to send the response.
+            */
+
+            ViaEntry via = response.Via.First;
+            if (string.IsNullOrEmpty(via.Received))
+            {
+                _logger.Warning("Received was not specified in " + response);
+                return;
+            }
+
+            int port = 5060;
+            int index = via.SentBy.IndexOf(':');
+            if (index > 0 && index < via.SentBy.Length - 1)
+            {
+                string temp = via.SentBy.Substring(index + 1);
+                if (!int.TryParse(temp, out port))
+                    port = 5060;
+            }
+
+            IPHostEntry entry = Dns.GetHostEntry(via.Received);
+            if (entry.AddressList.Length == 0)
+            {
+                _logger.Warning("Failed to find host entry for: " + via.Received);
+                return;
+            }
+
+
+            byte[] buffer = Serialize(response);
+            _transports[via.Protocol].Send(new IPEndPoint(entry.AddressList[0], port), buffer, 0, buffer.Length);
+        }
+
+        #endregion
+
+        public event EventHandler<ResponseEventArgs> ResponseReceived;
+        public event EventHandler<RequestEventArgs> RequestReceived;
     }
 }

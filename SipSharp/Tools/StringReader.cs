@@ -209,6 +209,8 @@ namespace SipSharp.Tools
                 switch (Current)
                 {
                     case '\\':
+                        Consume();
+                        buffer += Current;
                         break;
                     case '"':
                         Consume();

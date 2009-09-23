@@ -70,7 +70,8 @@
     <Compile Include="Contact.cs" />
     <Compile Include="Hop.cs" />
     <Compile Include="ISipStack.cs" />
-    <Compile Include="Logging\ConsoleLogWriter.cs" />
+    <Compile Include="Logging\ConsoleLogFactory.cs" />
+    <Compile Include="Logging\ConsoleLogger.cs" />
     <Compile Include="Logging\ILogFactory.cs" />
     <Compile Include="Logging\ILogger.cs" />
     <Compile Include="Logging\LogFactory.cs" />
@@ -78,6 +79,7 @@
     <Compile Include="Logging\NullLogFactory.cs" />
     <Compile Include="Logging\NullLogWriter.cs" />
     <Compile Include="Messages\Headers\Event.cs" />
+    <Compile Include="Messages\Headers\Parsers\GenericParserAttribute.cs" />
     <Compile Include="Messages\Headers\SubscriptionState.cs" />
     <Compile Include="Messages\Message.cs" />
     <Compile Include="Messages\Headers\GenericHeader.cs" />
@@ -106,7 +108,7 @@
     <Compile Include="IMessage.cs" />
     <Compile Include="IRequest.cs" />
     <Compile Include="IResponse.cs" />
-    <Compile Include="Messages\MessageBuilder.cs" />
+    <Compile Include="Messages\MessageFactoryContext.cs" />
     <Compile Include="Messages\MessageFactory.cs" />
     <Compile Include="Messages\Method.cs" />
     <Compile Include="Messages\ParseException.cs" />
@@ -136,6 +138,7 @@
     <Compile Include="Transactions\TransactionManager.cs" />
     <Compile Include="Transactions\TransactionState.cs" />
     <Compile Include="Transports\BufferPool.cs" />
+    <Compile Include="Transports\IFlow.cs" />
     <Compile Include="Transports\ITransport.cs" />
     <Compile Include="Transports\ITransportLayer.cs" />
     <Compile Include="Messages\BodyEventArgs.cs" />

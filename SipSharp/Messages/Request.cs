@@ -2,7 +2,7 @@
 using SipSharp.Headers;
 using SipSharp.Messages.Headers;
 using SipSharp.Tools;
-using UriParser=SipSharp.Headers.Parsers.UriParser;
+using UriParser=SipSharp.Messages.Headers.Parsers.UriParser;
 
 namespace SipSharp.Messages
 {

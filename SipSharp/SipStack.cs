@@ -49,7 +49,9 @@ namespace SipSharp
                 _logger.Trace("Response " + e.Response + " handled by transaction.");
             }
             else
-                Res
+            {
+                
+            }
         }
 
         /// <summary>
@@ -63,7 +65,6 @@ namespace SipSharp
                 
             _logger.Trace("Received " + e.Request + " from "  + e.RemoteEndPoint);
 
-            ITransaction transaction = _transactionManager.Find()
             _transactionManager.Process(e.Request);
         }
 
@@ -74,14 +75,11 @@ namespace SipSharp
 
         public void Send(IResponse response)
         {
-            IServerTransaction transaction = _transactionManager.Process(response);
-            if (transaction == null)
+            if (!_transactionManager.Process(response))
             {
                 _logger.Error("Failed to find request for: " + response);
                 throw new InvalidOperationException("Cannot send responses outside transactions.");
             }
-
-            transaction.
         }
 
         IDialog CreateDialog()

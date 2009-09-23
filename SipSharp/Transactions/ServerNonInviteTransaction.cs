@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 
 namespace SipSharp.Transactions
 {
@@ -21,6 +22,7 @@ namespace SipSharp.Transactions
         private void OnTerminate(object state)
         {
             State = TransactionState.Terminated;
+            Terminated(this, EventArgs.Empty);
         }
 
         #region IServerTransaction Members
@@ -77,9 +79,24 @@ namespace SipSharp.Transactions
         /// Gets dialog that the transaction belongs to
         /// </summary>
         //IDialog Dialog { get; }
+
+        /// <summary>
+        /// Gets transaction identifier.
+        /// </summary>
+        public string Id
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        /// <summary>
+        /// Gets dialog that the transaction belongs to
+        /// </summary>
+        //IDialog Dialog { get; }
         /// <summary>
         /// Gets current transaction state
         /// </summary>
         public TransactionState State { get; private set; }
+
+        public event EventHandler Terminated;
     }
 }

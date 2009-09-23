@@ -171,6 +171,19 @@ namespace SipSharp.Transactions
         /// Gets dialog that the transaction belongs to
         /// </summary>
         //IDialog Dialog { get; }
+
+        /// <summary>
+        /// Gets transaction identifier.
+        /// </summary>
+        public string Id
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        /// <summary>
+        /// Gets dialog that the transaction belongs to
+        /// </summary>
+        //IDialog Dialog { get; }
         /// <summary>
         /// Gets current transaction state
         /// </summary>

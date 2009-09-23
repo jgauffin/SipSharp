@@ -29,6 +29,5 @@ namespace SipSharp
         /// </summary>
         public EndPoint RemoteEndPoint { get; private set; }
 
-        internal 
     }
 }

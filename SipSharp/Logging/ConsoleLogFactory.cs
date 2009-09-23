@@ -2,16 +2,20 @@
 
 namespace SipSharp.Logging
 {
-    /// <summary>
-    /// Factory creating null logger.
-    /// </summary>
-    public class NullLogFactory : ILogFactory
+    public class ConsoleLogFactory : ILogFactory
     {
-        private static NullLogFactory _instance = new NullLogFactory();
+        private static readonly ConsoleLogFactory _instance = new ConsoleLogFactory();
+        private readonly ConsoleLogger _logger = new ConsoleLogger();
 
-        private NullLogFactory()
-        {}
 
+        private ConsoleLogFactory()
+        {
+        }
+
+        public static ILogFactory Instance
+        {
+            get { return _instance; }
+        }
 
         #region ILogFactory Members
 
@@ -26,14 +30,9 @@ namespace SipSharp.Logging
         /// </remarks>
         public ILogger CreateLogger(Type type)
         {
-            return new NullLogWriter();
+            return _logger;
         }
 
         #endregion
-
-        public static ILogFactory Instance
-        {
-            get { return _instance; }
-        }
     }
 }

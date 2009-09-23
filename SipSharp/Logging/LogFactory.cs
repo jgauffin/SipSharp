@@ -7,7 +7,8 @@ namespace SipSharp.Logging
     /// </summary>
     public static class LogFactory
     {
-        private static ILogFactory _factory;
+        private static ILogFactory _factory = NullLogFactory.Instance;
+        private static bool _isAssigned;
 
         /// <summary>
         /// Assigns log factory being used.
@@ -16,8 +17,9 @@ namespace SipSharp.Logging
         /// <exception cref="InvalidOperationException">A factory have already been assigned.</exception>
         public static void Assign(ILogFactory logFactory)
         {
-            if (_factory != null && !(logFactory is NullLogFactory))
+            if (_isAssigned)
                 throw new InvalidOperationException("A factory have already been assigned.");
+            _isAssigned = true;
             _factory = logFactory;
         }
 

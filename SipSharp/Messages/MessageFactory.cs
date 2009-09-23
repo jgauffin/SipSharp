@@ -24,17 +24,17 @@ namespace SipSharp.Messages
     internal class MessageFactory
     {
         private readonly HeaderFactory _factory;
-        private readonly ObjectPool<MessageBuilder> _builders;
+        private readonly ObjectPool<MessageFactoryContext> _builders;
 
         public MessageFactory(HeaderFactory factory)
         {
             _factory = factory;
-            _builders = new ObjectPool<MessageBuilder>(CreateBuilder);
+            _builders = new ObjectPool<MessageFactoryContext>(CreateBuilder);
         }
 
-        private MessageBuilder CreateBuilder()
+        private MessageFactoryContext CreateBuilder()
         {
-            MessageBuilder mb = new MessageBuilder(this, _factory, new SipParser());
+            MessageFactoryContext mb = new MessageFactoryContext(this, _factory, new SipParser());
             mb.RequestCompleted += OnRequest;
             mb.ResponseCompleted += OnResponse;
             return mb;
@@ -60,18 +60,18 @@ namespace SipSharp.Messages
             return new Response(version, statusCode, reason);
         }
 
-        public MessageBuilder CreateNewContext()
+        public MessageFactoryContext CreateNewContext()
         {
             return _builders.Dequeue();
         }
 
         /// <summary>
-        /// Release a used builder.
+        /// Release a used factoryContext.
         /// </summary>
-        /// <param name="builder"></param>
-        public void Release(MessageBuilder builder)
+        /// <param name="factoryContext"></param>
+        public void Release(MessageFactoryContext factoryContext)
         {
-            _builders.Enqueue(builder);
+            _builders.Enqueue(factoryContext);
         }
 
         /// <summary>

@@ -42,13 +42,13 @@ namespace SipSharp.Transports
             _socket.BeginReceiveFrom(newBuffer, 0, newBuffer.Length, SocketFlags.None,
                                             ref _serverEndPoint, OnRead, newBuffer);
 
-            MessageBuilder builder = _parsers.CreateNewContext();
-            int offset = builder.Parse(buffer, 0, bytesRead);
+            MessageFactoryContext factoryContext = _parsers.CreateNewContext();
+            int offset = factoryContext.Parse(buffer, 0, bytesRead);
             if (offset != bytesRead)
                 _logger.Error("Failed to parse complete message");
 
             _bufferPool.Enqueue(buffer);
-            _parsers.Release(builder);
+            _parsers.Release(factoryContext);
         }
 
         
@@ -115,6 +115,14 @@ namespace SipSharp.Transports
         public string Protocol
         {
             get { return "UDP"; }
+        }
+
+        /// <summary>
+        /// Gets port that the point is listening on.
+        /// </summary>
+        public int Port
+        {
+            get; set;
         }
 
         public event UnhandledExceptionEventHandler UnhandledException = delegate{};

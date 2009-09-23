@@ -12,7 +12,7 @@ namespace SipSharp.Messages
     /// <remarks>
     /// The factory is 
     /// </remarks>
-    internal class MessageBuilder : IDisposable
+    internal class MessageFactoryContext : IDisposable
     {
         private readonly MessageFactory _msgFactory;
         private readonly HeaderFactory _factory;
@@ -22,7 +22,7 @@ namespace SipSharp.Messages
         private HeaderHandler _onHeader;
         private Message _message;
 
-        public MessageBuilder(MessageFactory msgFactory, HeaderFactory factory, SipParser parser)
+        public MessageFactoryContext(MessageFactory msgFactory, HeaderFactory factory, SipParser parser)
         {
             _msgFactory = msgFactory;
             _factory = factory;
@@ -45,7 +45,10 @@ namespace SipSharp.Messages
 
         private void OnMessageComplete(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            if (_message is IRequest)
+                RequestCompleted(this, new RequestEventArgs((IRequest)_message, null));
+            else
+                ResponseCompleted(this, new ResponseEventArgs((IResponse)_message, null));
         }
 
 
