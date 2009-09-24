@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.IO;
 using SipSharp.Headers;
 using SipSharp.Messages.Headers;
 
-namespace SipSharp
+namespace SipSharp.Messages
 {
     public abstract class Message : IMessage
     {
@@ -18,6 +14,35 @@ namespace SipSharp
             Body = new MemoryStream();
             Headers = new HeaderCollection();
         }
+
+        /// <summary>
+        /// Assign a header
+        /// </summary>
+        /// <param name="name">Long name, in lower case.</param>
+        /// <param name="header">Header to assign</param>
+        internal virtual void Assign(string name, IHeader header)
+        {
+            switch (name)
+            {
+                case "to":
+                    To = ((ContactHeader) header).FirstContact;
+                    break;
+                case "from":
+                    From = ((ContactHeader)header).FirstContact;
+                    break;
+                case "cseq":
+                    CSeq = (CSeq)header;
+                    break;
+                case "via":
+                    Via = (Via) header;
+                    break;
+                default:
+                    Headers[name] = header;
+                    break;
+            }
+        }
+
+        #region IMessage Members
 
         /// <summary>
         /// Gets body stream.
@@ -33,8 +58,6 @@ namespace SipSharp
         /// Gets or sets used version of the SIP protocol.
         /// </summary>
         public string SipVersion { get; set; }
-
-        private ContactHeader _to;
 
         /// <summary>
         /// Gets or sets whom the request is intended for.
@@ -52,11 +75,7 @@ namespace SipSharp
         /// </para>
         /// </remarks>
         /// 
-        public ContactHeader To
-        {
-            get { return _to; }
-            set { _to = value; }
-        }
+        public Contact To { get; set; }
 
         /// <summary>
         /// Gets or sets whom the request is from.
@@ -86,7 +105,7 @@ namespace SipSharp
         /// authentication).
         /// </para>
         /// </remarks>
-        public ContactHeader From { get; set; }
+        public Contact From { get; set; }
 
         /// <summary>
         /// Gets or sets transaction identifier.
@@ -114,6 +133,11 @@ namespace SipSharp
         public Via Via { get; internal set; }
 
         /// <summary>
+        /// Gets whether the response is sent over a reliable protocol
+        /// </summary>
+        public bool IsReliableProtocol { get; set; }
+
+        /// <summary>
         /// Gets or sets call id.
         /// </summary>
         /// <remarks>
@@ -137,31 +161,10 @@ namespace SipSharp
         /// </remarks>
         public string CallId
         {
-            get
-            {
-                return ((GenericHeader)Headers["CallId"]).Value;
-            }
-            set
-            {
-                ((GenericHeader) Headers["CallId"]).Value = value;
-            }
+            get { return ((StringHeader) Headers["CallId"]).Value; }
+            set { ((StringHeader) Headers["CallId"]).Value = value; }
         }
 
-
-        /// <summary>
-        /// Assign a header
-        /// </summary>
-        /// <param name="name">Long name, in lower case.</param>
-        /// <param name="header">Header to assign</param>
-        internal virtual void Assign(string name, IHeader header)
-        {
-            Headers[name] = header;
-            switch (name)
-            {
-                case "to":
-                    To = (ContactHeader)header;
-                    break;
-            }
-        }
+        #endregion
     }
 }

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Net;
 using System.Threading;
-using SipSharp.Headers;
 using SipSharp.Messages;
+using SipSharp.Messages.Headers;
 using SipSharp.Transports;
 
 namespace SipSharp.Transactions
@@ -161,7 +161,7 @@ namespace SipSharp.Transactions
 			_timerA.Change(Timeout.Infinite, Timeout.Infinite);
 			_timerB.Change(Timeout.Infinite, Timeout.Infinite);
 			_timerD.Change(Timeout.Infinite, Timeout.Infinite);
-			_state = TransactionState.Terminated;
+			State = TransactionState.Terminated;
 		}
 
 

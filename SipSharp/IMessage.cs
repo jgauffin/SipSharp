@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using SipSharp.Headers;
+using SipSharp.Messages.Headers;
 
 namespace SipSharp
 {
@@ -40,7 +41,7 @@ namespace SipSharp
         /// </para>
         /// </remarks>
         /// 
-        ContactHeader To { get; set; }
+        Contact To { get; set; }
 
         /// <summary>
         /// Gets or sets whom the request is from.
@@ -70,7 +71,7 @@ namespace SipSharp
         /// authentication).
         /// </para>
         /// </remarks>
-        ContactHeader From { get; set; }
+        Contact From { get; set; }
 
         /// <summary>
         /// Gets or sets transaction identifier.

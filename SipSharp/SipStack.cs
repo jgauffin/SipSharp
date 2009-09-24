@@ -25,7 +25,7 @@ namespace SipSharp
 
         public SipStack()
         {
-            _messageFactory = new MessageFactory(new HeaderFactory(new GenericHeader("Nothing")));
+            _messageFactory = new MessageFactory(new HeaderFactory(new StringHeader("Nothing")));
             _messageFactory.RequestReceived += OnRequest;
             _messageFactory.ResponseReceived += OnResponse;
             _transportLayer = new TransportLayer(_messageFactory);

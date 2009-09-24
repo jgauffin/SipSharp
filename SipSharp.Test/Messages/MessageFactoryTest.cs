@@ -20,7 +20,7 @@ namespace SipSharp.Test.Messages
         {
             LogFactory.Assign(ConsoleLogFactory.Instance);
 
-            _headerFactory = new HeaderFactory(new GenericHeader("Prototype"));
+            _headerFactory = new HeaderFactory(new StringHeader("Prototype"));
             _headerFactory.AddDefaultParsers();
             _factory = new MessageFactory(_headerFactory);
             _factory.RequestReceived += OnRequest;

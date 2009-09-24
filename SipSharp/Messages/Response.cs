@@ -1,4 +1,5 @@
 ﻿using SipSharp.Headers;
+using SipSharp.Messages;
 
 namespace SipSharp
 {

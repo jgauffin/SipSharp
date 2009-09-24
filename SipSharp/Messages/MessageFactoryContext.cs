@@ -1,5 +1,4 @@
 ﻿using System;
-using SipSharp.Headers;
 using SipSharp.Messages.Headers;
 using SipSharp.Parser;
 using SipSharp.Transports.Parser;
