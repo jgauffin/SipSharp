@@ -99,6 +99,11 @@ namespace SipSharp
         Via Via { get; }
 
 		/// <summary>
+		/// Gets whether the response is sent over a reliable protocol
+		/// </summary>
+		bool IsReliableProtocol { get; }
+
+		/// <summary>
 		/// Gets or sets call id.
 		/// </summary>
 		/// <remarks>

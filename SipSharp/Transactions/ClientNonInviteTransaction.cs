@@ -57,7 +57,7 @@ namespace SipSharp.Transactions
 
             State = TransactionState.Trying;
             _timerF = new Timer(OnTimeout, null, TransactionManager.T1*64, Timeout.Infinite);
-            if (request.Via.First.Protocol == "UDP")
+            if (!request.IsReliableProtocol)
             {
                 _timerEValue = TransactionManager.T1;
                 _timerE = new Timer(OnRetransmission, null, _timerEValue, Timeout.Infinite);

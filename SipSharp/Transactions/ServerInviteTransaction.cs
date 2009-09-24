@@ -22,7 +22,6 @@ namespace SipSharp.Transactions
         /// </summary>
         private readonly Timer _timerI;
 
-        private IRequest _request;
         private IResponse _response;
 
         private int _timerGValue;
@@ -32,7 +31,6 @@ namespace SipSharp.Transactions
         {
             _sipStack = sipStack;
             State = TransactionState.Proceeding;
-            _request = request;
             _timerG = new Timer(OnRetransmit);
             _timerH = new Timer(OnTimeout);
             _timerI = new Timer(OnTerminated);
@@ -57,7 +55,7 @@ namespace SipSharp.Transactions
 
         private void OnTerminated(object state)
         {
-            Terminate();
+            Terminate(true);
         }
 
         private void OnTimeout(object state)
@@ -66,14 +64,16 @@ namespace SipSharp.Transactions
             // ACK was never received.  In this case, the server transaction MUST
             // transition to the "Terminated" state, and MUST indicate to the TU
             // that a transaction failure has occurred.
-            Terminate();
+            Terminate(false);
+        	TimedOut(this, EventArgs.Empty);
             //TODO: Should we have a TimedOut event too?
         }
 
-        private void Terminate()
+        private void Terminate(bool triggerEvent)
         {
             State = TransactionState.Terminated;
-            Terminated(this, EventArgs.Empty);
+			if (triggerEvent)
+				Terminated(this, EventArgs.Empty);
             _timerG.Change(Timeout.Infinite, Timeout.Infinite);
             _timerH.Change(Timeout.Infinite, Timeout.Infinite);
             _timerI.Change(Timeout.Infinite, Timeout.Infinite);
@@ -147,14 +147,17 @@ namespace SipSharp.Transactions
             {
                 if (StatusCodeHelper.Is2xx(response))
                 {
+					// retransmissions of 2xx
+					// responses are handled by the TU.  The server transaction MUST then
+					// transition to the "Terminated" state.
                     _sipStack.Send(response);
-                    State = TransactionState.Terminated;
+                    Terminate(true);
                 }
                 else if (StatusCodeHelper.Is3456xx(response))
                 {
                     _sipStack.Send(response);
                     State = TransactionState.Completed;
-                    if (response.Via.First.Protocol == "UDP")
+                    if (!response.IsReliableProtocol)
                         _timerG.Change(TransactionManager.T1, Timeout.Infinite);
                     _timerH.Change(64*TransactionManager.T1, Timeout.Infinite);
                 }
@@ -195,5 +198,10 @@ namespace SipSharp.Transactions
         /// Ack was never received from client.
         /// </summary>
         public event EventHandler Terminated = delegate { };
+
+		/// <summary>
+		/// Transaction timed out.
+		/// </summary>
+    	public event EventHandler TimedOut = delegate { };
     }
 }

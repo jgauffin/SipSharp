@@ -61,7 +61,7 @@ namespace SipSharp.Transactions
             // If an unreliable transport is being used, the client transaction MUST 
             // start timer A with a value of T1. If a reliable transport is being used, 
             // the client transaction SHOULD NOT start timer A 
-            if (request.Via.First.Protocol == "UDP")
+            if (!request.IsReliableProtocol)
             {
                 _timerAValue = TransactionManager.T1;
                 _timerA = new Timer(OnRetransmission, null, _timerAValue, Timeout.Infinite);
@@ -140,11 +140,8 @@ namespace SipSharp.Transactions
 			 * state, the client transaction MUST move to the terminated state.
 			 */
             if (State == TransactionState.Completed)
-            {
-                State = TransactionState.Terminated;
-                Terminated(this, EventArgs.Empty);
-            }
-        }
+				Terminate();
+		}
 
         private void OnTimeout(object state)
         {
@@ -155,9 +152,17 @@ namespace SipSharp.Transactions
             if (State == TransactionState.Calling)
             {
                 TimedOut(this, EventArgs.Empty);
-                State = TransactionState.Terminated;
+                Terminate();
             }
         }
+
+		private void Terminate()
+		{
+			_timerA.Change(Timeout.Infinite, Timeout.Infinite);
+			_timerB.Change(Timeout.Infinite, Timeout.Infinite);
+			_timerD.Change(Timeout.Infinite, Timeout.Infinite);
+			_state = TransactionState.Terminated;
+		}
 
 
         public bool Process(IResponse response, EndPoint endPoint)

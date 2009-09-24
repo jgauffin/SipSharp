@@ -64,7 +64,7 @@ namespace SipSharp.Transactions
                 else
                 {
                     State = TransactionState.Completed;
-                    if (_request.Via.First.Protocol == "UDP")
+                    if (!_request.IsReliableProtocol)
                         _timerJ.Change(TransactionManager.T1*64, Timeout.Infinite);
                     else
                         _timerJ.Change(0, Timeout.Infinite);
