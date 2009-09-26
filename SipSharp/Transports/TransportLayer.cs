@@ -205,28 +205,43 @@ namespace SipSharp.Transports
                 datagram packet size.  For UDP, this size is 65,535 bytes, including
                 IP and UDP headers.
             */
-            byte[] message = Serialize(request);
-            if (message.Length > 65335)
+            byte[] buffer = Serialize(request);
+            if (buffer.Length > 65335)
             {
                 //Serialize again with new sent-by header.
                 transport = _transports["TCP"];
                 request.Via.First.SentBy = _domainName + ":" + transport.Port;
-                message = Serialize(request);
+                buffer = Serialize(request);
             }
 
-            string domain = request.Uri.Domain;
-            IPHostEntry entry = Dns.GetHostEntry(domain);
-            if (entry.AddressList.Length == 0)
+            // Create end point and send.
+            EndPoint ep = CreateEndPoint(request);
+            if (ep == null)
             {
-                _logger.Warning("Failed to find " + domain);
+                _logger.Warning("Failed to find destination for " + request);
                 return;
             }
 
-            int port = request.Uri.Scheme == "sips" ? 5061 : 5060;
-
-            byte[] buffer = Serialize(request);
-            transport.Send(new IPEndPoint(entry.AddressList[0], port), buffer, 0, buffer.Length);
+            // And send it.
+            transport.Send(ep, buffer, 0, buffer.Length);
         }
+
+        /// <summary>
+        /// Create a endpoint for the destination that should be reached.
+        /// </summary>
+        /// <param name="request">Request to send</param>
+        /// <returns>Endpoint if destination could be looked up; otherwise <c>null</c>.</returns>
+        protected virtual EndPoint CreateEndPoint(IRequest request)
+        {
+            string domain = request.Uri.Domain;
+            IPHostEntry entry = Dns.GetHostEntry(domain);
+            if (entry.AddressList.Length == 0)
+                return null;
+
+            int port = request.Uri.Scheme == "sips" ? 5061 : 5060;
+            return new IPEndPoint(entry.AddressList[0], port);
+        }
+
 
         public void Send(IResponse response)
         {
@@ -287,10 +302,10 @@ namespace SipSharp.Transports
                 _logger.Warning("Failed to find host entry for: " + via.Received);
                 return;
             }
-
+            EndPoint ep = new IPEndPoint(entry.AddressList[0], port);
 
             byte[] buffer = Serialize(response);
-            _transports[via.Protocol].Send(new IPEndPoint(entry.AddressList[0], port), buffer, 0, buffer.Length);
+            _transports[via.Protocol].Send(ep, buffer, 0, buffer.Length);
         }
 
         #endregion

@@ -90,7 +90,7 @@
     <Compile Include="Messages\Headers\SubscriptionState.cs" />
     <Compile Include="Messages\Message.cs" />
     <Compile Include="Messages\Headers\StringHeader.cs" />
-    <Compile Include="Messages\Headers\HeaderCollection.cs" />
+    <Compile Include="Messages\Headers\HeaderKeyValueCollection.cs" />
     <Compile Include="Messages\Headers\HeaderFactory.cs" />
     <Compile Include="Messages\Headers\Parsers\StringHeaderParser.cs" />
     <Compile Include="Messages\Headers\Parsers\UriParser.cs" />

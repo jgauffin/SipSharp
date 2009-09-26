@@ -1,5 +1,4 @@
 ﻿using System;
-using SipSharp.Headers;
 using SipSharp.Messages.Headers;
 using SipSharp.Tools;
 using UriParser=SipSharp.Messages.Headers.Parsers.UriParser;

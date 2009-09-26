@@ -1,9 +1,11 @@
 ﻿using SipSharp.Headers;
-using SipSharp.Messages;
 
-namespace SipSharp
+namespace SipSharp.Messages
 {
-    class Response : Message, IResponse
+    /// <summary>
+    /// Response to a <see cref="IRequest"/>.
+    /// </summary>
+    public class Response : Message, IResponse
     {
         public Response(string version, StatusCode code, string phrase)
         {

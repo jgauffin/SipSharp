@@ -1,5 +1,5 @@
-﻿using System.IO;
-using SipSharp.Headers;
+﻿using System;
+using System.IO;
 using SipSharp.Messages.Headers;
 
 namespace SipSharp.Messages
@@ -12,7 +12,7 @@ namespace SipSharp.Messages
         protected Message()
         {
             Body = new MemoryStream();
-            Headers = new HeaderCollection();
+            Headers = new HeaderKeyValueCollection();
         }
 
         /// <summary>
@@ -34,7 +34,14 @@ namespace SipSharp.Messages
                     CSeq = (CSeq)header;
                     break;
                 case "via":
-                    Via = (Via) header;
+                    Via via = (Via)header;
+                    if (Via != null && Via.Items.Count > 0)
+                    {
+                        foreach (var entry in via)
+                            Via.Add(entry);
+                    }
+                    else
+                        Via = via;
                     break;
                 default:
                     Headers[name] = header;
@@ -163,6 +170,14 @@ namespace SipSharp.Messages
         {
             get { return ((StringHeader) Headers["CallId"]).Value; }
             set { ((StringHeader) Headers["CallId"]).Value = value; }
+        }
+
+        /// <summary>
+        /// Gets number of bytes in body.
+        /// </summary>
+        public int ContentLength
+        {
+            get; set;
         }
 
         #endregion

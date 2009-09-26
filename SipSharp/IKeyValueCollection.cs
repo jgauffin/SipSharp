@@ -189,6 +189,11 @@ namespace SipSharp
         }
 
         #endregion
+
+        public void Clear()
+        {
+            _items.Clear();
+        }
     }
 
     public class KeyValueCollection<TKey, TValue> : IKeyValueCollection<TKey, TValue>

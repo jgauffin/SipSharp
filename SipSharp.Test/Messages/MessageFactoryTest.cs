@@ -38,12 +38,19 @@ namespace SipSharp.Test.Messages
         }
 
         [Fact]
-        private void TestFactory()
+        private void TestTortousInvite()
         {
             MessageFactoryContext context = _factory.CreateNewContext();
             Parse(context, Messages.AShortTortuousINVITE);
             Assert.NotNull(_request);
-            Assert.Equal(_request.Uri.Domain, "chair-dnrc.example.com");
+            Assert.Equal("chair-dnrc.example.com", _request.Uri.Domain);
+            Assert.Equal("1918181833n", _request.To.Parameters["tag"]);
+
+            Via via = _request.Via;
+            Assert.Equal(3, via.Items.Count);
+            Assert.Equal("390skdjuw", via.Items[0].Branch);
+            Assert.Equal("SIP/2.0", via.Items[0].SipVersion);
+            Assert.Equal("192.168.255.111", via.Items[2].Domain);
         }
 
         private void Parse(MessageFactoryContext context, string message)

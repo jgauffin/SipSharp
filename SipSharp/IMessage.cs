@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using SipSharp.Headers;
 using SipSharp.Messages.Headers;
 
 namespace SipSharp
@@ -20,8 +19,11 @@ namespace SipSharp
         IKeyValueCollection<string, IHeader> Headers {get;}
 
         /// <summary>
-        /// Gets or sets used version of the SIP protocol.
+        /// Gets or sets SIP protocol version.
         /// </summary>
+        /// <example>
+        /// SIP/2.0
+        /// </example>
         string SipVersion { get; set; }
 
 
@@ -102,6 +104,11 @@ namespace SipSharp
 		/// <summary>
 		/// Gets whether the response is sent over a reliable protocol
 		/// </summary>
+		/// <remarks>
+		/// <para>Reliable means that the tranport guarantees the arrival of the send data.
+		/// TCP is reliable, while UDP is not.
+		/// </para>
+		/// </remarks>
 		bool IsReliableProtocol { get; }
 
 		/// <summary>
@@ -127,5 +134,12 @@ namespace SipSharp
 		/// </para>
 		/// </remarks>
 		string CallId { get; set; }
+
+        /// <summary>
+        /// Gets number of bytes in body.
+        /// </summary>
+        int ContentLength { get; set; }
+
+
     }
 }
