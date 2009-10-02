@@ -1,8 +1,9 @@
 ﻿using System;
+using SipSharp.Parser;
 using SipSharp.Tools;
 using SipSharp.Transports.Parser;
 
-namespace SipSharp.Parser
+namespace SipSharp.Messages
 {
     public class SipParser
     {
@@ -232,7 +233,7 @@ namespace SipSharp.Parser
             if (string.IsNullOrEmpty(words[0])
                 || string.IsNullOrEmpty(words[1])
                 || string.IsNullOrEmpty(words[2]))
-                    throw new BadRequestException("Invalid request/response line.");
+                throw new BadRequestException("Invalid request/response line.");
 
             OnFirstLine(words);
             _parserMethod = GetHeaderName;

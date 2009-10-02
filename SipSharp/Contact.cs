@@ -6,13 +6,18 @@ using System.Text;
 
 namespace SipSharp
 {
-    public class Contact
+    public class Contact : IEquatable<Contact>
     {
-        private IKeyValueCollection _parameters;
-
         public Contact(IKeyValueCollection parameters)
         {
-            _parameters = parameters;
+            Parameters = parameters;
+        }
+
+        public Contact(string name, SipUri uri)
+        {
+            Name = name;
+            Uri = uri;
+            Parameters = new KeyValueCollection();
         }
 
         /// <summary>
@@ -25,23 +30,58 @@ namespace SipSharp
         /// </summary>
         public SipUri Uri { get; set; }
 
-        public IKeyValueCollection Parameters
-        {
-            get {
-                return _parameters;
-            }
-        }
+        /// <summary>
+        /// Gets all contact parameters.
+        /// </summary>
+        /// <remarks>
+        /// Should not get confused with the URI parameters.
+        /// </remarks>
+        public IKeyValueCollection Parameters { get; private set; }
 
-        public string GetParameter(string name)
-        {
-            return _parameters[name];
-        }
 
+        /// <summary>
+        /// Checks if a parameter exists.
+        /// </summary>
+        /// <param name="name">Name of parameter</param>
+        /// <returns><c>true</c> if found; otherwise <c>false</c>.</returns>
         public bool HasParameter(string name)
         {
-            return _parameters.Contains(name);
+            return Parameters.Contains(name);
         }
 
+
+        /// <summary>
+        /// Indicates whether the current object is equal to another object of the same type.
+        /// </summary>
+        /// <returns>
+        /// true if the current object is equal to the <paramref name="other"/> parameter; otherwise, false.
+        /// </returns>
+        /// <param name="other">An object to compare with this object.
+        ///                 </param>
+        public bool Equals(Contact other)
+        {
+            return other.Uri == Uri && Name == other.Name;
+        }
+
+        public override string ToString()
+        {
+            string value;
+            if (!string.IsNullOrEmpty(Name))
+                value = "\"" + Name + "\" ";
+            else
+                value = string.Empty;
+
+            value += "<" + Uri + ">";
+
+            foreach (var parameter in Parameters)
+            {
+                value += ";" + parameter.Key;
+                if (!string.IsNullOrEmpty(parameter.Value))
+                    value += "=" + parameter.Value;
+            }
+
+            return value;
+        }
 
     }
 }

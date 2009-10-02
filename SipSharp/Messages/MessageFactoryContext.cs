@@ -1,6 +1,5 @@
 ﻿using System;
 using SipSharp.Messages.Headers;
-using SipSharp.Parser;
 using SipSharp.Transports.Parser;
 
 namespace SipSharp.Messages
@@ -16,9 +15,6 @@ namespace SipSharp.Messages
         private readonly MessageFactory _msgFactory;
         private readonly HeaderFactory _factory;
         private readonly SipParser _parser;
-
-        private delegate void HeaderHandler(string name, string value);
-        private HeaderHandler _onHeader;
         private Message _message;
 
         public MessageFactoryContext(MessageFactory msgFactory, HeaderFactory factory, SipParser parser)
@@ -64,6 +60,7 @@ namespace SipSharp.Messages
         /// <param name="offset"></param>
         /// <param name="length"></param>
         /// <returns></returns>
+        /// <exception cref="ParseException">Parsing failed.</exception>
         public int Parse(byte[] buffer, int offset, int length)
         {
             int lastOffset = _parser.Parse(buffer, offset, length);

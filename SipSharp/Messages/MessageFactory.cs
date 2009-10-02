@@ -1,6 +1,5 @@
 ﻿using System;
 using SipSharp.Messages.Headers;
-using SipSharp.Parser;
 using SipSharp.Tools;
 
 namespace SipSharp.Messages

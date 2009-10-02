@@ -13,7 +13,7 @@ namespace SipSharp
     /// <example>
     /// sip:user:password@host:port;uri-parameters?headers
     /// </example>
-    public class SipUri : ICloneable
+    public class SipUri : ICloneable, IEquatable<SipUri>
     {
         public static readonly SipUri Empty = new ReadOnlySipUri();
         private string _domain = string.Empty;
@@ -28,6 +28,13 @@ namespace SipSharp
         /// </summary>
         public SipUri()
         {
+            _parameters = new KeyValueCollection();
+        }
+
+        public SipUri(string userName, string domain)
+        {
+            _userName = userName;
+            _domain = domain;
             _parameters = new KeyValueCollection();
         }
 
@@ -170,13 +177,26 @@ namespace SipSharp
 
 
         /// <summary>
+        /// Indicates whether the current object is equal to another object of the same type.
+        /// </summary>
+        /// <returns>
+        /// true if the current object is equal to the <paramref name="other"/> parameter; otherwise, false.
+        /// </returns>
+        /// <param name="other">An object to compare with this object.
+        ///                 </param>
+        public bool Equals(SipUri other)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
         /// Will only add protocol and port if specified.
         /// </summary>
         /// <returns></returns>
         public override string ToString()
         {
             string temp = string.Empty;
-            if (_protocol != null)
+            if (!string.IsNullOrEmpty(_protocol))
                 temp += _protocol + ':';
             temp += _userName + '@' + _domain;
             if (_port != 0)

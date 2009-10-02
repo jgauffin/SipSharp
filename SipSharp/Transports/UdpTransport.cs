@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using SipSharp.Logging;
 using SipSharp.Messages;
+using SipSharp.Tools;
 using SipSharp.Transports.Parser;
 
 namespace SipSharp.Transports
@@ -11,7 +12,6 @@ namespace SipSharp.Transports
     {
         private readonly ILogger _logger = LogFactory.CreateLogger(typeof (UdpTransport));
         private Socket _socket;
-        private readonly BufferPool _bufferPool;
         private readonly MessageFactory _parsers;
         private EndPoint _serverEndPoint;
 
@@ -20,9 +20,8 @@ namespace SipSharp.Transports
         /// </summary>
         /// <param name="bufferPool">The buffer pool.</param>
         /// <param name="parsers">The parsers.</param>
-        public UdpTransport(BufferPool bufferPool, MessageFactory parsers)
+        public UdpTransport(MessageFactory parsers)
         {
-            _bufferPool = bufferPool;
             _parsers = parsers;
         }
 
@@ -38,7 +37,7 @@ namespace SipSharp.Transports
             int bytesRead = _socket.EndReceiveFrom(ar, ref endPoint);
 
             // begin receiving another packet before starting to process this one
-            byte[] newBuffer = _bufferPool.Dequeue();
+            byte[] newBuffer = BufferPool.Dequeue();
             _socket.BeginReceiveFrom(newBuffer, 0, newBuffer.Length, SocketFlags.None,
                                             ref _serverEndPoint, OnRead, newBuffer);
 
@@ -47,7 +46,7 @@ namespace SipSharp.Transports
             if (offset != bytesRead)
                 _logger.Error("Failed to parse complete message");
 
-            _bufferPool.Enqueue(buffer);
+            BufferPool.Enqueue(buffer);
             _parsers.Release(factoryContext);
         }
 
@@ -62,7 +61,7 @@ namespace SipSharp.Transports
                 _logger.Warning("Failed to send whole UDP message, " + bytesSent +
                                                          " of " + context.buffer.Length + " bytes to " + context.endPoint);
             }
-            _bufferPool.Enqueue(context.buffer);
+            BufferPool.Enqueue(context.buffer);
         }
 
 
@@ -96,7 +95,7 @@ namespace SipSharp.Transports
             if (ep == null)
                 throw new ArgumentException("Endpoint is not of type IPEndPoint", "listenerEndPoint");
 
-            byte[] buffer = _bufferPool.Dequeue();
+            byte[] buffer = BufferPool.Dequeue();
             _socket = CreateSocket();
             _serverEndPoint = listenerEndPoint;
             _socket.BeginReceiveFrom(buffer, 0, buffer.Length, SocketFlags.None, ref _serverEndPoint, OnRead, buffer);
@@ -123,6 +122,23 @@ namespace SipSharp.Transports
         public int Port
         {
             get; set;
+        }
+
+        /// <summary>
+        /// Gets of protocol is message based.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Message based protocols like UDP should only receive one (and a complete) message
+        /// in each receive. While packet based protocols like TCP can receive partial, complete or multiple
+        /// messages in one packet.
+        /// </para>
+        /// <para>This property should be used to </para>
+        /// </remarks>
+        //string IsMessageBasedProtocl{ get;}
+        public ObjectPool<byte[]> BufferPool
+        {
+            set; private get;
         }
 
         public event UnhandledExceptionEventHandler UnhandledException = delegate{};

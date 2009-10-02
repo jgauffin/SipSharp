@@ -15,7 +15,6 @@ namespace SipSharp.Transports
     /// </remarks>
     internal class TcpTransport : ITransport
     {
-        private readonly ObjectPool<byte[]> _bufferPool;
         private readonly Dictionary<EndPoint, ClientContext> _contexts = new Dictionary<EndPoint, ClientContext>();
         private readonly MessageFactory _factory;
         private TcpListener _listener;
@@ -25,11 +24,9 @@ namespace SipSharp.Transports
         /// Initializes a new instance of the <see cref="TcpTransport"/> class.
         /// </summary>
         /// <param name="factory">Message factory.</param>
-        /// <param name="bufferPool">Used to retrieve buffers for receiving messages.</param>
-        public TcpTransport(MessageFactory factory, ObjectPool<byte[]> bufferPool)
+        public TcpTransport(MessageFactory factory)
         {
             _factory= factory;
-            _bufferPool = bufferPool;
         }
 
         /// <summary>
@@ -42,12 +39,12 @@ namespace SipSharp.Transports
         {
             var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.IP);
             socket.Connect(endPoint);
-            return new ClientContext(socket, _bufferPool.Dequeue(), _factory.CreateNewContext());
+            return new ClientContext(socket, BufferPool.Dequeue(), _factory.CreateNewContext());
         }
 
         private void HandleDisconnect(ClientContext context)
         {
-            _bufferPool.Enqueue(context.Buffer);
+            BufferPool.Enqueue(context.Buffer);
             _factory.Release(context.Parser);
             context.Socket.Disconnect(true);
         }
@@ -106,7 +103,7 @@ namespace SipSharp.Transports
         /// <exception cref="System.ObjectDisposedException">Socket have been disposed.</exception>
         protected virtual void SetupNewContext(Socket socket)
         {
-            var context = new ClientContext(socket, _bufferPool.Dequeue(), _factory.CreateNewContext());
+            var context = new ClientContext(socket, BufferPool.Dequeue(), _factory.CreateNewContext());
             if (context.Buffer == null)
                 throw new InvalidOperationException("Could not allocate new buffer.");
 
@@ -159,18 +156,19 @@ namespace SipSharp.Transports
                 throw new ArgumentException("Endpoint is not a IPEndPoint.");
 
             ClientContext context;
-            bool created;
+            bool isCreated;
             lock (_contexts)
-            {
-                created = !_contexts.TryGetValue(endPoint, out context);
-            }
+                isCreated = _contexts.TryGetValue(endPoint, out context);
 
-            // since we dont want to look _contexts during connection tries.
-            if (created)
+            // since we dont want to lock _contexts during connection tries.
+            if (!isCreated)
             {
                 context = CreateAndConnect(ep);
                 lock (_contexts)
-                    _contexts.Add(endPoint, context);
+                {
+                    if (!_contexts.ContainsKey(endPoint))
+                        _contexts.Add(endPoint, context);
+                }
             }
 
             context.Socket.BeginSend(buffer, 0, buffer.Length, SocketFlags.None, OnSend, null);
@@ -190,6 +188,23 @@ namespace SipSharp.Transports
         public int Port
         {
             get; set;
+        }
+
+        /// <summary>
+        /// Gets of protocol is message based.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Message based protocols like UDP should only receive one (and a complete) message
+        /// in each receive. While packet based protocols like TCP can receive partial, complete or multiple
+        /// messages in one packet.
+        /// </para>
+        /// <para>This property should be used to </para>
+        /// </remarks>
+        //string IsMessageBasedProtocl{ get;}
+        public ObjectPool<byte[]> BufferPool
+        {
+            set; private get;
         }
 
         /// <summary>

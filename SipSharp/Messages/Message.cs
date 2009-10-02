@@ -43,9 +43,6 @@ namespace SipSharp.Messages
                     else
                         Via = via;
                     break;
-                default:
-                    Headers[name] = header;
-                    break;
             }
         }
 
@@ -82,7 +79,10 @@ namespace SipSharp.Messages
         /// </para>
         /// </remarks>
         /// 
-        public Contact To { get; set; }
+        public Contact To
+        {
+            get; set;
+        }
 
         /// <summary>
         /// Gets or sets whom the request is from.
@@ -168,8 +168,16 @@ namespace SipSharp.Messages
         /// </remarks>
         public string CallId
         {
-            get { return ((StringHeader) Headers["CallId"]).Value; }
-            set { ((StringHeader) Headers["CallId"]).Value = value; }
+            get
+            {
+                StringHeader header = (StringHeader) Headers["CallId"];
+                return  header == null ? string.Empty : header.Value;
+            }
+            set
+            {
+                StringHeader header = ((StringHeader) Headers["CallId"]) ?? new StringHeader("Call-id");
+                header.Value = value;
+            }
         }
 
         /// <summary>

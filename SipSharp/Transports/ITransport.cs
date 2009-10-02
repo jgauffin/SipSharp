@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using SipSharp.Tools;
 
 namespace SipSharp.Transports
 {
@@ -52,6 +53,7 @@ namespace SipSharp.Transports
         /// </remarks>
         //string IsMessageBasedProtocl{ get;}
 
+        ObjectPool<byte[]> BufferPool { set; }
 
 		/// <summary>
 		/// A exception was unhandled in a worker thread.

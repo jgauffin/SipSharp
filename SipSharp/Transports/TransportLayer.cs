@@ -34,7 +34,7 @@ namespace SipSharp.Transports
         private readonly ILogger _logger = LogFactory.CreateLogger(typeof (TransportLayer));
         private readonly MessageFactory _messageFactory;
         private readonly MessageSerializer _serializer = new MessageSerializer();
-        private readonly ObjectPool<Stream> _serializerStreams = new ObjectPool<Stream>(() => new MemoryStream());
+        private readonly ObjectPool<byte[]> _buffers = new ObjectPool<byte[]>(() => new byte[131072]); // double size to support large messages.
         private readonly Dictionary<string, ITransport> _transports = new Dictionary<string, ITransport>();
         private bool _isStarted;
         private string _domainName;
@@ -121,52 +121,10 @@ namespace SipSharp.Transports
                 throw new InvalidOperationException("Server have already been started.");
 
             _transports.Add(transport.Protocol, transport);
+            transport.BufferPool = _buffers;
         }
 
 
-        /// <summary>
-        /// Convert a package to bytes and send it.
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        private byte[] Serialize(IRequest request)
-        {
-            Stream stream = _serializerStreams.Dequeue();
-
-            _serializer.Serialize(request, stream);
-            stream.Seek(0, SeekOrigin.Begin);
-            if (stream.Length > UdpMaxSize)
-            {
-                //TODO: Switch to TCP
-            }
-            var buffer = new byte[stream.Length];
-            stream.Read(buffer, 0, (int) stream.Length);
-
-            _serializerStreams.Enqueue(stream);
-            return buffer;
-        }
-
-        /// <summary>
-        /// Convert a package to bytes and send it.
-        /// </summary>
-        /// <param name="response"></param>
-        /// <returns></returns>
-        private byte[] Serialize(IResponse response)
-        {
-            Stream stream = _serializerStreams.Dequeue();
-
-            _serializer.Serialize(response, stream);
-            stream.Seek(0, SeekOrigin.Begin);
-            if (stream.Length > UdpMaxSize)
-            {
-                //TODO: Switch to TCP
-            }
-            var buffer = new byte[stream.Length];
-            stream.Read(buffer, 0, (int) stream.Length);
-
-            _serializerStreams.Enqueue(stream);
-            return buffer;
-        }
 
         /// <summary>
         /// Start layer.
@@ -190,7 +148,7 @@ namespace SipSharp.Transports
                 5061 for TLS.
              */
 
-            ITransport transport = _transports[request.Via.First.Protocol];
+            ITransport transport = _transports[request.Via.First.Transport];
             request.Via.First.SentBy = _domainName + ":" + transport.Port;
 
             /*
@@ -205,13 +163,16 @@ namespace SipSharp.Transports
                 datagram packet size.  For UDP, this size is 65,535 bytes, including
                 IP and UDP headers.
             */
-            byte[] buffer = Serialize(request);
-            if (buffer.Length > 65335)
+
+            byte[] buffer = _buffers.Dequeue();
+            long count = _serializer.Serialize(request, buffer);
+
+            if (count > 65335)
             {
                 //Serialize again with new sent-by header.
                 transport = _transports["TCP"];
                 request.Via.First.SentBy = _domainName + ":" + transport.Port;
-                buffer = Serialize(request);
+                count = _serializer.Serialize(request, buffer);
             }
 
             // Create end point and send.
@@ -223,7 +184,7 @@ namespace SipSharp.Transports
             }
 
             // And send it.
-            transport.Send(ep, buffer, 0, buffer.Length);
+            transport.Send(ep, buffer, 0, (int)count);
         }
 
         /// <summary>
@@ -304,8 +265,10 @@ namespace SipSharp.Transports
             }
             EndPoint ep = new IPEndPoint(entry.AddressList[0], port);
 
-            byte[] buffer = Serialize(response);
-            _transports[via.Protocol].Send(ep, buffer, 0, buffer.Length);
+
+            byte[] buffer = _buffers.Dequeue();
+            int count = _serializer.Serialize(response, buffer);
+            _transports[via.Transport].Send(ep, buffer, 0, count);
         }
 
         #endregion

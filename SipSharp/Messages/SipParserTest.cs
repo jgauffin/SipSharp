@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using SipSharp.Messages;
 using SipSharp.Tests;
 using SipSharp.Transports.Parser;
 using Xunit;
