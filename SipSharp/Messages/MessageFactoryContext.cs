@@ -1,4 +1,5 @@
 ﻿using System;
+using SipSharp.Logging;
 using SipSharp.Messages.Headers;
 using SipSharp.Transports.Parser;
 
@@ -16,6 +17,7 @@ namespace SipSharp.Messages
         private readonly HeaderFactory _factory;
         private readonly SipParser _parser;
         private Message _message;
+        private ILogger _logger = LogFactory.CreateLogger(typeof (MessageFactoryContext));
 
         public MessageFactoryContext(MessageFactory msgFactory, HeaderFactory factory, SipParser parser)
         {
@@ -50,6 +52,7 @@ namespace SipSharp.Messages
         private void OnHeader(object sender, HeaderEventArgs e)
         {
             IHeader header = _factory.Parse(e.Name, e.Value);
+            _logger.Trace(e.Name + ": " + e.Value + " (" + header.GetType().Name + ")");
             _message.Assign(header.Name.ToLower(), header);
         }
 

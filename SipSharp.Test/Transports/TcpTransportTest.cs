@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using SipSharp.Logging;
 using SipSharp.Messages;
 using SipSharp.Messages.Headers;
 using SipSharp.Tools;
@@ -17,12 +18,18 @@ namespace SipSharp.Test.Transports
     {
         private TcpTransport _transport;
         private MessageFactory _messageFactory;
+        private IResponse _response;
         private IRequest _request;
-        private ManualResetEvent _requestEvent = new ManualResetEvent(false);
+        private ManualResetEvent _manualEvent = new ManualResetEvent(false);
         private ObjectPool<byte[]> _bufferPool = new ObjectPool<byte[]>(() => new byte[4096]);
+        private byte[] _recievedBuffer;
+        private int _receivedLength;
+
 
         public TcpTransportTest()
         {
+            LogFactory.Assign(ConsoleLogFactory.Instance);
+
             HeaderFactory headerFactory = new HeaderFactory(new StringHeader("Generic"));
             headerFactory.AddDefaultParsers();
             _messageFactory = new MessageFactory(headerFactory);
@@ -41,26 +48,88 @@ namespace SipSharp.Test.Transports
         }
 
         [Fact]
-        private void SendMessage()
+        private void ReceiveRequest()
         {
             Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             socket.Connect(IPAddress.Loopback, 1324);
 
-            _request = new Request("INVITE", "sips:jonas@gauffin.com", "SIP/2.0");
-            _request.From = new Contact("Adam Nilsson", new SipUri("sip", "adam", "nilsson.com", 5060));
-            _request.To = new Contact("Jonas Gauffin", new SipUri("jonas", "gauffin.com"));
+            _request = new Request("INVITE", "sips:jonas@gauffin.com", "SIP/2.0")
+                           {
+                               From = new Contact("Adam Nilsson", new SipUri("sip", "adam", "nilsson.com", 5060)),
+                               To = new Contact("Jonas Gauffin", new SipUri("jonas", "gauffin.com")),
+                               CallId = Guid.NewGuid().ToString().Replace("-", string.Empty),
+                               CSeq = new CSeq(1, _request.Method),
+                               MaxForwards = 60
+                           };
             _request.Contact = _request.To;
-            _request.CallId = Guid.NewGuid().ToString().Replace("-", string.Empty);
-            _request.CSeq = new CSeq(1, _request.Method);
-            _request.MaxForwards = 60;
 
 
             byte[] buffer =_bufferPool.Dequeue();
             MessageSerializer serializer = new MessageSerializer();
             int length = serializer.Serialize(_request, buffer);
             socket.Send(buffer, 0, length, SocketFlags.None);
-            Assert.True(_requestEvent.WaitOne(1000));
+            Assert.True(_manualEvent.WaitOne(1000));
 
+        }
+
+        [Fact]
+        private void SendRequest()
+        {
+            _request = new Request("INVITE", "sips:jonas@gauffin.com", "SIP/2.0")
+            {
+                From = new Contact("Adam Nilsson", new SipUri("sip", "adam", "nilsson.com", 5060)),
+                To = new Contact("Jonas Gauffin", new SipUri("jonas", "gauffin.com")),
+                CallId = Guid.NewGuid().ToString().Replace("-", string.Empty),
+                MaxForwards = 60,
+            };
+            _request.CSeq = new CSeq(1, _request.Method);
+            _request.Contact = _request.To;
+
+            TcpListener listener = new TcpListener(IPAddress.Loopback, 12721);
+            listener.Start();
+            listener.BeginAcceptSocket(OnNewSocket, listener);
+
+            byte[] buffer =_bufferPool.Dequeue();
+            MessageSerializer serializer = new MessageSerializer();
+            int length = serializer.Serialize(_request, buffer);
+            _transport.Send(new IPEndPoint(IPAddress.Loopback, 12721), buffer, 0, length);
+
+            Assert.True(_manualEvent.WaitOne(1000));
+
+        }
+
+        [Fact]
+        private void SendResponse()
+        {
+            _response = new Response("SIP/2.0", StatusCode.OK, "OK!")
+            {
+                From = new Contact("Adam Nilsson", new SipUri("sip", "adam", "nilsson.com", 5060)),
+                To = new Contact("Jonas Gauffin", new SipUri("jonas", "gauffin.com")),
+                CallId = Guid.NewGuid().ToString().Replace("-", string.Empty),
+            };
+            _response.CSeq = new CSeq(1, _request.Method);
+            //_response.Contact = _request.To;
+
+            TcpListener listener = new TcpListener(IPAddress.Loopback, 12721);
+            listener.Start();
+            listener.BeginAcceptSocket(OnNewSocket, listener);
+
+            byte[] buffer = _bufferPool.Dequeue();
+            MessageSerializer serializer = new MessageSerializer();
+            int length = serializer.Serialize(_response, buffer);
+            _transport.Send(new IPEndPoint(IPAddress.Loopback, 12721), buffer, 0, length);
+
+            Assert.True(_manualEvent.WaitOne(1000));
+        }
+
+        private void OnNewSocket(IAsyncResult ar)
+        {
+            TcpListener listener = (TcpListener) ar.AsyncState;
+            Socket socket = listener.EndAcceptSocket(ar);
+
+            _recievedBuffer = new byte[65535];
+            _receivedLength = socket.Receive(_recievedBuffer, 0, 65535, SocketFlags.None);
+            _manualEvent.Set();
         }
 
         private void OnResponse(object sender, ResponseEventArgs e)
@@ -76,7 +145,7 @@ namespace SipSharp.Test.Transports
             Assert.Equal(_request.CallId, e.Request.CallId);
             Assert.Equal(_request.CSeq, e.Request.CSeq);
             Assert.Equal(_request.MaxForwards, e.Request.MaxForwards);
-            _requestEvent.Set();
+            _manualEvent.Set();
         }
 
         private byte[] CreateBuffer()

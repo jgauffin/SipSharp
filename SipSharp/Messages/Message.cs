@@ -44,6 +44,8 @@ namespace SipSharp.Messages
                         Via = via;
                     break;
             }
+
+            Headers.Add(name, header);
         }
 
         #region IMessage Members

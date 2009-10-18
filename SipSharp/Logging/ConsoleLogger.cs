@@ -65,7 +65,7 @@ namespace SipSharp.Logging
             if (frames != null)
             {
                 int endFrame = frames.Length > 4 ? 4 : frames.Length;
-                int startFrame = frames.Length > 0 ? 1 : 0;
+                int startFrame = frames.Length > 1 ? 2 : 0;
                 for (int i = startFrame; i < endFrame; ++i)
                 {
                     sb.Append(frames[i].GetMethod().Name);

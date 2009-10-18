@@ -60,7 +60,7 @@ namespace SipSharp
         ///                 </param>
         public bool Equals(Contact other)
         {
-            return other.Uri == Uri && Name == other.Name;
+            return other.Uri.Equals(Uri) && Name.Equals(other.Name, StringComparison.OrdinalIgnoreCase);
         }
 
         public override string ToString()
@@ -83,5 +83,13 @@ namespace SipSharp
             return value;
         }
 
+        public override bool Equals(object obj)
+        {
+            Contact other = obj as Contact;
+            if (other == null)
+                return false;
+
+            return other.Uri == Uri && Name == other.Name;
+        }
     }
 }

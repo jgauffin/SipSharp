@@ -115,6 +115,7 @@ namespace SipSharp.Messages
 
         #region IRequest Members
 
+
         /// <summary>
         /// Gets or sets requested URI.
         /// </summary>
@@ -241,5 +242,20 @@ namespace SipSharp.Messages
         }
 
         #endregion
+
+        internal override void Assign(string name, IHeader header)
+        {
+            switch (name)
+            {
+                case "contact":
+                    Contact = ((ContactHeader) header).FirstContact;
+                    break;
+                case "max-forwards":
+                    MaxForwards = ((NumericHeader) header).Value;
+                    break;
+            }
+
+            base.Assign(name, header);
+        }
     }
 }

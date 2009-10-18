@@ -407,14 +407,14 @@ namespace SipSharp.Tools
         }
 
         /// <summary>
-        /// Read until a horizontal white space occurs.
+        /// Read until a horizontal white space occurs (or end, or end of line).
         /// </summary>
         /// <returns>
         /// A string if a white space was found; otherwise <c>null</c>.
         /// </returns>
         public string ReadWord()
         {
-            return ReadUntil(" \t");
+            return ReadToEnd(" \t\r\n");
         }
 
         /// <summary>

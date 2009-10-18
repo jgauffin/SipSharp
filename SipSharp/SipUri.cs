@@ -15,7 +15,7 @@ namespace SipSharp
     /// </example>
     public class SipUri : ICloneable, IEquatable<SipUri>
     {
-        public static readonly SipUri Empty = new ReadOnlySipUri();
+        //public static readonly SipUri Empty = new ReadOnlySipUri();
         private string _domain = string.Empty;
         private IKeyValueCollection _parameters;
         private string _password = string.Empty;
@@ -33,9 +33,9 @@ namespace SipSharp
 
         public SipUri(string userName, string domain)
         {
-            _userName = userName;
-            _domain = domain;
-            _parameters = new KeyValueCollection();
+            UserName = userName;
+            Domain = domain;
+            Parameters = new KeyValueCollection();
         }
 
         /// <summary>
@@ -47,11 +47,11 @@ namespace SipSharp
         /// <param name="port">The port.</param>
         public SipUri(string protocol, string userName, string domain, int port)
         {
-            _protocol = protocol;
-            _userName = userName;
-            _domain = domain;
-            _port = port;
-            _parameters = new KeyValueCollection();
+            Scheme = protocol;
+            UserName = userName;
+            Domain = domain;
+            Port = port;
+            Parameters = new KeyValueCollection();
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace SipSharp
         public SipUri(string protocol, string userName, string password, string domain, int port)
             : this(protocol, userName, domain, port)
         {
-            _password = password;
+            Password = password;
         }
 
         /// <summary>
@@ -80,12 +80,12 @@ namespace SipSharp
         public SipUri(string protocol, string userName, string password, string domain, int port,
                       IKeyValueCollection values)
         {
-            _protocol = protocol;
-            _userName = userName;
-            _domain = domain;
-            _port = port;
-            _password = password;
-            _parameters = values;
+            Scheme = protocol;
+            UserName = userName;
+            Domain = domain;
+            Port = port;
+            Password = password;
+            Parameters = values;
         }
 
         /// <summary>
@@ -97,19 +97,22 @@ namespace SipSharp
         /// address.  Using the fully-qualified domain name form is
         /// RECOMMENDED whenever possible.
         /// </remarks>
-        public virtual string Domain
+        public string Domain
         {
             get { return _domain; }
-            set { _domain = value; }
+            set
+            {
+                _domain = value ?? string.Empty;
+            }
         }
 
         /// <summary>
         /// Gets or sets optional parameters.
         /// </summary>
-        public virtual IKeyValueCollection Parameters
+        public IKeyValueCollection Parameters
         {
             get { return _parameters; }
-            set { _parameters = value; }
+            private set { _parameters = value; }
         }
 
         /// <summary>
@@ -122,16 +125,19 @@ namespace SipSharp
         /// it has been used.  For instance, transporting a PIN number in this field
         /// exposes the PIN.
         /// </remarks>
-        public virtual string Password
+        public string Password
         {
             get { return _password; }
-            set { _password = value; }
+            set
+            {
+                _password = value ?? string.Empty;
+            }
         }
 
         /// <summary>
         /// Gets or sets the port number to use.
         /// </summary>
-        public virtual int Port
+        public int Port
         {
             get { return _port; }
             set { _port = value; }
@@ -143,10 +149,10 @@ namespace SipSharp
         /// <remarks>
         /// Usually is 'SIP' or 'SIPS'.
         /// </remarks>
-        public virtual string Scheme
+        public string Scheme
         {
             get { return _protocol; }
-            set { _protocol = value; }
+            set { _protocol = value ?? string.Empty; }
         }
 
         /// <summary>
@@ -169,10 +175,10 @@ namespace SipSharp
         /// encoding telephone-subscriber fields in SIP and SIPS URIs
         /// described in Section 19.1.2.
         /// </para>
-        public virtual string UserName
+        public string UserName
         {
             get { return _userName; }
-            set { _userName = value; }
+            set { _userName = value??string.Empty; }
         }
 
 
@@ -186,7 +192,12 @@ namespace SipSharp
         ///                 </param>
         public bool Equals(SipUri other)
         {
-            throw new NotImplementedException();
+            return other.Domain.Equals(Domain, StringComparison.OrdinalIgnoreCase)
+                   && other.Parameters.Count == Parameters.Count
+                   && other.Password.Equals(Password, StringComparison.OrdinalIgnoreCase)
+                   && other.Port == Port
+                   && other.Scheme.Equals(Scheme, StringComparison.OrdinalIgnoreCase)
+                   && other.UserName.Equals(UserName, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -229,6 +240,20 @@ namespace SipSharp
         }
 
         #endregion
+
+        public override bool Equals(object obj)
+        {
+            SipUri other = obj as SipUri;
+            if (other == null)
+                return false;
+
+            return other.Domain.Equals(Domain, StringComparison.OrdinalIgnoreCase)
+                   && other.Parameters.Count == Parameters.Count
+                   && other.Password.Equals(Password, StringComparison.OrdinalIgnoreCase)
+                   && other.Port == Port
+                   && other.Scheme.Equals(Scheme, StringComparison.OrdinalIgnoreCase)
+                   && other.UserName.Equals(UserName, StringComparison.OrdinalIgnoreCase);
+        }
 
     }
 }

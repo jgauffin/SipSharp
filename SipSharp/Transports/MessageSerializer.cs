@@ -23,7 +23,7 @@ namespace SipSharp.Transports
             WriteHeader(writer, "From", request.From);
             WriteHeader(writer, "Contact", request.Contact);
             WriteHeader(writer, "Via", request.Via);
-            WriteHeader(writer, "MaxForwards", request.MaxForwards);
+            WriteHeader(writer, "Max-Forwards", request.MaxForwards);
             WriteHeader(writer, "CSeq", request.CSeq);
             WriteHeader(writer, "Call-ID", request.CallId);
             foreach (var header in request.Headers)
