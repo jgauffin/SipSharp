@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Threading;
+using SipSharp.Transports;
 
 namespace SipSharp.Transactions
 {
     internal class ServerInviteTransaction : IServerTransaction
     {
-        private readonly ISipStack _sipStack;
+        private readonly ITransportLayer _transport;
+        private readonly IRequest _request;
 
         /// <summary>
         /// Retransmission timer.
@@ -27,9 +29,10 @@ namespace SipSharp.Transactions
         private int _timerGValue;
 
 
-        public ServerInviteTransaction(ISipStack sipStack, IRequest request)
+        public ServerInviteTransaction(ITransportLayer transport, IRequest request)
         {
-            _sipStack = sipStack;
+            this._transport = transport;
+            _request = request;
             State = TransactionState.Proceeding;
             _timerG = new Timer(OnRetransmit);
             _timerH = new Timer(OnTimeout);
@@ -50,7 +53,7 @@ namespace SipSharp.Transactions
         {
             _timerGValue = Math.Min(_timerGValue*2, TransactionManager.T2);
             _timerG.Change(_timerGValue, Timeout.Infinite);
-            _sipStack.Send(_response);
+            _transport.Send(_response);
         }
 
         private void OnTerminated(object state)
@@ -109,14 +112,14 @@ namespace SipSharp.Transactions
             // recent provisional response that was received from the TU MUST be
             // passed to the transport layer for retransmission.
             if (State == TransactionState.Proceeding)
-                _sipStack.Send(_response);
+                _transport.Send(_response);
 
             // Furthermore,
             // while in the "Completed" state, if a request retransmission is
             // received, the server SHOULD pass the response to the transport for
             // retransmission.
             if (State == TransactionState.Completed)
-                _sipStack.Send(_response);
+                _transport.Send(_response);
         }
 
         public void Send(IResponse response)
@@ -150,12 +153,12 @@ namespace SipSharp.Transactions
 					// retransmissions of 2xx
 					// responses are handled by the TU.  The server transaction MUST then
 					// transition to the "Terminated" state.
-                    _sipStack.Send(response);
+                    _transport.Send(response);
                     Terminate(true);
                 }
                 else if (StatusCodeHelper.Is3456xx(response))
                 {
-                    _sipStack.Send(response);
+                    _transport.Send(response);
                     State = TransactionState.Completed;
                     if (!response.IsReliableProtocol)
                         _timerG.Change(TransactionManager.T1, Timeout.Infinite);
@@ -180,7 +183,7 @@ namespace SipSharp.Transactions
         /// </summary>
         public string Id
         {
-            get { throw new NotImplementedException(); }
+            get { return _request.GetTransactionId(); }
         }
 
         /// <summary>

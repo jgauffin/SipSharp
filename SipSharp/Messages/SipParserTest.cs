@@ -45,7 +45,6 @@ namespace SipSharp.Parser
 
         private void OnHeader(object sender, HeaderEventArgs e)
         {
-            Debug.WriteLine(e.Name + "= " + e.Value);
             _headers.Add(e.Name, e.Value);
         }
 

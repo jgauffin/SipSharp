@@ -57,7 +57,38 @@ namespace SipSharp.Transports
 
         public virtual int Serialize(IResponse response, byte[] buffer)
         {
-            return 0;
+            MemoryStream stream = new MemoryStream(buffer);
+            StreamWriter writer = new StreamWriter(stream, Encoding.ASCII);
+            writer.Write(response.SipVersion);
+            writer.Write(" ");
+            writer.Write(response.StatusCode);
+            writer.Write(" ");
+            writer.WriteLine(response.ReasonPhrase);
+
+            WriteHeader(writer, "To", response.To);
+            WriteHeader(writer, "From", response.From);
+            WriteHeader(writer, "Contact", response.Contact);
+            WriteHeader(writer, "Via", response.Via);
+            WriteHeader(writer, "CSeq", response.CSeq);
+            WriteHeader(writer, "Call-ID", response.CallId);
+            foreach (var header in response.Headers)
+                WriteHeader(writer, header.Key, header.Value.ToString());
+            if (response.Body != null && response.Body.Length > 0)
+                WriteHeader(writer, "Content-Length", response.Body.Length);
+            else
+                WriteHeader(writer, "Content-Length", "0");
+            writer.WriteLine();
+
+            if (response.Body != null)
+            {
+                MemoryStream ms = (MemoryStream)response.Body;
+                ms.WriteTo(stream);
+            }
+
+            writer.Flush();
+
+            string temp = Encoding.ASCII.GetString(buffer, 0, (int)stream.Length);
+            return (int)stream.Position;
         }
     }
 }

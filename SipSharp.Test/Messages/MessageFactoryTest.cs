@@ -20,7 +20,7 @@ namespace SipSharp.Test.Messages
         {
             LogFactory.Assign(ConsoleLogFactory.Instance);
 
-            _headerFactory = new HeaderFactory(new StringHeader("Prototype"));
+            _headerFactory = new HeaderFactory();
             _headerFactory.AddDefaultParsers();
             _factory = new MessageFactory(_headerFactory);
             _factory.RequestReceived += OnRequest;
@@ -40,7 +40,7 @@ namespace SipSharp.Test.Messages
         [Fact]
         private void TestTortousInvite()
         {
-            MessageFactoryContext context = _factory.CreateNewContext();
+            MessageFactoryContext context = _factory.CreateNewContext(null);
             Parse(context, Messages.AShortTortuousINVITE);
             Assert.NotNull(_request);
             Assert.Equal("chair-dnrc.example.com", _request.Uri.Domain);

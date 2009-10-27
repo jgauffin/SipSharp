@@ -3,6 +3,7 @@ using System.Net;
 using System.Threading;
 using SipSharp.Dialogs;
 using SipSharp.Messages;
+using SipSharp.Transports;
 
 namespace SipSharp.Transactions
 {
@@ -16,7 +17,7 @@ namespace SipSharp.Transactions
         /// </summary>
         private readonly Timer _timerE;
 
-        private readonly ISipStack _sipStack;
+        private readonly ITransportLayer _transport;
         private EndPoint _endPoint;
         private IRequest _request;
         private readonly Timer _timer1;
@@ -41,11 +42,11 @@ namespace SipSharp.Transactions
         /// <summary>
         /// Initializes a new instance of the <see cref="ClientNonInviteTransaction"/> class.
         /// </summary>
-        /// <param name="sipStack">Used to transport messages.</param>
+        /// <param name="transport">Used to transport messages.</param>
         /// <param name="message">Request to process.</param>
-        public ClientNonInviteTransaction(ISipStack sipStack, IMessage message)
+        public ClientNonInviteTransaction(ITransportLayer transport, IMessage message)
         {
-            _sipStack = sipStack;
+            _transport = transport;
 
             if (!(message is IRequest))
             {
@@ -62,7 +63,7 @@ namespace SipSharp.Transactions
                 _timerEValue = TransactionManager.T1;
                 _timerE = new Timer(OnRetransmission, null, _timerEValue, Timeout.Infinite);
             }
-            _sipStack.Send(request);
+            _transport.Send(request);
         }
 
         /// <summary>
@@ -111,7 +112,7 @@ namespace SipSharp.Transactions
                  */
             _timerEValue = Math.Min(_timerEValue*2, TransactionManager.T2);
             _timerE.Change(_timerEValue, Timeout.Infinite);
-            _sipStack.Send(_request);
+            _transport.Send(_request);
         }
 
         private void OnTerminate(object state)
@@ -248,5 +249,6 @@ namespace SipSharp.Transactions
         /// Gets current transaction state
         /// </summary>
         public TransactionState State { get; private set; }
+
     }
 }

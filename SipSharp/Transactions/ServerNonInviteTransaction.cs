@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Threading;
+using SipSharp.Messages;
+using SipSharp.Transports;
 
 namespace SipSharp.Transactions
 {
@@ -7,14 +9,14 @@ namespace SipSharp.Transactions
     {
         private readonly IRequest _request;
         private readonly Timer _timerJ;
-        private readonly ISipStack _sipStack;
+        private readonly ITransportLayer _transport;
         private IResponse _response;
 
-        public ServerNonInviteTransaction(ISipStack sipStack, IRequest request)
+        public ServerNonInviteTransaction(ITransportLayer transport, IRequest request)
         {
             _timerJ = new Timer(OnTerminate);
 
-            _sipStack = sipStack;
+            _transport = transport;
             _request = request;
             State = TransactionState.Trying;
         }
@@ -36,7 +38,7 @@ namespace SipSharp.Transactions
 
             if (State == TransactionState.Proceeding)
             {
-                _sipStack.Send(_response);
+                _transport.Send(_response);
             }
         }
 
@@ -60,7 +62,7 @@ namespace SipSharp.Transactions
             else if (State == TransactionState.Proceeding)
             {
                 if (StatusCodeHelper.Is1xx(response))
-                    _sipStack.Send(response);
+                    _transport.Send(response);
                 else
                 {
                     State = TransactionState.Completed;
@@ -70,7 +72,7 @@ namespace SipSharp.Transactions
                         _timerJ.Change(0, Timeout.Infinite);
                 }
             }
-            _sipStack.Send(response);
+            _transport.Send(response);
         }
 
         #endregion
@@ -85,7 +87,10 @@ namespace SipSharp.Transactions
         /// </summary>
         public string Id
         {
-            get { throw new NotImplementedException(); }
+            get
+            {
+                return _request.GetTransactionId();
+            }
         }
 
         /// <summary>

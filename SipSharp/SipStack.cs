@@ -13,7 +13,7 @@ using SipSharp.Transports;
 
 namespace SipSharp
 {
-    class SipStack : ISipStack
+    public class SipStack : ISipStack
     {
         private MessageFactory _messageFactory;
         private TransportLayer _transportLayer;
@@ -23,13 +23,27 @@ namespace SipSharp
         private string _domain;
         private ILogger _logger = Logging.LogFactory.CreateLogger(typeof (SipStack));
 
+        private SubscriberList<EventHandler<StackRequestEventArgs>> _requestSubscribers =
+            new SubscriberList<EventHandler<StackRequestEventArgs>>();
+
         public SipStack()
         {
-            _messageFactory = new MessageFactory(new HeaderFactory(new StringHeader("Nothing")));
-            _messageFactory.RequestReceived += OnRequest;
-            _messageFactory.ResponseReceived += OnResponse;
+            HeaderFactory hf = new HeaderFactory();
+            hf.AddDefaultParsers();
+            _messageFactory = new MessageFactory(hf);
             _transportLayer = new TransportLayer(_messageFactory);
+            _transportLayer.RequestReceived += OnRequest;
+            _transportLayer.ResponseReceived += OnResponse;
+            _transactionManager = new TransactionManager(_transportLayer);
 
+        }
+
+        public void Start(IPEndPoint ep)
+        {
+            UdpTransport transport = new UdpTransport(_messageFactory) {Port = 5060};
+            transport.Start(ep);
+            _transportLayer.Register(transport);
+            _transportLayer.Start();
         }
 
         private void OnResponse(object sender, ResponseEventArgs e)
@@ -61,11 +75,13 @@ namespace SipSharp
         /// <param name="e"></param>
         private void OnRequest(object sender, RequestEventArgs e)
         {
-
-                
             _logger.Trace("Received " + e.Request + " from "  + e.RemoteEndPoint);
 
-            _transactionManager.Process(e.Request);
+            if (_transactionManager.Process(e.Request))
+                return;
+
+            StackRequestEventArgs args = new StackRequestEventArgs(e.Request);
+            _requestSubscribers.Invoke(e.Request.Method, handler => handler(this, args));
         }
 
         public void Send(IRequest request)
@@ -82,11 +98,20 @@ namespace SipSharp
             }
         }
 
+        public IServerTransaction CreateServerTransaction(IRequest request)
+        {
+            return _transactionManager.CreateServerTransaction(request);
+        }
+
         IDialog CreateDialog()
         {
             return null;
         }
         public event EventHandler DialogCreated;
         public event EventHandler DialogTerminated;
+        public void RegisterMethod(string methodName, EventHandler<StackRequestEventArgs> handler)
+        {
+            _requestSubscribers.Register(methodName, handler);
+        }
     }
 }

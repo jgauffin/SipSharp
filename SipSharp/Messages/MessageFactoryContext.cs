@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using SipSharp.Logging;
 using SipSharp.Messages.Headers;
 using SipSharp.Transports.Parser;
@@ -18,6 +19,7 @@ namespace SipSharp.Messages
         private readonly SipParser _parser;
         private Message _message;
         private ILogger _logger = LogFactory.CreateLogger(typeof (MessageFactoryContext));
+        private EndPoint _endPoint;
 
         public MessageFactoryContext(MessageFactory msgFactory, HeaderFactory factory, SipParser parser)
         {
@@ -28,6 +30,12 @@ namespace SipSharp.Messages
             parser.MessageComplete += OnMessageComplete;
             parser.RequestLineParsed += OnRequestLine;
             parser.ResponseLineParsed += OnResponseLine;
+        }
+
+        public EndPoint EndPoint
+        {
+            get { return _endPoint; }
+            internal set { _endPoint = value; }
         }
 
         private void OnResponseLine(object sender, ResponseLineEventArgs e)
@@ -43,16 +51,15 @@ namespace SipSharp.Messages
         private void OnMessageComplete(object sender, EventArgs e)
         {
             if (_message is IRequest)
-                RequestCompleted(this, new RequestEventArgs((IRequest)_message, null));
+                RequestCompleted(this, new RequestEventArgs((IRequest)_message, EndPoint));
             else
-                ResponseCompleted(this, new ResponseEventArgs((IResponse)_message, null));
+                ResponseCompleted(this, new ResponseEventArgs((IResponse)_message, EndPoint));
         }
 
 
         private void OnHeader(object sender, HeaderEventArgs e)
         {
             IHeader header = _factory.Parse(e.Name, e.Value);
-            _logger.Trace(e.Name + ": " + e.Value + " (" + header.GetType().Name + ")");
             _message.Assign(header.Name.ToLower(), header);
         }
 

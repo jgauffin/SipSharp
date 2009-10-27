@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SipSharp", "SipSharp\SipSha
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SipSharp.Test", "SipSharp.Test\SipSharp.Test.csproj", "{EF735E93-DEF8-4EA2-9ED4-A00BA149DA42}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SwitchSharp", "SwitchSharp\SwitchSharp.csproj", "{7A029C59-47C9-4D6B-AE86-6B7C5BC96A83}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,6 +26,12 @@ Global
 		{EF735E93-DEF8-4EA2-9ED4-A00BA149DA42}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EF735E93-DEF8-4EA2-9ED4-A00BA149DA42}.Test|Any CPU.ActiveCfg = Release|Any CPU
 		{EF735E93-DEF8-4EA2-9ED4-A00BA149DA42}.Test|Any CPU.Build.0 = Release|Any CPU
+		{7A029C59-47C9-4D6B-AE86-6B7C5BC96A83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A029C59-47C9-4D6B-AE86-6B7C5BC96A83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A029C59-47C9-4D6B-AE86-6B7C5BC96A83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A029C59-47C9-4D6B-AE86-6B7C5BC96A83}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A029C59-47C9-4D6B-AE86-6B7C5BC96A83}.Test|Any CPU.ActiveCfg = Release|Any CPU
+		{7A029C59-47C9-4D6B-AE86-6B7C5BC96A83}.Test|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

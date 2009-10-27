@@ -40,22 +40,22 @@ namespace SipSharp.Transactions
 
         private readonly int _timerDValue = 32000;
 
-        private readonly ISipStack _sipStack;
+        private readonly ITransportLayer _transport;
         private int _timerAValue;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ClientInviteTransaction"/> class.
         /// </summary>
-        /// <param name="sipStack">The sip stack.</param>
+        /// <param name="transport">Transport layer used to send stuff.</param>
         /// <param name="request">Request that will be sent immidiately by the transaction.</param>
-        public ClientInviteTransaction(ISipStack sipStack, IRequest request)
+        public ClientInviteTransaction(ITransportLayer transport, IRequest request)
         {
-            _sipStack = sipStack;
+            _transport = transport;
             if (request.Method != "INVITE")
                 throw new SipSharpException("Can only be used with invite transactions.");
 
             State = TransactionState.Calling;
-            _sipStack.Send(request);
+            _transport.Send(request);
             _request = request;
 
             // If an unreliable transport is being used, the client transaction MUST 
@@ -131,7 +131,7 @@ namespace SipSharp.Transactions
 
             _timerAValue *= 2;
             _timerA.Change(_timerAValue, Timeout.Infinite);
-            _sipStack.Send(_request);
+            _transport.Send(_request);
         }
 
         private void OnTerminate(object state)
@@ -233,7 +233,7 @@ namespace SipSharp.Transactions
 
         private void SendAck(IResponse response)
         {
-            _sipStack.Send(CreateAck(response));
+            _transport.Send(CreateAck(response));
         }
 
         /// <summary>

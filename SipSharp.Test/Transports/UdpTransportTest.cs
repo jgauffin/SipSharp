@@ -14,9 +14,9 @@ using Xunit;
 
 namespace SipSharp.Test.Transports
 {
-    public class TcpTransportTest
+    public class UdpTransportTest
     {
-        private TcpTransport _transport;
+                private UdpTransport _transport;
         private MessageFactory _messageFactory;
         private IResponse _response;
         private IRequest _request;
@@ -24,9 +24,10 @@ namespace SipSharp.Test.Transports
         private ObjectPool<byte[]> _bufferPool = new ObjectPool<byte[]>(() => new byte[4096]);
         private byte[] _recievedBuffer;
         private int _receivedLength;
+        private const int PortNumber = 5032;
+        private Socket _testSocket;
 
-
-        public TcpTransportTest()
+        public UdpTransportTest()
         {
             LogFactory.Assign(ConsoleLogFactory.Instance);
 
@@ -36,8 +37,8 @@ namespace SipSharp.Test.Transports
             _messageFactory.RequestReceived += OnRequest;
             _messageFactory.ResponseReceived += OnResponse;
             ObjectPool<byte[]> pool = new ObjectPool<byte[]>(CreateBuffer);
-            _transport = new TcpTransport(_messageFactory) {BufferPool = _bufferPool};
-            _transport.Start(new IPEndPoint(IPAddress.Any, 1324));
+            _transport = new UdpTransport(_messageFactory) { BufferPool = _bufferPool };
+            _transport.Start(new IPEndPoint(IPAddress.Loopback, PortNumber));
             _transport.UnhandledException += OnUnhandledException;
         }
 
@@ -50,17 +51,17 @@ namespace SipSharp.Test.Transports
         [Fact]
         private void ReceiveRequest()
         {
-            Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            socket.Connect(IPAddress.Loopback, 1324);
+            Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            socket.Connect(IPAddress.Loopback, PortNumber);
 
             _request = new Request("INVITE", "sips:jonas@gauffin.com", "SIP/2.0")
                            {
                                From = new Contact("Adam Nilsson", new SipUri("sip", "adam", "nilsson.com", 5060)),
                                To = new Contact("Jonas Gauffin", new SipUri("jonas", "gauffin.com")),
                                CallId = Guid.NewGuid().ToString().Replace("-", string.Empty),
-                               CSeq = new CSeq(1, _request.Method),
                                MaxForwards = 60
                            };
+            _request.CSeq = new CSeq(1, _request.Method);
             _request.Contact = _request.To;
 
 
@@ -85,17 +86,27 @@ namespace SipSharp.Test.Transports
             _request.CSeq = new CSeq(1, _request.Method);
             _request.Contact = _request.To;
 
-            TcpListener listener = new TcpListener(IPAddress.Loopback, 12721);
-            listener.Start();
-            listener.BeginAcceptSocket(OnNewSocket, listener);
+            IAsyncResult res = CreateListener();
 
             byte[] buffer =_bufferPool.Dequeue();
             MessageSerializer serializer = new MessageSerializer();
             int length = serializer.Serialize(_request, buffer);
             _transport.Send(new IPEndPoint(IPAddress.Loopback, 12721), buffer, 0, length);
 
-            Assert.True(_manualEvent.WaitOne(1000));
+            EndPoint ep = new IPEndPoint(IPAddress.Any, 1234);
+            int bytesRead = _testSocket.EndReceiveFrom(res, ref ep);
+            Assert.NotEqual(0, bytesRead);
+            
 
+        }
+
+        private IAsyncResult CreateListener()
+        {
+            _testSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            _testSocket.Bind(new IPEndPoint(IPAddress.Any, 12721));
+            byte[] inbuffer = _bufferPool.Dequeue();
+            EndPoint ep = new IPEndPoint(IPAddress.Any,1234);
+            return _testSocket.BeginReceiveFrom(inbuffer, 0, inbuffer.Length, SocketFlags.None, ref ep, null, null);
         }
 
         [Fact]
@@ -110,16 +121,16 @@ namespace SipSharp.Test.Transports
             _response.CSeq = new CSeq(1, "INVITE");
             //_response.Contact = _request.To;
 
-            TcpListener listener = new TcpListener(IPAddress.Loopback, 12721);
-            listener.Start();
-            listener.BeginAcceptSocket(OnNewSocket, listener);
+            IAsyncResult res = CreateListener();
 
             byte[] buffer = _bufferPool.Dequeue();
             MessageSerializer serializer = new MessageSerializer();
             int length = serializer.Serialize(_response, buffer);
             _transport.Send(new IPEndPoint(IPAddress.Loopback, 12721), buffer, 0, length);
 
-            Assert.True(_manualEvent.WaitOne(1000));
+            EndPoint ep = new IPEndPoint(IPAddress.Any, 1234);
+            int bytesRead = _testSocket.EndReceiveFrom(res, ref ep);
+            Assert.NotEqual(0, bytesRead);
         }
 
         private void OnNewSocket(IAsyncResult ar)
@@ -152,5 +163,6 @@ namespace SipSharp.Test.Transports
         {
             return new byte[4196];
         }
+
     }
 }

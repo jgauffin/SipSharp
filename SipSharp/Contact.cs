@@ -38,6 +38,15 @@ namespace SipSharp
         /// </remarks>
         public IKeyValueCollection Parameters { get; private set; }
 
+        public double Quality
+        {
+            get
+            {
+                double temp;
+                return !double.TryParse(Parameters["q"], out temp) ? 1 : temp;
+            }
+        }
+
 
         /// <summary>
         /// Checks if a parameter exists.

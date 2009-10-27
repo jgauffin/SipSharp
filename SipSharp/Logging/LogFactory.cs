@@ -17,6 +17,8 @@ namespace SipSharp.Logging
         /// <exception cref="InvalidOperationException">A factory have already been assigned.</exception>
         public static void Assign(ILogFactory logFactory)
         {
+            if (logFactory == _factory)
+                return;
             if (_isAssigned)
                 throw new InvalidOperationException("A factory have already been assigned.");
             _isAssigned = true;

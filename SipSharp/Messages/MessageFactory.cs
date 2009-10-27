@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using SipSharp.Messages.Headers;
 using SipSharp.Tools;
 
@@ -59,9 +60,19 @@ namespace SipSharp.Messages
             return new Response(version, statusCode, reason);
         }
 
-        public MessageFactoryContext CreateNewContext()
+        /// <summary>
+        /// Create a new message factory context.
+        /// </summary>
+        /// <param name="ep">End point to parse messgaes from</param>
+        /// <returns>A new context.</returns>
+        /// <remarks>
+        /// A context is used to parse messages from a specific endpoint.
+        /// </remarks>
+        public MessageFactoryContext CreateNewContext(EndPoint ep)
         {
-            return _builders.Dequeue();
+            MessageFactoryContext context = _builders.Dequeue();
+            context.EndPoint = ep;
+            return context;
         }
 
         /// <summary>

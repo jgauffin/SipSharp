@@ -97,6 +97,7 @@ namespace SipSharp.Transports
                 matching server transaction, and based on this rule, the ACK is
                 passed to the UAS core, where it is processed.
             */
+            RequestReceived(this, e);
         }
 
         private void OnResponse(object sender, ResponseEventArgs e)
@@ -108,6 +109,7 @@ namespace SipSharp.Transports
                client transport is configured to insert into requests, the response
                MUST be silently discarded.
              */
+            ResponseReceived(this, e);
         }
 
         /// <summary>
@@ -248,16 +250,27 @@ namespace SipSharp.Transports
                 return;
             }
 
+            string targetDomain;
             int port = 5060;
-            int index = via.SentBy.IndexOf(':');
-            if (index > 0 && index < via.SentBy.Length - 1)
+            if (!string.IsNullOrEmpty(via.SentBy))
             {
-                string temp = via.SentBy.Substring(index + 1);
-                if (!int.TryParse(temp, out port))
-                    port = 5060;
+                targetDomain = via.SentBy;
+                int index = via.SentBy.IndexOf(':');
+                if (index > 0 && index < via.SentBy.Length - 1)
+                {
+                    string temp = via.SentBy.Substring(index + 1);
+                    if (!int.TryParse(temp, out port))
+                        port = 5060;
+                }
             }
+            else
+                targetDomain = via.Received;
 
-            IPHostEntry entry = Dns.GetHostEntry(via.Received);
+            // RFC3841
+            if (via.Rport > 0)
+                port = via.Rport;
+
+            IPHostEntry entry = Dns.GetHostEntry(targetDomain);
             if (entry.AddressList.Length == 0)
             {
                 _logger.Warning("Failed to find host entry for: " + via.Received);

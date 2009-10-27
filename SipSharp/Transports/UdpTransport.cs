@@ -33,21 +33,52 @@ namespace SipSharp.Transports
         private void OnRead(IAsyncResult ar)
         {
             var buffer = (byte[]) ar.AsyncState;
-            EndPoint endPoint = null;
-            int bytesRead = _socket.EndReceiveFrom(ar, ref endPoint);
+            EndPoint endPoint = new IPEndPoint(IPAddress.Any, 3929);
+            int bytesRead = 0;
+            try
+            {
+                _logger.Trace("_socket.EndReceiveFrom");
+                bytesRead = _socket.EndReceiveFrom(ar, ref endPoint);
+            }
+            catch(Exception err)
+            {
+                _logger.Warning("EndReceiveFrom failed: " + err.ToString());
+            }
+
 
             // begin receiving another packet before starting to process this one
             byte[] newBuffer = BufferPool.Dequeue();
-            _socket.BeginReceiveFrom(newBuffer, 0, newBuffer.Length, SocketFlags.None,
-                                            ref _serverEndPoint, OnRead, newBuffer);
 
-            MessageFactoryContext factoryContext = _parsers.CreateNewContext();
-            int offset = factoryContext.Parse(buffer, 0, bytesRead);
-            if (offset != bytesRead)
-                _logger.Error("Failed to parse complete message");
+            try
+            {
+                _socket.BeginReceiveFrom(newBuffer, 0, newBuffer.Length, SocketFlags.None,
+                                                ref _serverEndPoint, OnRead, newBuffer);
+            }
+            catch(Exception err)
+            {
+                _logger.Warning("BeginReceiveFrom failed, closing socket. Exception: " + err);
+                BufferPool.Enqueue(newBuffer);
+                BufferPool.Enqueue(buffer);
+                _socket.Close();
+                return;
+            }
 
-            BufferPool.Enqueue(buffer);
-            _parsers.Release(factoryContext);
+            if (bytesRead == 0)
+                return;
+
+            // Parse buffer.
+            MessageFactoryContext factoryContext = _parsers.CreateNewContext(endPoint);
+            try
+            {
+                int offset = factoryContext.Parse(buffer, 0, bytesRead);
+                if (offset != bytesRead)
+                    _logger.Error("Failed to parse complete message");
+            }
+            finally
+            {
+                BufferPool.Enqueue(buffer);
+                _parsers.Release(factoryContext);
+            }
         }
 
         
@@ -62,6 +93,7 @@ namespace SipSharp.Transports
                                                          " of " + context.buffer.Length + " bytes to " + context.endPoint);
             }
             BufferPool.Enqueue(context.buffer);
+            _logger.Trace("OnSendComplete");
         }
 
 
@@ -95,17 +127,25 @@ namespace SipSharp.Transports
             if (ep == null)
                 throw new ArgumentException("Endpoint is not of type IPEndPoint", "listenerEndPoint");
 
+            if (BufferPool == null)
+                BufferPool = new ObjectPool<byte[]>(() => new byte[65535]);
+
             byte[] buffer = BufferPool.Dequeue();
             _socket = CreateSocket();
+            _socket.Bind(ep);
+
+            _logger.Trace("BeginReceiveFrom");
             _serverEndPoint = listenerEndPoint;
             _socket.BeginReceiveFrom(buffer, 0, buffer.Length, SocketFlags.None, ref _serverEndPoint, OnRead, buffer);
         }
 
         public void Send(EndPoint endPoint, byte[] buffer, int offset, int count)
         {
+            _logger.Trace("Sending to " + endPoint);
             SendContext context = new SendContext(endPoint, buffer);
-            _socket.BeginSendTo(buffer, 0, buffer.Length, SocketFlags.None, endPoint, OnSendComplete,
+            _socket.BeginSendTo(buffer, 0, count, SocketFlags.None, endPoint, OnSendComplete,
                                        context);
+            _logger.Trace("BeginSendTo");
         }
 
         /// <summary>

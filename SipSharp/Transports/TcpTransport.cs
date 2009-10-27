@@ -39,7 +39,7 @@ namespace SipSharp.Transports
         {
             var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.IP);
             socket.Connect(endPoint);
-            return new ClientContext(socket, BufferPool.Dequeue(), _factory.CreateNewContext());
+            return new ClientContext(socket, BufferPool.Dequeue(), _factory.CreateNewContext(endPoint));
         }
 
         private void HandleDisconnect(ClientContext context)
@@ -103,7 +103,7 @@ namespace SipSharp.Transports
         /// <exception cref="System.ObjectDisposedException">Socket have been disposed.</exception>
         protected virtual void SetupNewContext(Socket socket)
         {
-            var context = new ClientContext(socket, BufferPool.Dequeue(), _factory.CreateNewContext());
+            var context = new ClientContext(socket, BufferPool.Dequeue(), _factory.CreateNewContext(socket.RemoteEndPoint));
             if (context.Buffer == null)
                 throw new InvalidOperationException("Could not allocate new buffer.");
 

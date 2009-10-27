@@ -35,24 +35,24 @@ namespace SipSharp.Transactions
         /// </summary>
         public const int T4 = 5000;
 
-        private readonly ISipStack _sipStack;
+        private readonly ITransportLayer _transport;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TransactionManager"/> class.
         /// </summary>
-        /// <param name="sipStack">The sip stack.</param>
-        public TransactionManager(ISipStack sipStack)
+        /// <param name="transport">Transport layer.</param>
+        public TransactionManager(ITransportLayer transport)
         {
-            _sipStack = sipStack;
+            _transport = transport;
         }
 
         public IClientTransaction CreateClientTransaction(IRequest message)
         {
             IClientTransaction transaction;
             if (message.Method == SipMethod.INVITE)
-                transaction = new ClientInviteTransaction(_sipStack, message);
+                transaction = new ClientInviteTransaction(_transport, message);
             else
-                transaction = new ClientNonInviteTransaction(_sipStack, message);
+                transaction = new ClientNonInviteTransaction(_transport, message);
 
             _clientTransactions.Add(transaction.Id, transaction);
             transaction.Terminated += OnTerminated;
@@ -71,9 +71,9 @@ namespace SipSharp.Transactions
         {
             IServerTransaction transaction;
             if (request.Method == SipMethod.INVITE)
-                transaction = new ServerInviteTransaction(_sipStack, request);
+                transaction = new ServerInviteTransaction(_transport, request);
             else
-                transaction = new ServerNonInviteTransaction(_sipStack, request);
+                transaction = new ServerNonInviteTransaction(_transport, request);
 
             _serverTransactions.Add(transaction.Id, transaction);
             transaction.Terminated += OnTerminated;
@@ -111,7 +111,7 @@ namespace SipSharp.Transactions
             return transaction.Process(response, null);
         }
 
-        public IServerTransaction Process(IRequest request)
+        public bool Process(IRequest request)
         {
             // The branch parameter in the topmost Via header field of the request
             // is examined.  If it is present and begins with the magic cookie
@@ -131,34 +131,15 @@ namespace SipSharp.Transactions
             //       transaction, except for ACK, where the method of the request
             //       that created the transaction is INVITE.
 
-            string token = request.Via.First.Branch;
-            token += request.Via.First.SentBy;
-
-            if (request.Method == SipMethod.ACK)
-                token += SipMethod.INVITE;
-            else
-                token += request.Method;
-
             IServerTransaction transaction;
-            bool isNew = false;
             lock (_serverTransactions)
             {
-                if (!_serverTransactions.TryGetValue(token, out transaction))
-                {
-                    // Failed to find it. add it.
-                    if (request.Method == SipMethod.INVITE)
-                        transaction = new ServerInviteTransaction(_sipStack, request);
-                    else
-                        transaction = new ServerNonInviteTransaction(_sipStack, request);
-                    isNew = true;
-                }
+                if (!_serverTransactions.TryGetValue(request.GetTransactionId(), out transaction))
+                    return false;
             }
 
             transaction.Process(request);
-            if (isNew)
-                ServerTransactionCreated(this, new TransactionEventArgs(transaction));
-
-            return transaction;
+            return true;
         }
 
         public event EventHandler<TransactionEventArgs> ClientTransactionCreated = delegate { };
