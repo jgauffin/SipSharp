@@ -28,7 +28,7 @@ namespace SipSharp.Test.Transports
 
         public TcpTransportTest()
         {
-            LogFactory.Assign(ConsoleLogFactory.Instance);
+            LogFactory.Assign(new ConsoleLogFactory(null));
 
             HeaderFactory headerFactory = new HeaderFactory();
             headerFactory.AddDefaultParsers();

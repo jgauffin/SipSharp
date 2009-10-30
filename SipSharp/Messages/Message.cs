@@ -45,7 +45,7 @@ namespace SipSharp.Messages
                     break;
             }
 
-            Headers.Add(name, header);
+            Headers.Add(name.ToLower(), header);
         }
 
         #region IMessage Members
@@ -172,13 +172,15 @@ namespace SipSharp.Messages
         {
             get
             {
-                StringHeader header = (StringHeader) Headers["CallId"];
+                StringHeader header = (StringHeader) Headers["call-id"];
                 return  header == null ? string.Empty : header.Value;
             }
             set
             {
-                StringHeader header = ((StringHeader) Headers["CallId"]) ?? new StringHeader("Call-id");
-                header.Value = value;
+                if (!Headers.Contains("call-id"))
+                    Headers.Add("call-id", new StringHeader("call-id", value));
+                else
+                    ((StringHeader) Headers["call-id"]).Value = value;
             }
         }
 

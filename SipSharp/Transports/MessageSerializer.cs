@@ -61,7 +61,7 @@ namespace SipSharp.Transports
             StreamWriter writer = new StreamWriter(stream, Encoding.ASCII);
             writer.Write(response.SipVersion);
             writer.Write(" ");
-            writer.Write(response.StatusCode);
+            writer.Write((int)response.StatusCode);
             writer.Write(" ");
             writer.WriteLine(response.ReasonPhrase);
 
@@ -70,7 +70,7 @@ namespace SipSharp.Transports
             WriteHeader(writer, "Contact", response.Contact);
             WriteHeader(writer, "Via", response.Via);
             WriteHeader(writer, "CSeq", response.CSeq);
-            WriteHeader(writer, "Call-ID", response.CallId);
+            //WriteHeader(writer, "Call-Id", response.CallId);
             foreach (var header in response.Headers)
                 WriteHeader(writer, header.Key, header.Value.ToString());
             if (response.Body != null && response.Body.Length > 0)

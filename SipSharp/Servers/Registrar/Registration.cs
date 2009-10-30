@@ -5,7 +5,7 @@ using System.Text;
 
 namespace SipSharp.Servers.Registrar
 {
-    class Registration
+    public class Registration
     {
         public Registration()
         {
@@ -38,6 +38,14 @@ namespace SipSharp.Servers.Registrar
             }
 
             return null;
+        }
+
+        public void Replace(List<RegistrationContact> contacts)
+        {
+            lock (Contacts)
+            {
+                Contacts = contacts;
+            }
         }
     }
 }

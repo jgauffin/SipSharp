@@ -20,7 +20,7 @@ namespace SipSharp
         private IKeyValueCollection _parameters;
         private string _password = string.Empty;
         private int _port;
-        private string _protocol = string.Empty;
+        private string _scheme = string.Empty;
         private string _userName = string.Empty;
 
         /// <summary>
@@ -41,13 +41,13 @@ namespace SipSharp
         /// <summary>
         /// Initializes a new instance of the <see cref="SipUri"/> class.
         /// </summary>
-        /// <param name="protocol">The protocol.</param>
+        /// <param name="scheme">The scheme.</param>
         /// <param name="userName">User name.</param>
         /// <param name="domain">The domain.</param>
         /// <param name="port">The port.</param>
-        public SipUri(string protocol, string userName, string domain, int port)
+        public SipUri(string scheme, string userName, string domain, int port)
         {
-            Scheme = protocol;
+            Scheme = scheme;
             UserName = userName;
             Domain = domain;
             Port = port;
@@ -57,13 +57,13 @@ namespace SipSharp
         /// <summary>
         /// Initializes a new instance of the <see cref="SipUri"/> class.
         /// </summary>
-        /// <param name="protocol">The protocol.</param>
+        /// <param name="scheme">The scheme.</param>
         /// <param name="userName">Name of the user.</param>
         /// <param name="password">The password.</param>
         /// <param name="domain">The domain.</param>
         /// <param name="port">The port.</param>
-        public SipUri(string protocol, string userName, string password, string domain, int port)
-            : this(protocol, userName, domain, port)
+        public SipUri(string scheme, string userName, string password, string domain, int port)
+            : this(scheme, userName, domain, port)
         {
             Password = password;
         }
@@ -71,21 +71,35 @@ namespace SipSharp
         /// <summary>
         /// Initializes a new instance of the <see cref="SipUri"/> class.
         /// </summary>
-        /// <param name="protocol">The protocol.</param>
+        /// <param name="scheme">The scheme.</param>
         /// <param name="userName">Name of the user.</param>
         /// <param name="password">The password.</param>
         /// <param name="domain">The domain.</param>
         /// <param name="port">The port.</param>
         /// <param name="values">The values.</param>
-        public SipUri(string protocol, string userName, string password, string domain, int port,
+        public SipUri(string scheme, string userName, string password, string domain, int port,
                       IKeyValueCollection values)
         {
-            Scheme = protocol;
+            Scheme = scheme;
             UserName = userName;
             Domain = domain;
             Port = port;
             Password = password;
             Parameters = values;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SipUri"/> class.
+        /// </summary>
+        /// <param name="scheme">The scheme.</param>
+        /// <param name="domain">The domain.</param>
+        /// <param name="port">Port number</param>
+        public SipUri(string scheme, string domain, int port)
+        {
+            Scheme = scheme;
+            Domain = domain;
+            Port = port;
+            Parameters = new KeyValueCollection();
         }
 
         /// <summary>
@@ -147,12 +161,18 @@ namespace SipSharp
         /// Gets or sets uri scheme
         /// </summary>
         /// <remarks>
-        /// Usually is 'SIP' or 'SIPS'.
+        /// Usually is 'sip' or 'sips'.
         /// </remarks>
+        /// <value>
+        /// Always lower case.
+        /// </value>
         public string Scheme
         {
-            get { return _protocol; }
-            set { _protocol = value ?? string.Empty; }
+            get { return _scheme; }
+            set { 
+                _scheme = value ?? string.Empty;
+                _scheme = _scheme.ToLower();
+            }
         }
 
         /// <summary>
@@ -201,15 +221,18 @@ namespace SipSharp
         }
 
         /// <summary>
-        /// Will only add protocol and port if specified.
+        /// Will only add scheme and port if specified.
         /// </summary>
         /// <returns></returns>
         public override string ToString()
         {
             string temp = string.Empty;
-            if (!string.IsNullOrEmpty(_protocol))
-                temp += _protocol + ':';
-            temp += _userName + '@' + _domain;
+            if (!string.IsNullOrEmpty(_scheme))
+                temp += _scheme + ':';
+            if (!string.IsNullOrEmpty(_userName))
+                temp += _userName + '@' + _domain;
+            else
+                temp += _domain;
             if (_port != 0)
                 temp += ":" + _port;
 
@@ -236,7 +259,7 @@ namespace SipSharp
         ///<filterpriority>2</filterpriority>
         public object Clone()
         {
-            return new SipUri(_protocol, _userName, _password, _domain, _port, (IKeyValueCollection)_parameters.Clone());
+            return new SipUri(_scheme, _userName, _password, _domain, _port, (IKeyValueCollection)_parameters.Clone());
         }
 
         #endregion

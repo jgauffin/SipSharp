@@ -50,12 +50,12 @@ namespace SipSharp.Messages
             RequestReceived(this, e);
         }
 
-        public Request CreateRequest(string method, string path, string version)
+        internal Request CreateRequest(string method, string path, string version)
         {
             return new Request(method, path, version);
         }
 
-        public Response CreateResponse(string version, StatusCode statusCode, string reason)
+        internal Response CreateResponse(string version, StatusCode statusCode, string reason)
         {
             return new Response(version, statusCode, reason);
         }
@@ -68,7 +68,7 @@ namespace SipSharp.Messages
         /// <remarks>
         /// A context is used to parse messages from a specific endpoint.
         /// </remarks>
-        public MessageFactoryContext CreateNewContext(EndPoint ep)
+        internal MessageFactoryContext CreateNewContext(EndPoint ep)
         {
             MessageFactoryContext context = _builders.Dequeue();
             context.EndPoint = ep;
@@ -79,7 +79,7 @@ namespace SipSharp.Messages
         /// Release a used factoryContext.
         /// </summary>
         /// <param name="factoryContext"></param>
-        public void Release(MessageFactoryContext factoryContext)
+        internal void Release(MessageFactoryContext factoryContext)
         {
             _builders.Enqueue(factoryContext);
         }

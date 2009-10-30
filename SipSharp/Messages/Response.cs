@@ -1,4 +1,5 @@
 ﻿using SipSharp.Headers;
+using SipSharp.Messages.Headers;
 
 namespace SipSharp.Messages
 {
@@ -27,7 +28,7 @@ namespace SipSharp.Messages
         /// <summary>
         /// Gets or sets where we want to be contacted
         /// </summary>
-        public SipUri Contact { get; set; }
+        public ContactHeader Contact { get; set; }
 
         /// <summary>
         /// Gets or sets all routes.

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace SipSharp.Servers.Registrar
 {
-    class RegistrationContact
+    public class RegistrationContact
     {
         /// <summary>
         /// Gets or sets expires time.

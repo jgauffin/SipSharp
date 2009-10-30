@@ -14,10 +14,18 @@ namespace SipSharp.Logging
     /// <seealso cref="ILogger"/>
     public sealed class ConsoleLogger : ILogger
     {
+        private readonly ILogFilter _filter;
+
+        public ConsoleLogger(Type loggingType, ILogFilter filter)
+        {
+            _filter = filter;
+            LoggingType = loggingType;
+        }
+
         /// <summary>
-        /// The actual instance of this class.
+        /// Gets or sets type that the logger is for
         /// </summary>
-        public static readonly ConsoleLogger Instance = new ConsoleLogger();
+        public Type LoggingType { get; private set; }
 
         /// <summary>
         /// Get color for the specified log level
@@ -54,6 +62,9 @@ namespace SipSharp.Logging
         /// <param name="message">The message.</param>
         public void Write(LogLevel level, string message)
         {
+            if (_filter != null && !_filter.CanLog(level, LoggingType))
+                return;
+
             var sb = new StringBuilder();
             sb.Append(DateTime.Now.ToString());
             sb.Append(" ");
@@ -66,9 +77,9 @@ namespace SipSharp.Logging
             {
                 int endFrame = frames.Length > 4 ? 4 : frames.Length;
                 int startFrame = frames.Length > 1 ? 2 : 0;
-                for (int i = startFrame; i < endFrame; ++i)
+                for (int i = endFrame; i >= startFrame; --i)
                 {
-                    sb.Append(frames[i].GetMethod().Name);
+                    sb.Append(frames[i].GetMethod().ReflectedType.Name + "." + frames[i].GetMethod().Name);
                     sb.Append(" -> ");
                 }
             }

@@ -257,5 +257,10 @@ namespace SipSharp.Messages
 
             base.Assign(name, header);
         }
+
+        public override string ToString()
+        {
+            return Method + " [" + Uri + "] " + CallId + "/" + CSeq;
+        }
     }
 }

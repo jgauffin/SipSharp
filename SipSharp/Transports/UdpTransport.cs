@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using SipSharp.Logging;
 using SipSharp.Messages;
 using SipSharp.Tools;
@@ -18,7 +19,6 @@ namespace SipSharp.Transports
         /// <summary>
         /// Initializes a new instance of the <see cref="UdpTransport"/> class.
         /// </summary>
-        /// <param name="bufferPool">The buffer pool.</param>
         /// <param name="parsers">The parsers.</param>
         public UdpTransport(MessageFactory parsers)
         {
@@ -35,14 +35,31 @@ namespace SipSharp.Transports
             var buffer = (byte[]) ar.AsyncState;
             EndPoint endPoint = new IPEndPoint(IPAddress.Any, 3929);
             int bytesRead = 0;
+
+            bool isKeepAlive = true;
+
             try
             {
                 _logger.Trace("_socket.EndReceiveFrom");
                 bytesRead = _socket.EndReceiveFrom(ar, ref endPoint);
+                if (bytesRead <= 4)
+                {
+                    for (int i = 0; i < bytesRead; ++i)
+                        if (buffer[i] != '\r' && buffer[i] != '\n')
+                        {
+                            isKeepAlive = false;
+                            break;
+                        }
+                }
+                else
+                    isKeepAlive = false;
+
+                if (!isKeepAlive)
+                    _logger.Debug("Received "+bytesRead+" bytes from " + endPoint + ":\r\n" + Encoding.ASCII.GetString(buffer, 0, bytesRead));
             }
             catch(Exception err)
             {
-                _logger.Warning("EndReceiveFrom failed: " + err.ToString());
+                _logger.Warning("EndReceiveFrom failed: " + err);
             }
 
 
@@ -63,8 +80,11 @@ namespace SipSharp.Transports
                 return;
             }
 
-            if (bytesRead == 0)
+            if (bytesRead == 0 || isKeepAlive)
+            {
+                BufferPool.Enqueue(buffer);
                 return;
+            }
 
             // Parse buffer.
             MessageFactoryContext factoryContext = _parsers.CreateNewContext(endPoint);
@@ -87,13 +107,8 @@ namespace SipSharp.Transports
         {
             var context = (SendContext) ar.AsyncState;
             int bytesSent = _socket.EndSendTo(ar);
-            if (context.buffer.Length != bytesSent)
-            {
-                _logger.Warning("Failed to send whole UDP message, " + bytesSent +
-                                                         " of " + context.buffer.Length + " bytes to " + context.endPoint);
-            }
             BufferPool.Enqueue(context.buffer);
-            _logger.Trace("OnSendComplete");
+            _logger.Trace("OnSendComplete, " + bytesSent + " sent ");
         }
 
 
@@ -141,11 +156,11 @@ namespace SipSharp.Transports
 
         public void Send(EndPoint endPoint, byte[] buffer, int offset, int count)
         {
-            _logger.Trace("Sending to " + endPoint);
+            _logger.Debug("Sending " + count + " bytes to " + endPoint + ":\r\n" +
+                          Encoding.ASCII.GetString(buffer, 0, count));
             SendContext context = new SendContext(endPoint, buffer);
             _socket.BeginSendTo(buffer, 0, count, SocketFlags.None, endPoint, OnSendComplete,
                                        context);
-            _logger.Trace("BeginSendTo");
         }
 
         /// <summary>

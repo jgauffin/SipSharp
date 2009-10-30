@@ -3,6 +3,10 @@
     /// <summary>
     /// Interface used to write to log files.
     /// </summary>
+    /// <remarks>
+    /// If you want to use the built in filtering mecanism, create a constructor
+    /// which takes one parameter, a <see cref="ILogFilter"/>.
+    /// </remarks>
     public interface ILogger
     {
         /// <summary>

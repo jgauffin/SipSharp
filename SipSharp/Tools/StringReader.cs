@@ -438,9 +438,9 @@ namespace SipSharp.Tools
             int index = Index;
             while (index < Length)
             {
-                ++index;
                 if (ch == _buffer[index])
                     return true;
+                ++index;
             }
 
             return false;

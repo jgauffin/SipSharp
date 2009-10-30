@@ -18,7 +18,7 @@ namespace SipSharp.Test.Messages
 
         public MessageFactoryTest()
         {
-            LogFactory.Assign(ConsoleLogFactory.Instance);
+            LogFactory.Assign(new ConsoleLogFactory(null));
 
             _headerFactory = new HeaderFactory();
             _headerFactory.AddDefaultParsers();

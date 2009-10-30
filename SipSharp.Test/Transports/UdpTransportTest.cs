@@ -29,7 +29,7 @@ namespace SipSharp.Test.Transports
 
         public UdpTransportTest()
         {
-            LogFactory.Assign(ConsoleLogFactory.Instance);
+            LogFactory.Assign(new ConsoleLogFactory(null));
 
             HeaderFactory headerFactory = new HeaderFactory();
             headerFactory.AddDefaultParsers();

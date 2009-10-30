@@ -4,18 +4,17 @@ namespace SipSharp.Logging
 {
     public class ConsoleLogFactory : ILogFactory
     {
-        private static readonly ConsoleLogFactory _instance = new ConsoleLogFactory();
-        private readonly ConsoleLogger _logger = new ConsoleLogger();
+        readonly ILogFilter _filter;
 
-
-        private ConsoleLogFactory()
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConsoleLogFactory"/> class.
+        /// </summary>
+        /// <param name="filter">The filter.</param>
+        public ConsoleLogFactory(ILogFilter filter)
         {
+            _filter = filter;
         }
 
-        public static ILogFactory Instance
-        {
-            get { return _instance; }
-        }
 
         #region ILogFactory Members
 
@@ -30,7 +29,7 @@ namespace SipSharp.Logging
         /// </remarks>
         public ILogger CreateLogger(Type type)
         {
-            return _logger;
+            return new ConsoleLogger(type, _filter);
         }
 
         #endregion

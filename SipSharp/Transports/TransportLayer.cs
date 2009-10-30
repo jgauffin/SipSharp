@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Text;
 using SipSharp.Headers;
 using SipSharp.Logging;
 using SipSharp.Messages;
@@ -97,6 +98,7 @@ namespace SipSharp.Transports
                 matching server transaction, and based on this rule, the ACK is
                 passed to the UAS core, where it is processed.
             */
+            //_logger.Debug(GetMessage(e.Request));
             RequestReceived(this, e);
         }
 
@@ -109,6 +111,7 @@ namespace SipSharp.Transports
                client transport is configured to insert into requests, the response
                MUST be silently discarded.
              */
+            //_logger.Debug(GetMessage(e.Response));
             ResponseReceived(this, e);
         }
 
@@ -124,6 +127,19 @@ namespace SipSharp.Transports
 
             _transports.Add(transport.Protocol, transport);
             transport.BufferPool = _buffers;
+        }
+
+        private string GetMessage(IRequest request)
+        {
+            byte[] buffer = _buffers.Dequeue();
+            long count = _serializer.Serialize(request, buffer);
+            return Encoding.ASCII.GetString(buffer, 0, (int) count);
+        }
+        private string GetMessage(IResponse response)
+        {
+            byte[] buffer = _buffers.Dequeue();
+            long count = _serializer.Serialize(response, buffer);
+            return Encoding.ASCII.GetString(buffer, 0, (int)count);
         }
 
 

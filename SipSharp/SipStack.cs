@@ -81,7 +81,11 @@ namespace SipSharp
                 return;
 
             StackRequestEventArgs args = new StackRequestEventArgs(e.Request);
-            _requestSubscribers.Invoke(e.Request.Method, handler => handler(this, args));
+            if (!_requestSubscribers.Invoke(e.Request.Method, handler => handler(this, args)))
+            {
+                IResponse response = e.Request.CreateResponse(StatusCode.NotImplemented, "Method not implemented");
+                _transportLayer.Send(response);
+            }
         }
 
         public void Send(IRequest request)

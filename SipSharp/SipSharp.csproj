@@ -74,7 +74,9 @@
     <Compile Include="Logging\ConsoleLogger.cs" />
     <Compile Include="Logging\ILogFactory.cs" />
     <Compile Include="Logging\ILogger.cs" />
+    <Compile Include="Logging\ILogFilter.cs" />
     <Compile Include="Logging\LogFactory.cs" />
+    <Compile Include="Logging\LogFilter.cs" />
     <Compile Include="Logging\LogLevel.cs" />
     <Compile Include="Logging\NullLogFactory.cs" />
     <Compile Include="Logging\NullLogWriter.cs" />
@@ -139,6 +141,7 @@
     <Compile Include="Servers\Registrar\NonceManager.cs" />
     <Compile Include="Servers\Registrar\Registration.cs" />
     <Compile Include="Servers\Registrar\RegistrationContact.cs" />
+    <Compile Include="Servers\Registrar\RegistrationReporsitory.cs" />
     <Compile Include="Servers\Registrar\RegistrationRepository.cs" />
     <Compile Include="SipException.cs" />
     <Compile Include="SipStack.cs" />

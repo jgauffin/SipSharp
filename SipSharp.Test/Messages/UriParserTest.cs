@@ -49,5 +49,25 @@ namespace SipSharp.Test.Messages
             Assert.Equal("world", collection["welcome"]);
             Assert.Equal(string.Empty, collection["yes"]);
         }
+
+        [Fact]
+        private void TestRequestLine()
+        {
+            SipUri uri = UriParser.Parse("sips:127.0.0.1:5061");
+            Assert.Equal(5061, uri.Port);
+            Assert.Equal("sips", uri.Scheme);
+            Assert.Equal("127.0.0.1", uri.Domain);
+
+            uri = UriParser.Parse("127.0.0.1:5061");
+            Assert.Equal(5061, uri.Port);
+            Assert.Equal(string.Empty, uri.Scheme);
+            Assert.Equal("127.0.0.1", uri.Domain);
+
+            uri = UriParser.Parse("sips:127.0.0.1");
+            Assert.Equal(0, uri.Port);
+            Assert.Equal("sips", uri.Scheme);
+            Assert.Equal("127.0.0.1", uri.Domain);
+
+        }
     }
 }

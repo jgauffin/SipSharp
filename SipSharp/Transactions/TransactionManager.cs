@@ -108,6 +108,7 @@ namespace SipSharp.Transactions
                 }
             }
 
+            _logger.Debug(transaction.Id + " got response: " + response);
             return transaction.Process(response, null);
         }
 
@@ -138,6 +139,7 @@ namespace SipSharp.Transactions
                     return false;
             }
 
+            _logger.Debug(transaction.Id + " got request: " + request);
             transaction.Process(request);
             return true;
         }
