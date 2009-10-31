@@ -68,6 +68,7 @@
     <Compile Include="BackToBackUserAgent.cs" />
     <Compile Include="BadRequestException.cs" />
     <Compile Include="Contact.cs" />
+    <Compile Include="ForbiddenException.cs" />
     <Compile Include="Hop.cs" />
     <Compile Include="ISipStack.cs" />
     <Compile Include="Logging\ConsoleLogFactory.cs" />
@@ -85,15 +86,18 @@
     <Compile Include="Messages\Headers\Event.cs" />
     <Compile Include="Messages\Headers\HeaderInfo.cs" />
     <Compile Include="Messages\Headers\MaxForwards.cs" />
+    <Compile Include="Messages\Headers\MethodsHeader.cs" />
     <Compile Include="Messages\Headers\Parsers\AuthorizationParser.cs" />
     <Compile Include="Messages\Headers\Parsers\ContentTypeParser.cs" />
     <Compile Include="Messages\Headers\Parsers\GenericParserAttribute.cs" />
     <Compile Include="Messages\Headers\NumericHeader.cs" />
+    <Compile Include="Messages\Headers\Parsers\MethodsParser.cs" />
     <Compile Include="Messages\Headers\Parsers\NumericHeaderParser.cs" />
     <Compile Include="Messages\Headers\Parsers\ParserForAttribute.cs" />
-    <Compile Include="Messages\Headers\Parsers\WwwAuthenticateParser.cs" />
+    <Compile Include="Messages\Headers\Parsers\AuthenticateParser.cs" />
+    <Compile Include="Messages\Headers\Parsers\RouteParser.cs" />
     <Compile Include="Messages\Headers\SubscriptionState.cs" />
-    <Compile Include="Messages\Headers\WwwAuthenticate.cs" />
+    <Compile Include="Messages\Headers\Authenticate.cs" />
     <Compile Include="Messages\Message.cs" />
     <Compile Include="Messages\Headers\StringHeader.cs" />
     <Compile Include="Messages\Headers\HeaderKeyValueCollection.cs" />
@@ -143,6 +147,7 @@
     <Compile Include="Servers\Registrar\RegistrationContact.cs" />
     <Compile Include="Servers\Registrar\RegistrationReporsitory.cs" />
     <Compile Include="Servers\Registrar\RegistrationRepository.cs" />
+    <Compile Include="Servers\StatefulProxy\Proxy.cs" />
     <Compile Include="SipException.cs" />
     <Compile Include="SipStack.cs" />
     <Compile Include="SubscriberList.cs" />

@@ -1,5 +1,4 @@
-﻿using SipSharp.Headers;
-using SipSharp.Messages.Headers;
+﻿using SipSharp.Messages.Headers;
 
 namespace SipSharp.Messages
 {
@@ -34,6 +33,11 @@ namespace SipSharp.Messages
         /// Gets or sets all routes.
         /// </summary>
         public Route Route { get; internal set;  }
+
+        public override void Validate()
+        {
+            throw new System.NotImplementedException();
+        }
 
     }
 }

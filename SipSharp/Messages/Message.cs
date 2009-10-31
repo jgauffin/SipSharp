@@ -51,6 +51,12 @@ namespace SipSharp.Messages
         #region IMessage Members
 
         /// <summary>
+        /// Validate all mandatory headers.
+        /// </summary>
+        /// <exception cref="BadRequestException">A header is invalid/missing.</exception>
+        public abstract void Validate();
+
+        /// <summary>
         /// Gets body stream.
         /// </summary>
         public Stream Body { get; private set; }

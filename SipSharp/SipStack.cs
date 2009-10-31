@@ -80,7 +80,8 @@ namespace SipSharp
             if (_transactionManager.Process(e.Request))
                 return;
 
-            StackRequestEventArgs args = new StackRequestEventArgs(e.Request);
+            IServerTransaction transaction = _transactionManager.CreateServerTransaction(e.Request);
+            StackRequestEventArgs args = new StackRequestEventArgs(e.Request, transaction);
             if (!_requestSubscribers.Invoke(e.Request.Method, handler => handler(this, args)))
             {
                 IResponse response = e.Request.CreateResponse(StatusCode.NotImplemented, "Method not implemented");

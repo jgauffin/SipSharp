@@ -13,8 +13,17 @@ namespace SipSharp
         private Dictionary<string, LinkedList<T>> _subscribers =
             new Dictionary<string, LinkedList<T>>();
 
+        private LinkedList<T> _allHandlers = new LinkedList<T>();
+
         public void Register(string key, T value)
         {
+            if (string.IsNullOrEmpty(key))
+            {
+                lock (_allHandlers)
+                    _allHandlers.AddLast(value);
+                return;
+            }
+
             LinkedList<T> subscribers;
             lock (_subscribers)
             {
@@ -35,13 +44,22 @@ namespace SipSharp
             lock (_subscribers)
             {
                 if (!_subscribers.TryGetValue(key, out subscribers))
-                    return false;
+                    subscribers = null;
             }
 
-            lock (subscribers)
+            if (subscribers != null)
             {
-                foreach (T subscriber in subscribers)
-                    action(subscriber);
+                lock (subscribers)
+                {
+                    foreach (T subscriber in subscribers)
+                        action(subscriber);
+                }
+            }
+
+            lock (_allHandlers)
+            {
+                foreach (var handler in _allHandlers)
+                    action(handler);
             }
 
             return true;

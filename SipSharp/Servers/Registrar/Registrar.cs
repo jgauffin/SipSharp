@@ -51,7 +51,7 @@ namespace SipSharp.Servers.Registrar
 
         protected virtual IHeader CreateAuthenticateHeader()
         {
-            return new Authorization();
+            return new Authorization(Authorization.NAME);
         }
 
 
@@ -132,7 +132,7 @@ namespace SipSharp.Servers.Registrar
                 response.StatusCode = StatusCode.Unauthorized;
                 response.ReasonPhrase = "You must authorize";
                 IHeader wwwHeader = _authenticator.CreateWwwHeader(Realm, Domain);
-                response.Headers.Add(WwwAuthenticate.NAME, wwwHeader);
+                response.Headers.Add(Authenticate.WWW_NAME, wwwHeader);
                 transaction.Send(response);
                 return;
             }

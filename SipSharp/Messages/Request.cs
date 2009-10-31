@@ -12,47 +12,52 @@ namespace SipSharp.Messages
             Method = method;
             Uri = UriParser.Parse(new StringReader(path));
             SipVersion = version;
+            MaxForwards = -1;
         }
 
-        public virtual void ValidateHeaders()
+        /// <summary>
+        /// Validate all mandatory headers.
+        /// </summary>
+        /// <exception cref="BadRequestException">A header is invalid/missing.</exception>
+        public override void Validate()
         {
             const string prefix = "Missing header: ";
 
             if (CSeq == null)
             {
-                throw new ParseException(prefix + "CSeq");
+                throw new BadRequestException(prefix + "CSeq");
             }
             if (To == null)
             {
-                throw new ParseException(prefix + "To");
+                throw new BadRequestException(prefix + "To");
             }
 
             if (string.IsNullOrEmpty(CallId))
-                throw new ParseException(prefix + "CallId");
+                throw new BadRequestException(prefix + "CallId");
 
             if (From == null)
             {
-                throw new ParseException(prefix + "From");
+                throw new BadRequestException(prefix + "From");
             }
             if (Via == null)
             {
-                throw new ParseException(prefix + "Via");
+                throw new BadRequestException(prefix + "Via");
             }
             if (MaxForwards == 0)
             {
-                throw new ParseException(prefix + "MaxForwards");
+                throw new BadRequestException(prefix + "MaxForwards");
             }
 
             if (Via.First == null)
-                throw new ParseException("No via header in request! ");
+                throw new BadRequestException("No via headers in request! ");
 
             if (Method == SipMethod.NOTIFY)
             {
                 if (Headers[SubscriptionState.NAME] == null)
-                    throw new ParseException(prefix + SubscriptionState.NAME);
+                    throw new BadRequestException(prefix + SubscriptionState.NAME);
 
                 if (Headers[Event.NAME] == null)
-                    throw new ParseException(prefix + Event.NAME);
+                    throw new BadRequestException(prefix + Event.NAME);
             }
             else if (Method == SipMethod.PUBLISH)
             {
@@ -62,7 +67,7 @@ namespace SipSharp.Messages
              * indicates the event package for which this request is publishing event state.
              */
                 if (Headers[Event.NAME] == null)
-                    throw new ParseException(prefix + Event.NAME);
+                    throw new BadRequestException(prefix + Event.NAME);
             }
 
             /*
@@ -86,13 +91,13 @@ namespace SipSharp.Messages
                     // refresh its ok not to have a contact header. Otherwise
                     // contact header is mandatory.
                     if (To.Parameters["tag"] == null)
-                        throw new ParseException(prefix + ContactHeader.NAME);
+                        throw new BadRequestException(prefix + ContactHeader.NAME);
                 }
 
                 else if (string.Compare(Uri.Scheme, "sips", true) == 0)
                 {
                     if (string.Compare(Contact.Uri.Scheme, "sips", false) != 0)
-                        throw new ParseException("Scheme for contact should be sips:" + Contact.Uri);
+                        throw new BadRequestException("Scheme for contact should be sips:" + Contact.Uri);
                 }
             }
 
@@ -102,14 +107,14 @@ namespace SipSharp.Messages
             if (Contact == null
                 && (Method == SipMethod.INVITE
                     || Method == SipMethod.REFER || Method == SipMethod.SUBSCRIBE))
-                throw new ParseException("Contact Header is Mandatory for a SIP INVITE");
+                throw new BadRequestException("Contact Header is Mandatory for a SIP INVITE");
 
 
             if (Method != null
                 && CSeq.Method != null
                 && Method != CSeq.Method)
             {
-                throw new ParseException("CSEQ method mismatch with  Request-Line ");
+                throw new BadRequestException("CSEQ method mismatch with  Request-Line ");
             }
         }
 

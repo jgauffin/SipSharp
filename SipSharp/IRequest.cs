@@ -62,6 +62,9 @@ namespace SipSharp
         /// topologies are known by the UA.
         /// </para>
         /// </remarks>
+        /// <value>
+        /// Not specified = -1
+        /// </value>
         int MaxForwards { get; set; }
 
         /// <summary>

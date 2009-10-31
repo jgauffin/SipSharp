@@ -9,6 +9,12 @@ namespace SipSharp
     public interface IMessage
     {
         /// <summary>
+        /// Validate all mandatory headers.
+        /// </summary>
+        /// <exception cref="BadRequestException">A header is invalid/missing.</exception>
+        void Validate();
+
+        /// <summary>
         /// Gets body stream.
         /// </summary>
         Stream Body { get; }

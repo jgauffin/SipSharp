@@ -13,9 +13,9 @@ namespace SipSharp.Servers.Registrar
     {
         private NonceManager _nonce = new NonceManager();
 
-        public WwwAuthenticate CreateWwwHeader(string realm, SipUri domain)
+        public Authenticate CreateWwwHeader(string realm, SipUri domain)
         {
-            WwwAuthenticate header = new WwwAuthenticate
+            Authenticate header = new Authenticate(Authenticate.WWW_NAME)
                                          {
                                              Algortihm = "MD5",
                                              Domain = domain,
