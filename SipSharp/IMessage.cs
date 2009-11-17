@@ -47,6 +47,11 @@ namespace SipSharp
         /// implementation that supports TLS MUST support the SIPS URI scheme. The To
         /// header field allows for a display name.
         /// </para>
+        /// <para>
+        /// A request outside of a dialog MUST NOT contain a To tag; the tag in
+        /// the To field of a request identifies the peer of the dialog.  Since
+        /// no dialog is established, no tag is present.
+        /// </para>
         /// </remarks>
         /// 
         Contact To { get; set; }

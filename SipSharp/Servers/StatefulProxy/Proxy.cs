@@ -52,7 +52,128 @@ namespace SipSharp.Servers.StatefulProxy
             if (!ValidateRequest(e.Request, e.Transaction))
                 return;
 
+            if (!PreProcessRoutes(e.Request, e.Transaction))
+                return;
 
+            // RFC3261 section 16.5
+            if (!DetermineRequestTargets(e.Request, e.Transaction))
+                return;
+        }
+
+        private bool DetermineRequestTargets(IRequest request, IServerTransaction transaction)
+        {
+            List<SipUri> targets = new List<SipUri>();
+
+            //   Next, the proxy calculates the target(s) of the request.  The set of
+            //   targets will either be predetermined by the contents of the request
+            //   or will be obtained from an abstract location service.  Each target
+            //   in the set is represented as a URI.
+            //
+            //   If the Request-URI of the request contains an maddr parameter, the
+            //   Request-URI MUST be placed into the target set as the only target
+            //   URI, and the proxy MUST proceed to Section 16.6.
+            //
+            //   If the domain of the Request-URI indicates a domain this element is
+            //   not responsible for, the Request-URI MUST be placed into the target
+            //   set as the only target, and the element MUST proceed to the task of
+            //   Request Forwarding (Section 16.6).
+            //
+            //      There are many circumstances in which a proxy might receive a
+            //      request for a domain it is not responsible for.  A firewall proxy
+            //      handling outgoing calls (the way HTTP proxies handle outgoing
+            //      requests) is an example of where this is likely to occur.
+            //
+            if (LookupTargets(request, transaction, targets))
+            {
+                
+            }
+
+            //   If the target set for the request has not been predetermined as
+            //   described above, this implies that the element is responsible for the
+            //   domain in the Request-URI, and the element MAY use whatever mechanism
+            //   it desires to determine where to send the request.  Any of these
+            //   mechanisms can be modeled as accessing an abstract Location Service.
+            //   This may consist of obtaining information from a location service
+            //   created by a SIP Registrar, reading a database, consulting a presence
+            //   server, utilizing other protocols, or simply performing an
+            //   algorithmic substitution on the Request-URI.  When accessing the
+            //   location service constructed by a registrar, the Request-URI MUST
+            //   first be canonicalized as described in Section 10.3 before being used
+            //   as an index.  The output of these mechanisms is used to construct the
+            //   target set.
+            //
+            //   If the Request-URI does not provide sufficient information for the
+            //   proxy to determine the target set, it SHOULD return a 485 (Ambiguous)
+            //   response.  This response SHOULD contain a Contact header field
+            //   containing URIs of new addresses to be tried.  For example, an INVITE
+            //   to sip:John.Smith@company.com may be ambiguous at a proxy whose
+            //   location service has multiple John Smiths listed.  See Section
+            //   21.4.23 for details.
+            //
+            //   Any information in or about the request or the current environment of
+            //   the element MAY be used in the construction of the target set.  For
+            //   instance, different sets may be constructed depending on contents or
+            //   the presence of header fields and bodies, the time of day of the
+            //   request's arrival, the interface on which the request arrived,
+            //   failure of previous requests, or even the element's current level of
+            //   utilization.
+            //
+            //   As potential targets are located through these services, their URIs
+            //   are added to the target set.  Targets can only be placed in the
+            //   target set once.  If a target URI is already present in the set
+            //   (based on the definition of equality for the URI type), it MUST NOT
+            //   be added again.
+            //
+            //   A proxy MUST NOT add additional targets to the target set if the
+            //   Request-URI of the original request does not indicate a resource this
+            //   proxy is responsible for.
+            //
+            //      A proxy can only change the Request-URI of a request during
+            //      forwarding if it is responsible for that URI.  If the proxy is not
+            //      responsible for that URI, it will not recurse on 3xx or 416
+            //      responses as described below.
+            //
+            //   If the Request-URI of the original request indicates a resource this
+            //   proxy is responsible for, the proxy MAY continue to add targets to
+            //   the set after beginning Request Forwarding.  It MAY use any
+            //   information obtained during that processing to determine new targets.
+            //   For instance, a proxy may choose to incorporate contacts obtained in
+            //   a redirect response (3xx) into the target set.  If a proxy uses a
+            //   dynamic source of information while building the target set (for
+            //   instance, if it consults a SIP Registrar), it SHOULD monitor that
+            //   source for the duration of processing the request.  New locations
+            //   SHOULD be added to the target set as they become available.  As
+            //   above, any given URI MUST NOT be added to the set more than once.
+            //
+            //      Allowing a URI to be added to the set only once reduces
+            //      unnecessary network traffic, and in the case of incorporating
+            //      contacts from redirect requests prevents infinite recursion.
+            //
+            //   For example, a trivial location service is a "no-op", where the
+            //   target URI is equal to the incoming request URI.  The request is sent
+            //   to a specific next hop proxy for further processing.  During request
+            //   forwarding of Section 16.6, Item 6, the identity of that next hop,
+            //   expressed as a SIP or SIPS URI, is inserted as the top-most Route
+            //   header field value into the request.
+            //
+            //   If the Request-URI indicates a resource at this proxy that does not
+            //   exist, the proxy MUST return a 404 (Not Found) response.
+            //
+            //   If the target set remains empty after applying all of the above, the
+            //   proxy MUST return an error response, which SHOULD be the 480
+            //   (Temporarily Unavailable) response.
+            return true;
+        }
+
+        /// <summary>
+        /// Check if the request belongs to us.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="transaction"></param>
+        /// <param name="targets"></param>
+        /// <returns></returns>
+        private bool LookupTargets(IRequest request, IServerTransaction transaction, ICollection<SipUri> targets)
+        {
         }
 
         /// <summary>
@@ -199,32 +320,65 @@ namespace SipSharp.Servers.StatefulProxy
             //   value from the Route header field, and remove that value from the
             //   Route header field.  The proxy MUST then proceed as if it received
             //   this modified request.
-            Route route = request.Headers["route"]
-            if (IsRecordRoute(request.Uri) && request.Route.GetAllValues().Length > 0)
+
+            //      This will only happen when the element sending the request to the
+            //      proxy (which may have been an endpoint) is a strict router.  This
+            //      rewrite on receive is necessary to enable backwards compatibility
+            //      with those elements.  It also allows elements following this
+            //      specification to preserve the Request-URI through strict-routing
+            //      proxies (see Section 12.2.1.1).
+            //
+            //      This requirement does not obligate a proxy to keep state in order
+            //      to detect URIs it previously placed in Record-Route header fields.
+            //      Instead, a proxy need only place enough information in those URIs
+            //      to recognize them as values it provided when they later appear.
+            //
+            Route route = request.Headers["route"] as Route;
+            if (route == null || route.Items.Count == 0)
+                return true;
+
+            foreach (var entry in route.Items)
             {
-                request.RequestLine.Uri = request.Route.GetAllValues()[request.Route.GetAllValues().Length - 1].Address.Uri;
-                SIP_t_AddressParam[] routes = request.Route.GetAllValues();
-                route = (SIP_Uri)routes[routes.Length - 1].Address.Uri;
-                request.Route.RemoveLastValue();
+                if (entry.Uri != request.Uri)
+                    continue;
+
+                _logger.Warning("Replacing request URI with " + route.Items[route.Items.Count - 1].Uri);
+                request.Uri = route.Items[route.Items.Count - 1].Uri;
+                route.Items.RemoveAt(route.Items.Count - 1);
+                break;
             }
 
-            // Check if Route header field indicates this proxy.
-            if (request.Route.GetAllValues().Length > 0)
-            {
-                route = (SIP_Uri)request.Route.GetTopMostValue().Address.Uri;
 
-                // We consider loose-route always ours, because otherwise this message never reach here.
-                if (route.Param_Lr)
-                {
-                    request.Route.RemoveTopMostValue();
-                }
-                // It's our route, remove it.
-                else if (IsLocalRoute(route))
-                {
-                    request.Route.RemoveTopMostValue();
-                }
-            }            
+            //   If the Request-URI contains a maddr parameter, the proxy MUST check
+            //   to see if its value is in the set of addresses or domains the proxy
+            //   is configured to be responsible for.  If the Request-URI has a maddr
+            //   parameter with a value the proxy is responsible for, and the request
+            //   was received using the port and transport indicated (explicitly or by
+            //   default) in the Request-URI, the proxy MUST strip the maddr and any
+            //   non-default port or transport parameter and continue processing as if
+            //   those values had not been present in the request.
+            //
+            //      A request may arrive with a maddr matching the proxy, but on a
+            //      port or transport different from that indicated in the URI.  Such
+            //      a request needs to be forwarded to the proxy using the indicated
+            //      port and transport.
+            //
+
+
+            //   If the first value in the Route header field indicates this proxy,
+            //   the proxy MUST remove that value from the request.
+            // jg: Remove if route is loose, since they always only reach specified target.
+            if (route.Items[0].IsLoose || IsOurDomain(route.Items[0].Uri))
+                route.Items.RemoveAt(0);
+
+            return true;
         }
+
+        protected virtual bool IsOurDomain(SipUri uri)
+        {
+            return false;
+        }
+
 
         private bool CheckAuthorization(IRequest request, IServerTransaction transaction)
         {
@@ -263,7 +417,7 @@ namespace SipSharp.Servers.StatefulProxy
         /// <exception cref="ForbiddenException">User may not try to authenticate anymore.</exception>
         protected virtual bool Authenticate(IRequest request, Authorization authorization)
         {
-            
+            return false;
         }
 
         /// <summary>

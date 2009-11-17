@@ -52,6 +52,7 @@
     <Compile Include="Class1.cs" />
     <Compile Include="Messages\Headers\Parsers\AuthorizationParserTest.cs" />
     <Compile Include="Messages\Headers\Parsers\ContactParserTest.cs" />
+    <Compile Include="Messages\Headers\Parsers\RouteHeaderTest.cs" />
     <Compile Include="Messages\MessageFactoryTest.cs" />
     <Compile Include="Messages\Messages.cs" />
     <Compile Include="Messages\UriParserTest.cs" />

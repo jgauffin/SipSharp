@@ -1,19 +1,27 @@
 ﻿using System;
 using SipSharp.Messages.Headers;
-using SipSharp.Tools;
 using UriParser=SipSharp.Messages.Headers.Parsers.UriParser;
 
 namespace SipSharp.Messages
 {
     internal class Request : Message, IRequest
     {
-        public Request(string method, string path, string version)
+        public Request(string method, string uri, string version)
         {
             Method = method;
-            Uri = UriParser.Parse(new StringReader(path));
+            Uri = UriParser.Parse(uri);
             SipVersion = version;
             MaxForwards = -1;
         }
+
+        public Request(string method, SipUri uri, string version)
+        {
+            Method = method;
+            Uri = uri;
+            SipVersion = version;
+            MaxForwards = -1;
+        }
+
 
         /// <summary>
         /// Validate all mandatory headers.

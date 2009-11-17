@@ -16,5 +16,10 @@ namespace SipSharp.Messages
         public const string INVITE = "INVITE";
         public const string REFER = "REFER";
         public const string ACK = "ACK";
+
+        public const string REGISTER = "REGISTER";
+
+
+        
     }
 }
