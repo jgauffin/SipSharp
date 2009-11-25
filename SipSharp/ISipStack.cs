@@ -19,6 +19,7 @@ namespace SipSharp
 
         void RegisterMethod(string methodName, EventHandler<StackRequestEventArgs> handler);
         IServerTransaction CreateServerTransaction(IRequest request);
+        IClientTransaction CreateClientTransaction(IRequest request);
     }
 
     public class StackRequestEventArgs : EventArgs

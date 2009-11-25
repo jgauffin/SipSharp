@@ -1,4 +1,6 @@
-﻿namespace SipSharp
+﻿using System;
+
+namespace SipSharp
 {
     /// <summary>
     /// 1xx Provisional responses, also known as informational responses,
@@ -568,6 +570,18 @@
             int icode = (int)msg.StatusCode;
             return icode >= 300 && icode < 700;
 
+        }
+
+        public static bool IsRedirected(IResponse response)
+        {
+            int icode = (int)response.StatusCode;
+            return icode >= 300 && icode < 400;
+        }
+
+        public static bool Is4xx(IResponse response)
+        {
+            int icode = (int)response.StatusCode;
+            return icode >= 400 && icode < 500;
         }
     }
 }

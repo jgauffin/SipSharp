@@ -67,6 +67,8 @@
   <ItemGroup>
     <Compile Include="BackToBackUserAgent.cs" />
     <Compile Include="BadRequestException.cs" />
+    <Compile Include="Client\UserAgentClient.cs" />
+    <Compile Include="Client\UserAgentServer.cs" />
     <Compile Include="Contact.cs" />
     <Compile Include="ForbiddenException.cs" />
     <Compile Include="Hop.cs" />
@@ -188,9 +190,11 @@
     <Compile Include="Transports\TcpTransport.cs" />
     <Compile Include="Transports\TransportLayer.cs" />
     <Compile Include="Transports\UdpTransport.cs" />
+    <Compile Include="Client\UserAgent.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Channels\" />
+    <Folder Include="Dns\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

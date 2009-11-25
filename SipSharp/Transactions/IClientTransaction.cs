@@ -2,12 +2,21 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
 
 namespace SipSharp.Transactions
 {
+    /// <summary>
+    /// Used to make sure that requests will receive respones
+    /// properly.
+    /// </summary>
 	public interface IClientTransaction : ITransaction
 	{
+        /// <summary>
+        /// Gets request that the transaction is for.
+        /// </summary>
+        IRequest Request { get; }
+
+
         /// <summary>
         /// Process a response to the request.
         /// </summary>
@@ -16,6 +25,20 @@ namespace SipSharp.Transactions
         /// <returns><c>true</c> if response was handled; otherwise <c>false</c>.</returns>
         bool Process(IResponse response, EndPoint endPoint);
 
+        /// <summary>
+        /// Invoked if transportation failed.
+        /// </summary>
+        event EventHandler TransportFailed;
+
+        /// <summary>
+        /// A timeout have occurred.
+        /// </summary>
+        event EventHandler TimeoutTriggered;
+
+        /// <summary>
+        /// A response have been received.
+        /// </summary>
+        event EventHandler<ResponseEventArgs> ResponseReceived;
 
         /// <summary>
         /// We like to reuse transaction objects. Remove all references

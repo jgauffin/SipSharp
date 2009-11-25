@@ -19,7 +19,7 @@ namespace SipSharp
     /// are in addition to the mandatory request line, which contains the method,
     /// Request-URI, and SIP version.
     /// </remarks>
-    public interface IRequest : IMessage
+    public interface IRequest : IMessage, ICloneable
     {
         /// <summary>
         /// Gets or sets requested URI.
@@ -96,6 +96,5 @@ namespace SipSharp
     	/// <returns>A Created response.</returns>
     	/// <exception cref="InvalidOperationException">Provisional responses is only valid for INVITE method.</exception>
     	IResponse CreateResponse(StatusCode code, string reason);
-
     }
 }

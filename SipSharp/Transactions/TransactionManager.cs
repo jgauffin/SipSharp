@@ -143,8 +143,5 @@ namespace SipSharp.Transactions
             transaction.Process(request);
             return true;
         }
-
-        public event EventHandler<TransactionEventArgs> ClientTransactionCreated = delegate { };
-        public event EventHandler<TransactionEventArgs> ServerTransactionCreated = delegate { };
     }
 }

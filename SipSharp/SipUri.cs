@@ -31,6 +31,12 @@ namespace SipSharp
             _parameters = new KeyValueCollection();
         }
 
+        public SipUri(string domain)
+        {
+            Domain = domain;
+            Parameters = new KeyValueCollection();
+        }
+
         public SipUri(string userName, string domain)
         {
             UserName = userName;
