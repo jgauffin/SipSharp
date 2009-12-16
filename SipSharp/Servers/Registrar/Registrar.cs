@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using SipSharp.Logging;
+using SipSharp.Messages;
 using SipSharp.Messages.Headers;
 using SipSharp.Transactions;
 using Authorization=SipSharp.Messages.Headers.Authorization;
@@ -10,7 +11,7 @@ namespace SipSharp.Servers.Registrar
 {
     public class Registrar
     {
-        private readonly Authenticator _authenticator = new Authenticator();
+        private readonly Authenticator _authenticator;
         private readonly ILogger _logger = LogFactory.CreateLogger(typeof (Registrar));
         private readonly IRegistrationRepository _repository;
         private readonly ISipStack _stack;
@@ -18,73 +19,21 @@ namespace SipSharp.Servers.Registrar
         public Registrar(ISipStack stack, IRegistrationRepository repository)
         {
             _stack = stack;
-            stack.RegisterMethod("REGISTER", OnRegister);
+            _stack.RequestReceived += OnRequest;
             _repository = repository;
+            _authenticator = stack.Authenticator;
             MinExpires = 600;
         }
 
-        /// <summary>
-        /// Gets or sets domain that the users have to authenticate against.
-        /// </summary>
-        /// <example>
-        /// sip:biloxi.com
-        /// </example>
-        public SipUri Domain { get; set; }
-
-        /// <summary>
-        /// Gets or sets minimum time in seconds before user expires.
-        /// </summary>
-        /// <remarks>
-        /// This is the default and minimum expires time. It will be used
-        /// if the time suggested by client is lower, or if the client
-        /// haven't suggested a time at all.
-        /// </remarks>
-        public int MinExpires { get; set; }
-
-        /// <summary>
-        /// Gets or sets more like a show domain.
-        /// </summary>
-        /// <example>
-        /// biloxi.com
-        /// </example>
-        public string Realm { get; set; }
-
-        protected virtual IHeader CreateAuthenticateHeader()
+        private void OnRequest(object sender, RequestEventArgs e)
         {
-            return new Authorization(Authorization.NAME);
-        }
+            if (e.Request.Method != SipMethod.REGISTER)
+                return;
 
-
-        protected IRegistrarUser CreateUser()
-        {
-            return new RegistrarUser();
-        }
-
-        protected virtual void ForwardRequest(IRequest request)
-        {
-        }
-
-        protected virtual bool IsOurDomain(SipUri uri)
-        {
-            return true;
-        }
-
-        /// <summary>
-        /// Check if we support everything in the Require header.
-        /// </summary>
-        /// <param name="request">Register request.</param>
-        /// <returns><c>true</c> if supported; otherwise <c>false</c>.</returns>
-        protected virtual bool IsRequireOk(IRequest request)
-        {
-            return true;
-        }
-
-        private void OnRegister(object source, StackRequestEventArgs args)
-        {
-            if (args.Request.To.Uri.Scheme != "sip" && args.Request.To.Uri.Scheme != "sips")
+            if (e.Request.To.Uri.Scheme != "sip" && e.Request.To.Uri.Scheme != "sips")
             {
-                IServerTransaction trans = _stack.CreateServerTransaction(args.Request);
-                IResponse resp = args.Request.CreateResponse(StatusCode.BadRequest,
+                IServerTransaction trans = _stack.CreateServerTransaction(e.Request);
+                IResponse resp = e.Request.CreateResponse(StatusCode.BadRequest,
                                                              "Only SIP and SIPS protocols are allowed.");
                 resp.Headers["Date"] = new StringHeader("Date", DateTime.Now.ToString("R"));
                 trans.Send(resp);
@@ -100,9 +49,9 @@ namespace SipSharp.Servers.Registrar
                  domain, following the general behavior for proxying messages
                  described in Section 16.
             */
-            if (!IsOurDomain(args.Request.Uri))
+            if (!IsOurDomain(e.Request.Uri))
             {
-                ForwardRequest(args.Request);
+                ForwardRequest(e.Request);
                 return;
             }
 
@@ -111,12 +60,12 @@ namespace SipSharp.Servers.Registrar
                  extensions, the registrar MUST process the Require header field
                  values as described for UASs in Section 8.2.2.
             */
-            if (IsRequireOk(args.Request))
+            if (IsRequireOk(e.Request))
             {
             }
 
-            IServerTransaction transaction = _stack.CreateServerTransaction(args.Request);
-            IResponse response = args.Request.CreateResponse(StatusCode.OK, "You are REGISTERED! :)");
+            IServerTransaction transaction = _stack.CreateServerTransaction(e.Request);
+            IResponse response = e.Request.CreateResponse(StatusCode.OK, "You are REGISTERED! :)");
             response.Headers["Date"] = new StringHeader("Date", DateTime.Now.ToString("R"));
 
             /*
@@ -127,7 +76,7 @@ namespace SipSharp.Servers.Registrar
                  mechanism is available, the registrar MAY take the From address
                  as the asserted identity of the originator of the request.
             */
-            if (args.Request.Headers[Authorization.LNAME] == null)
+            if (e.Request.Headers[Authorization.LNAME] == null)
             {
                 response.StatusCode = StatusCode.Unauthorized;
                 response.ReasonPhrase = "You must authorize";
@@ -163,10 +112,10 @@ namespace SipSharp.Servers.Registrar
                  any escaped characters MUST be converted to their unescaped
                  form.  The result serves as an index into the list of bindings.
             */
-            if (!_repository.Exists(args.Request.To, args.Request.Uri))
+            if (!_repository.Exists(e.Request.To, e.Request.Uri))
             {
                 response.StatusCode = StatusCode.NotFound;
-                response.ReasonPhrase = "User was not found in '" + args.Request.Uri + "'.";
+                response.ReasonPhrase = "User was not found in '" + e.Request.Uri + "'.";
                 transaction.Send(response);
                 return;
             }
@@ -248,14 +197,14 @@ namespace SipSharp.Servers.Registrar
                  request MUST fail with a 500 (Server Error) response and all
                  tentative binding updates MUST be removed.
             */
-            Registration registration = _repository.Get(args.Request.To.Uri);
+            Registration registration = _repository.Get(e.Request.To.Uri);
             if (registration == null)
             {
-                _logger.Debug("Creating new registration for: " + args.Request.To);
-                registration = _repository.Create(args.Request.To.Uri);
+                _logger.Debug("Creating new registration for: " + e.Request.To);
+                registration = _repository.Create(e.Request.To.Uri);
             }
 
-            var contactHeader = args.Request.Headers[ContactHeader.LNAME] as ContactHeader;
+            var contactHeader = e.Request.Headers[ContactHeader.LNAME] as ContactHeader;
             if (contactHeader == null)
             {
                 _logger.Warning("Contact header was not specified.");
@@ -290,8 +239,8 @@ namespace SipSharp.Servers.Registrar
                     }
                 }
                 RegistrationContact oldContact = registration.Find(contact.Uri);
-                if (oldContact != null && oldContact.CallId == args.Request.CallId
-                    && args.Request.CSeq.SeqNr < oldContact.SequenceNumber)
+                if (oldContact != null && oldContact.CallId == e.Request.CallId
+                    && e.Request.CSeq.Number < oldContact.SequenceNumber)
                 {
                     response.StatusCode = StatusCode.BadRequest;
                     response.ReasonPhrase = "CSeq value in contact is out of order.";
@@ -301,11 +250,11 @@ namespace SipSharp.Servers.Registrar
                 // Add new contact
                 newContacts.Add(new RegistrationContact
                                     {
-                                        CallId = args.Request.CallId,
+                                        CallId = e.Request.CallId,
                                         Expires = expires,
                                         ExpiresAt = DateTime.Now.AddSeconds(expires),
-                                        Quality = args.Request.Contact.Quality,
-                                        SequenceNumber = args.Request.CSeq.SeqNr,
+                                        Quality = e.Request.Contact.Quality,
+                                        SequenceNumber = e.Request.CSeq.Number,
                                         UpdatedAt = DateTime.Now,
                                         Uri = contact.Uri
                                     });
@@ -335,9 +284,70 @@ namespace SipSharp.Servers.Registrar
             }
             transaction.Send(response);
         }
+
+        /// <summary>
+        /// Gets or sets domain that the users have to authenticate against.
+        /// </summary>
+        /// <example>
+        /// sip:biloxi.com
+        /// </example>
+        public SipUri Domain { get; set; }
+
+        /// <summary>
+        /// Gets or sets minimum time in seconds before user expires.
+        /// </summary>
+        /// <remarks>
+        /// This is the default and minimum expires time. It will be used
+        /// if the time suggested by client is lower, or if the client
+        /// haven't suggested a time at all.
+        /// </remarks>
+        public int MinExpires { get; set; }
+
+        /// <summary>
+        /// Gets or sets more like a show domain.
+        /// </summary>
+        /// <example>
+        /// biloxi.com
+        /// </example>
+        public string Realm { get; set; }
+
+        protected virtual IHeader CreateAuthenticateHeader()
+        {
+            return new Authorization(Authorization.NAME);
+        }
+
+
+        protected IRegistrarUser CreateUser()
+        {
+            return new RegistrarUser();
+        }
+
+        protected virtual void ForwardRequest(IRequest request)
+        {
+        }
+
+        protected virtual bool IsOurDomain(SipUri uri)
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Check if we support everything in the Require header.
+        /// </summary>
+        /// <param name="request">Register request.</param>
+        /// <returns><c>true</c> if supported; otherwise <c>false</c>.</returns>
+        protected virtual bool IsRequireOk(IRequest request)
+        {
+            return true;
+        }
+
+        public Registration Get(Contact contact)
+        {
+            return _repository.Get(contact.Uri);
+        }
     }
 
-    public interface RegistrarDataSource
+    public interface IRegistrarDataSource
     {
         bool Validate(Contact contact);
     }

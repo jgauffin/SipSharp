@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Net;
 using System.Threading;
-using SipSharp.Dialogs;
 using SipSharp.Messages;
 using SipSharp.Transports;
 
@@ -19,7 +18,6 @@ namespace SipSharp.Transactions
 
         private readonly ITransportLayer _transport;
         private EndPoint _endPoint;
-        private IRequest _request;
         private readonly Timer _timer1;
 
         private int _timerEValue = TransactionManager.T1*2;
@@ -87,8 +85,8 @@ namespace SipSharp.Transactions
                 //      different transaction, but shares the same value of the branch
                 //      parameter.
                 var response = (IResponse) obj;
-                return response.Via.First.Branch == _request.Via.First.Branch
-                       && response.CSeq.Method == _request.CSeq.Method;
+                return response.Via.First.Branch == Request.Via.First.Branch
+                       && response.CSeq.Method == Request.CSeq.Method;
             }
             return base.Equals(obj);
         }
@@ -112,7 +110,7 @@ namespace SipSharp.Transactions
                  */
             _timerEValue = Math.Min(_timerEValue*2, TransactionManager.T2);
             _timerE.Change(_timerEValue, Timeout.Infinite);
-            _transport.Send(_request);
+            _transport.Send(Request);
         }
 
         private void OnTerminate(object state)
@@ -136,8 +134,13 @@ namespace SipSharp.Transactions
                  * timeout, and then it SHOULD enter the "Terminated" state                
                  */
             if (State == TransactionState.Trying)
-                TimeoutTriggered(this, EventArgs.Empty);
+                TimedOut(this, EventArgs.Empty);
         }
+
+        /// <summary>
+        /// Gets request that the transaction is for.
+        /// </summary>
+        public IRequest Request { get; private set; }
 
         public bool Process(IResponse response, EndPoint endPoint)
         {
@@ -190,7 +193,7 @@ namespace SipSharp.Transactions
         /// <summary>
         /// A timeout have occurred.
         /// </summary>
-        public event EventHandler TimeoutTriggered = delegate { };
+        public event EventHandler TimedOut = delegate{};
 
         /// <summary>
         /// A response have been received.
@@ -216,7 +219,7 @@ namespace SipSharp.Transactions
             _timerF.Change(Timeout.Infinite, Timeout.Infinite);
             _timerK.Change(Timeout.Infinite, Timeout.Infinite);
             _endPoint = null;
-            _request = null;
+            Request = null;
         }
 
         /// <summary>
@@ -230,13 +233,13 @@ namespace SipSharp.Transactions
         public string Id
         {
             get {
-                string token = _request.Via.First.Branch;
-                token += _request.Via.First.SentBy;
+                string token = Request.Via.First.Branch;
+                token += Request.Via.First.SentBy;
 
-                if (_request.Method == SipMethod.ACK)
+                if (Request.Method == SipMethod.ACK)
                     token += SipMethod.INVITE;
                 else
-                    token += _request.Method;
+                    token += Request.Method;
                 return token;
             }
         }

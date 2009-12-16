@@ -16,5 +16,10 @@
         /// </summary>
         /// <param name="request"></param>
         void Process(IRequest request);
+
+        /// <summary>
+        /// Gets request that created the transaction.
+        /// </summary>
+        IRequest Request { get; }
     }
 }

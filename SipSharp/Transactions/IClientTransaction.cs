@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 
 namespace SipSharp.Transactions
@@ -33,7 +31,7 @@ namespace SipSharp.Transactions
         /// <summary>
         /// A timeout have occurred.
         /// </summary>
-        event EventHandler TimeoutTriggered;
+        event EventHandler TimedOut;
 
         /// <summary>
         /// A response have been received.

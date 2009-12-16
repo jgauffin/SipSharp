@@ -67,9 +67,24 @@
   <ItemGroup>
     <Compile Include="BackToBackUserAgent.cs" />
     <Compile Include="BadRequestException.cs" />
+    <Compile Include="Calls\Call.cs" />
+    <Compile Include="Calls\CallContext.cs" />
+    <Compile Include="Calls\CallManager.cs" />
+    <Compile Include="Calls\CallOriginHelper.cs" />
+    <Compile Include="Calls\CallOrigins.cs" />
+    <Compile Include="Calls\CallReason.cs" />
+    <Compile Include="Calls\CallState.cs" />
+    <Compile Include="Calls\IPartyAddress.cs" />
+    <Compile Include="Calls\Party.cs" />
+    <Compile Include="Calls\PhoneNumber.cs" />
+    <Compile Include="Client\CallManager.cs" />
+    <Compile Include="Client\MethodHandlers.cs" />
+    <Compile Include="Client\SipClient.cs" />
+    <Compile Include="Client\SoftPhone.cs" />
     <Compile Include="Client\UserAgentClient.cs" />
     <Compile Include="Client\UserAgentServer.cs" />
     <Compile Include="Contact.cs" />
+    <Compile Include="Dialogs\Dialog.cs" />
     <Compile Include="ForbiddenException.cs" />
     <Compile Include="Hop.cs" />
     <Compile Include="ISipStack.cs" />
@@ -138,10 +153,11 @@
     <Compile Include="Messages\Request.cs" />
     <Compile Include="Messages\Response.cs" />
     <Compile Include="SDP\SessionDescriptionProtocol.cs" />
+    <Compile Include="Servers\Authenticators\IAuthenticator.cs" />
     <Compile Include="Servers\IUser.cs" />
     <Compile Include="Servers\IUserContact.cs" />
     <Compile Include="Servers\IUserRepository.cs" />
-    <Compile Include="Servers\Registrar\Authenticator.cs" />
+    <Compile Include="Servers\Authenticator.cs" />
     <Compile Include="Servers\Registrar\IRegistrationRepository.cs" />
     <Compile Include="Servers\Registrar\Registrar.cs" />
     <Compile Include="Servers\Registrar\NonceManager.cs" />
@@ -150,6 +166,8 @@
     <Compile Include="Servers\Registrar\RegistrationReporsitory.cs" />
     <Compile Include="Servers\Registrar\RegistrationRepository.cs" />
     <Compile Include="Servers\StatefulProxy\Proxy.cs" />
+    <Compile Include="Servers\Switch\DialPlan.cs" />
+    <Compile Include="Servers\Switch\SwitchSharp.cs" />
     <Compile Include="SipException.cs" />
     <Compile Include="SipStack.cs" />
     <Compile Include="SubscriberList.cs" />
@@ -195,6 +213,7 @@
   <ItemGroup>
     <Folder Include="Channels\" />
     <Folder Include="Dns\" />
+    <Folder Include="Servers\Users\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

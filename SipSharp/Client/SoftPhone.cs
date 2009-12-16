@@ -5,8 +5,7 @@ using System.Text;
 
 namespace SipSharp.Client
 {
-    public class UserAgentClient
+    class SoftPhone
     {
-        
     }
 }

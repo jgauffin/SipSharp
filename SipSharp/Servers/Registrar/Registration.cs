@@ -23,6 +23,29 @@ namespace SipSharp.Servers.Registrar
         public string UserName { get; set; }
 
         /// <summary>
+        /// Gets or sets display name.
+        /// </summary>
+        public string RealName { get; set; }
+
+        /// <summary>
+        /// Gets or sets complete phone number, E.164 formatted.
+        /// </summary>
+        /// <remarks>
+        /// Used to locate user on external inbound calls, and as call id number
+        /// when user is making external outbound calls.
+        /// </remarks>
+        public string PhoneNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets extension.
+        /// </summary>
+        /// <remarks>
+        /// Extension is used to locate user on internal calls, and as call id number
+        /// on internal calls.
+        /// </remarks>
+        public string Extension { get; set; }
+
+        /// <summary>
         /// Gets or sets uri
         /// </summary>
         public SipUri Uri { get; set; }

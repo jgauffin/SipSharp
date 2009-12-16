@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace SipSharp.Client
+namespace SipSharp.Servers.Switch
 {
-    public class UserAgentClient
+    public class DialPlan
     {
-        
+
     }
 }

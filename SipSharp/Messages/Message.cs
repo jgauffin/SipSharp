@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using SipSharp.Messages.Headers;
 
 namespace SipSharp.Messages
@@ -13,6 +12,21 @@ namespace SipSharp.Messages
         {
             Body = new MemoryStream();
             Headers = new HeaderKeyValueCollection();
+        }
+
+        protected Message(IMessage message)
+        {
+            Headers = new HeaderKeyValueCollection();
+            foreach (var header in message.Headers)
+                Headers.Add(header.Key, (IHeader)header.Value.Clone());
+            
+            SipVersion = message.SipVersion;
+            To = (Contact)message.To.Clone();
+            From = (Contact)message.From.Clone();
+            CSeq = (CSeq) message.CSeq.Clone();
+            Via = (Via)message.Via.Clone();
+            IsReliableProtocol = message.IsReliableProtocol;
+            ContentLength = message.ContentLength;
         }
 
         /// <summary>

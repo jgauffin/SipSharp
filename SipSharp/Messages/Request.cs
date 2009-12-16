@@ -22,6 +22,13 @@ namespace SipSharp.Messages
             MaxForwards = -1;
         }
 
+        public Request(IRequest request) : base(request)
+        {
+            Uri = request.Uri;
+            Method = request.Method;
+            MaxForwards = request.MaxForwards;
+            Contact = request.Contact;
+        }
 
         /// <summary>
         /// Validate all mandatory headers.
@@ -240,7 +247,7 @@ namespace SipSharp.Messages
             // and provisional (again excepting the 100 (Trying)).  Procedures for
             // the generation of tags are defined in Section 19.3.
             response.To = To;
-            if (To.Parameters["Tag"] != null)
+            if (To.Parameters["tag"] != null)
             {
                 // RFC3261 Section 17.2.1:
                 // The 100 (Trying) response is constructed
@@ -248,7 +255,7 @@ namespace SipSharp.Messages
                 // insertion of tags in the To header field of the response (when none
                 // was present in the request) is downgraded from MAY to SHOULD NOT.
                 if (!StatusCodeHelper.Is1xx(code))
-                    response.To.Parameters.Add("Tag", Guid.NewGuid().ToString().Replace("-", string.Empty));
+                    response.To.Parameters.Add("tag", Guid.NewGuid().ToString().Replace("-", string.Empty));
             }
 
             return response;
@@ -274,6 +281,18 @@ namespace SipSharp.Messages
         public override string ToString()
         {
             return Method + " [" + Uri + "] " + CallId + "/" + CSeq;
+        }
+
+        /// <summary>
+        /// Creates a new object that is a copy of the current instance.
+        /// </summary>
+        /// <returns>
+        /// A new object that is a copy of this instance.
+        /// </returns>
+        /// <filterpriority>2</filterpriority>
+        public object Clone()
+        {
+            return new Request(this);
         }
     }
 }

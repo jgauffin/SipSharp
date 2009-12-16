@@ -105,7 +105,7 @@ namespace SipSharp.Transactions
                               CallId = _request.CallId,
                               From = _request.From,
                               To = response.To,
-                              CSeq = new CSeq(_request.CSeq.SeqNr, "ACK")
+                              CSeq = new CSeq(_request.CSeq.Number, "ACK")
                           };
             ack.Via.AddToTop(_request.Via.First);
             ack.Headers.Add("Route", (IHeader)response.Route.Clone());
@@ -164,6 +164,14 @@ namespace SipSharp.Transactions
 			State = TransactionState.Terminated;
 		}
 
+
+        /// <summary>
+        /// Gets request that the transaction is for.
+        /// </summary>
+        public IRequest Request
+        {
+            get { return _request; }
+        }
 
         public bool Process(IResponse response, EndPoint endPoint)
         {
@@ -230,6 +238,7 @@ namespace SipSharp.Transactions
             return true;
         }
 
+        public event EventHandler TransportFailed = delegate{};
 
         private void SendAck(IResponse response)
         {

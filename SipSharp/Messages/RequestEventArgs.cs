@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 
-namespace SipSharp
+namespace SipSharp.Messages
 {
     /// <summary>
     /// A request have been received.

@@ -1,23 +1,41 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Linq;
-using System.Text;
 
 namespace SipSharp
 {
-    public class Contact : IEquatable<Contact>
+    public class Contact : IEquatable<Contact>, ICloneable
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Contact"/> class.
+        /// </summary>
+        /// <param name="parameters">The parameters.</param>
         public Contact(IKeyValueCollection parameters)
         {
             Parameters = parameters;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Contact"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="uri">The URI.</param>
         public Contact(string name, SipUri uri)
         {
             Name = name;
             Uri = uri;
             Parameters = new KeyValueCollection();
+        }
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Contact"/> class.
+        /// </summary>
+        /// <param name="value">contact to deep clone.</param>
+        public Contact(Contact value)
+        {
+            Name = value.Name;
+            Uri = value.Uri;
+            Parameters = new KeyValueCollection();
+            foreach (var parameter in value.Parameters)
+                Parameters.Add(parameter.Key, parameter.Value);
         }
 
         /// <summary>
@@ -34,10 +52,19 @@ namespace SipSharp
         /// Gets all contact parameters.
         /// </summary>
         /// <remarks>
+        /// <para>
         /// Should not get confused with the URI parameters.
+        /// </para>
+        /// <para>
+        /// All parameters are automatically converted to lower case.
+        /// </para>
         /// </remarks>
         public IKeyValueCollection Parameters { get; private set; }
 
+        /// <summary>
+        /// Gets the quality.
+        /// </summary>
+        /// <value>The quality.</value>
         public double Quality
         {
             get
@@ -55,7 +82,7 @@ namespace SipSharp
         /// <returns><c>true</c> if found; otherwise <c>false</c>.</returns>
         public bool HasParameter(string name)
         {
-            return Parameters.Contains(name);
+            return Parameters.Contains(name.ToLower());
         }
 
 
@@ -72,6 +99,12 @@ namespace SipSharp
             return other.Uri.Equals(Uri) && Name.Equals(other.Name, StringComparison.OrdinalIgnoreCase);
         }
 
+        /// <summary>
+        /// Returns a <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+        /// </returns>
         public override string ToString()
         {
             string value;
@@ -99,6 +132,18 @@ namespace SipSharp
                 return false;
 
             return other.Uri == Uri && Name == other.Name;
+        }
+
+        /// <summary>
+        /// Creates a new object that is a copy of the current instance.
+        /// </summary>
+        /// <returns>
+        /// A new object that is a copy of this instance.
+        /// </returns>
+        /// <filterpriority>2</filterpriority>
+        public object Clone()
+        {
+            return new Contact(this);
         }
     }
 }

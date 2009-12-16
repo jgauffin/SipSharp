@@ -15,6 +15,9 @@ namespace SipSharp.Servers
         /// </summary>
         string CSeq { get; set; }
 
-
+        /// <summary>
+        /// Gets or sets E.164 formatted phone number.
+        /// </summary>
+        string PhoneNumber { get; set; }
     }
 }

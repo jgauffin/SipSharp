@@ -44,10 +44,10 @@ namespace SipSharp.Servers.StatefulProxy
         public Proxy(ISipStack stack)
         {
             _stack = stack;
-            _stack.RegisterMethod(null, OnRequest);
+            _stack.RequestReceived += OnRequest;
         }
 
-        private void OnRequest(object sender, StackRequestEventArgs e)
+        private void OnRequest(object sender, RequestEventArgs e)
         {
             if (!ValidateRequest(e.Request, e.Transaction))
                 return;
@@ -174,6 +174,7 @@ namespace SipSharp.Servers.StatefulProxy
         /// <returns></returns>
         private bool LookupTargets(IRequest request, IServerTransaction transaction, ICollection<SipUri> targets)
         {
+            return false;
         }
 
         /// <summary>
