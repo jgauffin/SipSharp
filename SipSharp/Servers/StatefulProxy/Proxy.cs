@@ -207,7 +207,7 @@ namespace SipSharp.Servers.StatefulProxy
             catch (BadRequestException err)
             {
                 IResponse response = request.CreateResponse(StatusCode.BadRequest, err.Message);
-                _stack.Send(response);
+                transaction.Send(response);
                 return false;
             }
 
@@ -221,7 +221,7 @@ namespace SipSharp.Servers.StatefulProxy
             {
                 IResponse response = request.CreateResponse(StatusCode.UnsupportedUriScheme,
                                                               "Scheme is not supported.");
-                _stack.Send(response);
+                transaction.Send(response);
                 return false;
             }
 
@@ -246,7 +246,7 @@ namespace SipSharp.Servers.StatefulProxy
             {
                 IResponse response = request.CreateResponse(StatusCode.TooManyHops,
                                               "Too many hops.");
-                _stack.Send(response);
+                transaction.Send(response);
                 return false;
             }
             request.MaxForwards -= 1;
@@ -289,7 +289,7 @@ namespace SipSharp.Servers.StatefulProxy
                     if (IsMethodSupported(method)) continue;
                     IResponse response = request.CreateResponse(StatusCode.BadExtension,
                                                                   method + " is not supported.");
-                    _stack.Send(response);
+                    transaction.Send(response);
                     return false;
                 }
             }

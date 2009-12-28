@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using SipSharp.Calls;
 using SipSharp.Dialogs;
 using SipSharp.Headers;
 using SipSharp.Logging;
@@ -23,6 +24,8 @@ namespace SipSharp
         private int _sequenceNumber;
         private Contact _contact;
         private Authenticator _authenticator;
+        private CallManager _callManager;
+
 
         private SubscriberList<EventHandler<RequestEventArgs>> _requestSubscribers =
             new SubscriberList<EventHandler<RequestEventArgs>>();
@@ -179,7 +182,10 @@ namespace SipSharp
             return "z9hG4bK" + Guid.NewGuid().ToString().Replace("-", string.Empty);
         }
 
-
+        private string CreateCallId()
+        {
+            return Guid.NewGuid().ToString().Replace("-", string.Empty);
+        }
 
         private string CreateTag()
         {
@@ -219,6 +225,9 @@ namespace SipSharp
             _logger.Trace("Received " + e.Request + " from "  + e.RemoteEndPoint);
 
             if (_transactionManager.Process(e.Request))
+                return;
+
+            if (_callManager.Process(e.Request))
                 return;
 
             if (!CheckAuthentication(e.Request, e.Transaction))
@@ -482,6 +491,11 @@ namespace SipSharp
             }
         }
 
+        private bool CheckAuthentication(IRequest request, IServerTransaction transaction)
+        {
+            return true;
+        }
+
         public IClientTransaction Send(IRequest request)
         {
             return _transactionManager.CreateClientTransaction(request);
@@ -502,5 +516,9 @@ namespace SipSharp
             return _transactionManager.CreateClientTransaction(request);
         }
 
+        public Authenticator Authenticator
+        {
+            get { return _authenticator; }
+        }
     }
 }

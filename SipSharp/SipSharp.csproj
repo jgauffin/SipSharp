@@ -69,15 +69,14 @@
     <Compile Include="BadRequestException.cs" />
     <Compile Include="Calls\Call.cs" />
     <Compile Include="Calls\CallContext.cs" />
-    <Compile Include="Calls\CallManager.cs" />
     <Compile Include="Calls\CallOriginHelper.cs" />
     <Compile Include="Calls\CallOrigins.cs" />
-    <Compile Include="Calls\CallReason.cs" />
+    <Compile Include="Calls\CallReasons.cs" />
     <Compile Include="Calls\CallState.cs" />
     <Compile Include="Calls\IPartyAddress.cs" />
     <Compile Include="Calls\Party.cs" />
     <Compile Include="Calls\PhoneNumber.cs" />
-    <Compile Include="Client\CallManager.cs" />
+    <Compile Include="Calls\CallManager.cs" />
     <Compile Include="Client\MethodHandlers.cs" />
     <Compile Include="Client\SipClient.cs" />
     <Compile Include="Client\SoftPhone.cs" />
@@ -203,8 +202,6 @@
     <Compile Include="StatusCode.cs" />
     <Compile Include="Tests\TestMessages.cs" />
     <Compile Include="Transports\MessageSerializer.cs" />
-    <Compile Include="Messages\RequestEventArgs.cs" />
-    <Compile Include="Messages\ResponseEventArgs.cs" />
     <Compile Include="Transports\TcpTransport.cs" />
     <Compile Include="Transports\TransportLayer.cs" />
     <Compile Include="Transports\UdpTransport.cs" />

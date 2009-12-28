@@ -42,6 +42,14 @@ namespace SipSharp.Transactions
             }
         }
 
+        /// <summary>
+        /// Gets request that created the transaction.
+        /// </summary>
+        public IRequest Request
+        {
+            get { return _request; }
+        }
+
         public void Send(IResponse response)
         {
             // Any other final responses passed by the TU to the server

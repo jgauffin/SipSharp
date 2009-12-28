@@ -6,7 +6,7 @@ namespace SipSharp.Calls
     /// Why a call was made.
     /// </summary>
     [Flags]
-    public enum CallReason
+    public enum CallReasons
     {
         /// <summary>
         /// The call was the result of a call completion request.

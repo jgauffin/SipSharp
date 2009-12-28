@@ -51,9 +51,9 @@ namespace SipSharp.Messages
         private void OnMessageComplete(object sender, EventArgs e)
         {
             if (_message is IRequest)
-                RequestCompleted(this, new RequestEventArgs((IRequest)_message, EndPoint));
+                RequestCompleted(this, new RequestEventArgs((IRequest)_message, null, EndPoint));
             else
-                ResponseCompleted(this, new ResponseEventArgs((IResponse)_message, EndPoint));
+                ResponseCompleted(this, new ResponseEventArgs((IResponse)_message, null, EndPoint));
         }
 
 

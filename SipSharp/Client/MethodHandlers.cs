@@ -6,7 +6,7 @@ using System.Text;
 namespace SipSharp.Client
 {
     /// <summary>
-    /// Used to keep track of which handlers want to get wich method.
+    /// Used to keep track of which handlers want to get which method.
     /// </summary>
     public class MethodHandlers
     {
@@ -34,8 +34,11 @@ namespace SipSharp.Client
             List<EventHandler<RequestEventArgs>> items = GetList(method);
             if (items == null)
                 return false;
-            
 
+            lock (items)
+                foreach (var handler in items)
+                    handler(source, args);
+            return items.Count > 0;
         }
 
         private List<EventHandler<RequestEventArgs>> GetList(string method)

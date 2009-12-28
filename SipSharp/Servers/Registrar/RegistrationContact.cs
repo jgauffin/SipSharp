@@ -5,8 +5,17 @@ using System.Text;
 
 namespace SipSharp.Servers.Registrar
 {
-    public class RegistrationContact
+    public class RegistrationContact : Contact
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Contact"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="uri">The URI.</param>
+        public RegistrationContact(string name, SipUri uri) : base(name, uri)
+        {
+        }
+
         /// <summary>
         /// Gets or sets expires time.
         /// </summary>
@@ -36,10 +45,5 @@ namespace SipSharp.Servers.Registrar
         /// Gets or sets when the binding was updated last.
         /// </summary>
         public DateTime UpdatedAt { get; set; }
-
-        /// <summary>
-        /// Gets or sets contact uri
-        /// </summary>
-        public SipUri Uri { get; set; }
     }
 }

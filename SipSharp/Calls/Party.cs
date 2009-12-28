@@ -5,15 +5,8 @@
     /// </summary>
     public class CallParty
     {
-        /// <summary>
-        /// Gets or sets name of party.
-        /// </summary>
-        public string Name { get; set; }
+        public Contact Contact { get; set; }
 
-        /// <summary>
-        /// Gets or sets unformatted number.
-        /// </summary>
-        public string Number { get; set; }
 
         /// <summary>
         /// Gets or sets whether party is registered in the switch

@@ -36,8 +36,8 @@ namespace SipSharp.Servers
 
         public bool IsAuthenticated(IRequest request)
         {
-
-            if (e.Request.Headers[Authorization.LNAME] == null)
+            /*
+            if (request.Headers[Authorization.LNAME] == null)
             {
                 response.StatusCode = StatusCode.Unauthorized;
                 response.ReasonPhrase = "You must authorize";
@@ -46,7 +46,8 @@ namespace SipSharp.Servers
                 transaction.Send(response);
                 return;
             }
-            
+*/
+            return false;
         }
     }
 }

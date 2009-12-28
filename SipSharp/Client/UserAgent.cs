@@ -54,6 +54,7 @@ namespace SipSharp.Client
         private IPEndPoint _endPoint;
         private int _sequenceNumber;
         private CallManager _callManager;
+        private Contact _contact;
 
         private UserAgent()
         {
@@ -73,7 +74,7 @@ namespace SipSharp.Client
         /// <param name="contact"></param>
         public void MakeCall(Contact contact)
         {
-            IRequest request = CreateRequest("INVITE", _contact, contact);
+            IRequest request = _stack.CreateRequest("INVITE", _contact, contact);
             IClientTransaction transaction = _stack.CreateClientTransaction(request);
             transaction.ResponseReceived += OnInviteResponse;
         }

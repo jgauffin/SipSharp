@@ -5,6 +5,9 @@
     /// </summary>
     public class Call
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Call"/> class.
+        /// </summary>
         public Call()
         {
             State = CallState.Proceeding;
@@ -23,17 +26,17 @@
         /// <summary>
         /// Gets or sets party that made the call
         /// </summary>
-        public Contact Caller { get; set; }
+        public CallParty Caller { get; set; }
 
         /// <summary>
         /// Gets or sets current destination
         /// </summary>
-        public Contact Destination { get; set; }
+        public CallParty Destination { get; set; }
 
         /// <summary>
-        /// Gets or sets party that was orginally called.
+        /// Gets or sets party that was originally called.
         /// </summary>
-        public Contact CalledParty { get; set; }
+        public CallParty CalledParty { get; set; }
 
         /// <summary>
         /// Gets or sets call state
@@ -54,7 +57,7 @@
         /// <summary>
         /// Gets or sets why the call was made.
         /// </summary>
-        public CallReason Reason { get; set; }
+        public CallReasons Reason { get; set; }
     }
 
 }

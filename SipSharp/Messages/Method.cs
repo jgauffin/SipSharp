@@ -10,6 +10,7 @@ namespace SipSharp.Messages
     /// </summary>
     public static class SipMethod
     {
+        public const string CANCEL = "CANCEL";
         public const string PUBLISH = "PUBLISH";
         public const string SUBSCRIBE = "SUBSCRIBE";
         public const string NOTIFY = "NOTIFY";

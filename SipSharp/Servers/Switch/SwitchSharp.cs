@@ -40,12 +40,17 @@ namespace SipSharp.Servers.Switch
             }
         }
 
+        private void DialPlanHunt(Call call)
+        {
+            throw new NotImplementedException();
+        }
+
         private void LookupCaller(IRequest request, IServerTransaction transaction, Call call)
         {
             Registration reg = _registrar.Get(request.From);
             if (reg == null)
                 return;
-            call.Caller = new CallParty {Name = reg.RealName, Number = reg.PhoneNumber, IsInternal = true};
+            call.Caller = new CallParty {Contact = reg.Contacts[0], IsInternal = true};
         }
 
 
@@ -60,13 +65,13 @@ namespace SipSharp.Servers.Switch
             Registration reg = _registrar.Get(request.To);
             if (reg == null)
                 return;
-            call.Destination = new CallParty { Name = reg.RealName, Number = reg.PhoneNumber, IsInternal = true };
+            call.Destination = new CallParty { Contact = reg.Contacts[0], IsInternal = true };
         }
 
 
         private Call CreateCall(IRequest request)
         {
-            
+            throw new NotImplementedException();
         }
 
         public void AddListener(ITransport transport)

@@ -248,7 +248,7 @@ namespace SipSharp.Servers.Registrar
                     return;
                 }
                 // Add new contact
-                newContacts.Add(new RegistrationContact
+                newContacts.Add(new RegistrationContact(contact.Name, contact.Uri)
                                     {
                                         CallId = e.Request.CallId,
                                         Expires = expires,
@@ -256,7 +256,6 @@ namespace SipSharp.Servers.Registrar
                                         Quality = e.Request.Contact.Quality,
                                         SequenceNumber = e.Request.CSeq.Number,
                                         UpdatedAt = DateTime.Now,
-                                        Uri = contact.Uri
                                     });
             }
 
