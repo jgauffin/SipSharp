@@ -16,6 +16,11 @@ namespace SipSharp.Logging
     {
         private readonly ILogFilter _filter;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ConsoleLogger"/> class.
+		/// </summary>
+		/// <param name="loggingType">Type being logged.</param>
+		/// <param name="filter">Filter used to decide which entries to log.</param>
         public ConsoleLogger(Type loggingType, ILogFilter filter)
         {
             _filter = filter;
@@ -94,6 +99,48 @@ namespace SipSharp.Logging
             Console.ForegroundColor = ConsoleColor.Gray;
         }
 
+
+		/// <summary>
+		/// Write an entry
+		/// </summary>
+		/// <param name="level">Importance of the log message</param>
+		/// <param name="message">The message.</param>
+		public void Write(LogLevel level, string message, Exception exception)
+		{
+			if (_filter != null && !_filter.CanLog(level, LoggingType))
+				return;
+
+			var sb = new StringBuilder();
+			sb.Append(DateTime.Now.ToString());
+			sb.Append(" ");
+			sb.Append(level.ToString().PadRight(10));
+			sb.Append(" | ");
+#if DEBUG
+			var trace = new StackTrace();
+			StackFrame[] frames = trace.GetFrames();
+			if (frames != null)
+			{
+				int endFrame = frames.Length > 4 ? 4 : frames.Length;
+				int startFrame = frames.Length > 1 ? 2 : 0;
+				for (int i = endFrame; i >= startFrame; --i)
+				{
+					sb.Append(frames[i].GetMethod().ReflectedType.Name + "." + frames[i].GetMethod().Name);
+					sb.Append(" -> ");
+				}
+			}
+#else
+            sb.Append(System.Reflection.MethodBase.GetCurrentMethod().Name);
+            sb.Append(" | ");
+#endif
+			sb.Append(message);
+			sb.AppendLine();
+			sb.Append(exception.ToString());
+
+			Console.ForegroundColor = GetColor(level);
+			Console.WriteLine(sb.ToString());
+			Console.ForegroundColor = ConsoleColor.Gray;
+		}
+
         #endregion
 
         /// <summary>
@@ -105,7 +152,17 @@ namespace SipSharp.Logging
             Write(LogLevel.Debug, message);
         }
 
-        /// <summary>
+    	/// <summary>
+    	/// Write an entry that helps when debugging code.
+    	/// </summary>
+    	/// <param name="message">Log message</param>
+    	/// <param name="err">Exception being logged.</param>
+    	public void Debug(string message, Exception err)
+    	{
+			Write(LogLevel.Debug, message, err);
+    	}
+
+    	/// <summary>
         /// Write a entry needed when following through code during hard to find bugs.
         /// </summary>
         /// <param name="message">Log message</param>
@@ -114,7 +171,17 @@ namespace SipSharp.Logging
             Write(LogLevel.Trace, message);
         }
 
-        /// <summary>
+    	/// <summary>
+    	/// Write a entry needed when following through code during hard to find bugs.
+    	/// </summary>
+    	/// <param name="message">Log message</param>
+    	/// <param name="err">Exception being logged.</param>
+    	public void Trace(string message, Exception err)
+    	{
+			Write(LogLevel.Trace, message, err);
+		}
+
+    	/// <summary>
         /// Informational message, needed when helping customer to find a problem.
         /// </summary>
         /// <param name="message">Log message</param>
@@ -123,7 +190,17 @@ namespace SipSharp.Logging
             Write(LogLevel.Info, message);
         }
 
-        /// <summary>
+    	/// <summary>
+    	/// Informational message, needed when helping customer to find a problem.
+    	/// </summary>
+    	/// <param name="message">Log message</param>
+    	/// <param name="err">Exception being logged.</param>
+    	public void Info(string message, Exception err)
+    	{
+			Write(LogLevel.Info, message, err);
+		}
+
+    	/// <summary>
         /// Something is not as we expect, but the code can continue to run without any changes.
         /// </summary>
         /// <param name="message">Log message</param>
@@ -132,7 +209,17 @@ namespace SipSharp.Logging
             Write(LogLevel.Warning, message);
         }
 
-        /// <summary>
+    	/// <summary>
+    	/// Something is not as we expect, but the code can continue to run without any changes.
+    	/// </summary>
+    	/// <param name="message">Log message</param>
+    	/// <param name="err">Exception being logged.</param>
+    	public void Warning(string message, Exception err)
+    	{
+			Write(LogLevel.Warning, message, err);
+		}
+
+    	/// <summary>
         /// Something went wrong, but the application do not need to die. The current thread/request
         /// cannot continue as expected.
         /// </summary>
@@ -142,7 +229,18 @@ namespace SipSharp.Logging
             Write(LogLevel.Error, message);
         }
 
-        /// <summary>
+    	/// <summary>
+    	/// Something went wrong, but the application do not need to die. The current thread/request
+    	/// cannot continue as expected.
+    	/// </summary>
+    	/// <param name="message">Log message</param>
+    	/// <param name="err">Exception being logged.</param>
+    	public void Error(string message, Exception err)
+    	{
+			Write(LogLevel.Error, message, err);
+		}
+
+    	/// <summary>
         /// Something went very wrong, application might not recover.
         /// </summary>
         /// <param name="message">Log message</param>
@@ -150,5 +248,15 @@ namespace SipSharp.Logging
         {
             Write(LogLevel.Fatal, message);
         }
+
+    	/// <summary>
+    	/// Something went very wrong, application might not recover.
+    	/// </summary>
+    	/// <param name="message">Log message</param>
+    	/// <param name="err">Exception being logged.</param>
+    	public void Fatal(string message, Exception err)
+    	{
+			Write(LogLevel.Fatal, message, err);
+		}
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using SipSharp.Calls;
+using SipSharp.Dialogs;
 using SipSharp.Headers;
 using SipSharp.Logging;
 using SipSharp.Messages;
@@ -55,6 +56,8 @@ namespace SipSharp.Client
         private int _sequenceNumber;
         private CallManager _callManager;
         private Contact _contact;
+    	private DialogManager _dialog;
+
 
         private UserAgent()
         {

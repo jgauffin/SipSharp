@@ -223,5 +223,10 @@ namespace SipSharp.Dialogs
             //    proxy not represented in the route set).
             return request;
         }
+
+    	public bool Process(IRequest request)
+    	{
+    		return false;
+    	}
     }
 }

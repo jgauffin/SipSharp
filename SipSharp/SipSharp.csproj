@@ -96,7 +96,7 @@
     <Compile Include="Logging\LogFilter.cs" />
     <Compile Include="Logging\LogLevel.cs" />
     <Compile Include="Logging\NullLogFactory.cs" />
-    <Compile Include="Logging\NullLogWriter.cs" />
+    <Compile Include="Logging\NullLogger.cs" />
     <Compile Include="Messages\Headers\Authorization.cs" />
     <Compile Include="Messages\Headers\ContentType.cs" />
     <Compile Include="Messages\Headers\Event.cs" />
