@@ -15,7 +15,6 @@ namespace SipSharp
     public class SipStack : ISipStack
     {
         private readonly Authenticator _authenticator;
-        private readonly CallManager _callManager;
         private readonly ILogger _logger = LogFactory.CreateLogger(typeof (SipStack));
         private readonly MessageFactory _messageFactory;
 
@@ -35,7 +34,7 @@ namespace SipSharp
             var hf = new HeaderFactory();
             hf.AddDefaultParsers();
             _messageFactory = new MessageFactory(hf);
-            _transportLayer = new TransportLayer(_messageFactory);
+            _transportLayer = new TransportLayer(MessageFactory);
             _transportLayer.RequestReceived += OnRequest;
             _transportLayer.ResponseReceived += OnResponse;
             _transactionManager = new TransactionManager(_transportLayer);
@@ -90,7 +89,7 @@ namespace SipSharp
             if (_transactionManager.Process(e.Request))
                 return;
 
-            if (_callManager.Process(e.Request))
+            if (_dialogManager.Process(e.Request, e.Transaction))
                 return;
 
             if (!CheckAuthentication(e.Request, e.Transaction))
@@ -377,7 +376,10 @@ namespace SipSharp
             }
         }
 
-        public void Start(IPEndPoint ep)
+        /// <summary>
+        /// Start stack.
+        /// </summary>
+        public void Start()
         {
             _transportLayer.Start();
         }
@@ -521,6 +523,11 @@ namespace SipSharp
         public Authenticator Authenticator
         {
             get { return _authenticator; }
+        }
+
+        public MessageFactory MessageFactory
+        {
+            get { return _messageFactory; }
         }
 
         #endregion

@@ -8,15 +8,18 @@ using SipSharp.Tools;
 namespace SipSharp.Messages.Headers
 {
     /// <summary>
-    /// Used to create headers
+    /// Parses and creates headers.
     /// </summary>
-    internal class HeaderFactory
+    public class HeaderFactory
     {
         private readonly Dictionary<string, IHeaderParser> _headerParsers = new Dictionary<string, IHeaderParser>();
         private readonly ILogger _logger = LogFactory.CreateLogger(typeof (MessageFactory));
         private readonly ObjectPool<StringReader> _readers = new ObjectPool<StringReader>(() => new StringReader());
         private readonly Dictionary<char, IHeaderParser> _shortNameParsers = new Dictionary<char, IHeaderParser>();
 
+        /// <summary>
+        /// Add all default parsers in the library.
+        /// </summary>
         public void AddDefaultParsers()
         {
             string ns = GetType().Namespace + ".Parsers";

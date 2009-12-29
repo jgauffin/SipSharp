@@ -14,14 +14,14 @@ namespace SipSharp.Messages
     /// <para>
     /// Since both message and packet protocols are used, the factory 
     /// hands out contexts to all end points. The context keeps a state
-    /// to be able to parse partial messages propertly.
+    /// to be able to parse partial messages properly.
     /// </para>
     /// <para>
     /// Each end point need to hand the context back to the message factory
     /// when the client disconnects (or a message have been parsed).
     /// </para>
     /// </remarks>
-    internal class MessageFactory
+    public class MessageFactory
     {
         private readonly ObjectPool<MessageFactoryContext> _builders;
         private readonly HeaderFactory _factory;

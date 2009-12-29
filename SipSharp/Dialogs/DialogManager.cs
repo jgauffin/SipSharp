@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using SipSharp.Calls;
+using SipSharp.Headers;
 using SipSharp.Logging;
+using SipSharp.Messages.Headers;
 using SipSharp.Transactions;
 
 namespace SipSharp.Dialogs
@@ -35,7 +38,7 @@ namespace SipSharp.Dialogs
         /// <remarks>
         /// Described in RFC321 Section 12.1.2 UAC Behavior
         /// </remarks>
-        private Dialog CreateClientDialog(IRequest request, IResponse response)
+        public Dialog CreateClientDialog(IRequest request, IResponse response)
         {
             // When a UAC sends a request that can establish a dialog (such as an
             // INVITE) it MUST provide a SIP or SIPS URI with global scope (i.e.,
@@ -100,7 +103,21 @@ namespace SipSharp.Dialogs
 
             dialog.Id = response.CallId + "-" + (response.From.Parameters["tag"] ?? string.Empty) + "-" +
                         (response.To.Parameters["tag"] ?? string.Empty);
+
+            dialog.Terminated += OnDialogTerminated;
+
+            lock (_dialogs)
+                _dialogs.Add(dialog.Id, dialog);
+
             return dialog;
+        }
+
+        private void OnDialogTerminated(object sender, EventArgs e)
+        {
+            Dialog dialog = (Dialog) sender;
+            dialog.Terminated -= OnDialogTerminated;
+            lock (_dialogs)
+                _dialogs.Remove(dialog.Id);
         }
 
         /// <summary>

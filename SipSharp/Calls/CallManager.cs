@@ -47,7 +47,8 @@ namespace SipSharp.Calls
             // Answer to an invite that we sent.
             if (e.Transaction.Request.Method == SipMethod.INVITE)
             {
-                _dialogManager.CreateClientDialog(e.Transaction.Request, e.Response);
+                Dialog dialog = _dialogManager.CreateClientDialog(e.Transaction.Request, e.Response);
+
                 return;
             }
         }
@@ -80,6 +81,29 @@ namespace SipSharp.Calls
         }
 
 
+        /// <summary>
+        /// A call (or it's state) have changed.
+        /// </summary>
         public event EventHandler<CallEventArgs> CallChanged = delegate { };
+    }
+
+    /// <summary>
+    /// Event arguments for various call events.
+    /// </summary>
+    public class CallEventArgs : EventArgs
+    {
+        /// <summary>
+        /// Gets call.
+        /// </summary>
+        public Call Call { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CallEventArgs"/> class.
+        /// </summary>
+        /// <param name="call">The call.</param>
+        public CallEventArgs(Call call)
+        {
+            Call = call;
+        }
     }
 }

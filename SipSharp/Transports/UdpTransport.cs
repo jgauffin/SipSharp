@@ -8,7 +8,10 @@ using SipSharp.Tools;
 
 namespace SipSharp.Transports
 {
-    internal class UdpTransport : ITransport
+    /// <summary>
+    /// Transports messages over UDP.
+    /// </summary>
+    public class UdpTransport : ITransport
     {
         private readonly ILogger _logger = LogFactory.CreateLogger(typeof (UdpTransport));
         private readonly MessageFactory _parsers;
@@ -24,11 +27,19 @@ namespace SipSharp.Transports
             _parsers = parsers;
         }
 
+        /// <summary>
+        /// Create a new UDP socket.
+        /// </summary>
+        /// <returns>Created socket</returns>
         protected virtual Socket CreateSocket()
         {
             return new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
         }
 
+        /// <summary>
+        /// Received a message from remote end point.
+        /// </summary>
+        /// <param name="ar"></param>
         private void OnRead(IAsyncResult ar)
         {
             var buffer = (byte[]) ar.AsyncState;

@@ -1,4 +1,5 @@
-﻿using SipSharp.Headers;
+﻿using System;
+using SipSharp.Headers;
 using SipSharp.Messages;
 using SipSharp.Messages.Headers;
 
@@ -222,5 +223,10 @@ namespace SipSharp.Dialogs
         public DialogState State { get; set; }
 
         #endregion
+
+        /// <summary>
+        /// Dialog have terminated.
+        /// </summary>
+        public event EventHandler Terminated = delegate { };
     }
 }

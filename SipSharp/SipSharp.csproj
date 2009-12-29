@@ -165,8 +165,6 @@
     <Compile Include="Servers\Registrar\RegistrationReporsitory.cs" />
     <Compile Include="Servers\Registrar\RegistrationRepository.cs" />
     <Compile Include="Servers\StatefulProxy\Proxy.cs" />
-    <Compile Include="Servers\Switch\DialPlan.cs" />
-    <Compile Include="Servers\Switch\SwitchSharp.cs" />
     <Compile Include="SipException.cs" />
     <Compile Include="SipStack.cs" />
     <Compile Include="SubscriberList.cs" />
@@ -210,7 +208,6 @@
   <ItemGroup>
     <Folder Include="Channels\" />
     <Folder Include="Dns\" />
-    <Folder Include="Servers\Users\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

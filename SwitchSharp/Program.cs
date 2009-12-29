@@ -3,6 +3,7 @@ using System.Threading;
 using SipSharp;
 using SipSharp.Logging;
 using SipSharp.Servers.Registrar;
+using SipSharp.Transports;
 
 namespace SwitchSharp
 {
@@ -16,15 +17,14 @@ namespace SwitchSharp
 
             LogFactory.Assign(new ConsoleLogFactory(filter));
 
-            var stack = new SipStack();
-            stack.Start(new IPEndPoint(IPAddress.Any, 5060));
-
             var repos = new RegistrationReporsitory();
             repos.Add("test3", "127.0.0.1");
 
-            var registrar = new Registrar(stack, repos);
-            registrar.Domain = new SipUri(null, "pbx.gateon.se");
-            registrar.Realm = "pbx.gateon.se";
+            SwitchSharp switchSharp = new SwitchSharp();
+
+            switchSharp.AddListener(new UdpTransport(switchSharp.MessageFactory));
+            switchSharp.Start("mydomain.com");
+            
 
             Thread.Sleep(500000);
         }

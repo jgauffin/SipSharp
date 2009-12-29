@@ -45,8 +45,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DialPlans\ActionCollection.cs" />
+    <Compile Include="DialPlans\Bridge.cs" />
+    <Compile Include="DialPlans\BridgeDestination.cs" />
+    <Compile Include="DialPlans\BridgeToMany.cs" />
+    <Compile Include="DialPlans\BridgeToUser.cs" />
+    <Compile Include="DialPlans\DialPlan.cs" />
+    <Compile Include="DialPlans\DialPlanManager.cs" />
+    <Compile Include="DialPlans\IDialPlanAction.cs" />
+    <Compile Include="DialPlans\UserDestination.cs" />
+    <Compile Include="IVR\IvrApplication.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SwitchSharp.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SipSharp\SipSharp.csproj">
