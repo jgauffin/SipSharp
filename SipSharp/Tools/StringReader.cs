@@ -24,7 +24,6 @@ namespace SipSharp.Tools
         /// </summary>
         public StringReader()
         {
-            
         }
 
         private string GetString(int startIndex, int endIndex)
@@ -327,7 +326,6 @@ namespace SipSharp.Tools
         {
             return _buffer[Index++];
         }
-
 
 
         /// <summary>

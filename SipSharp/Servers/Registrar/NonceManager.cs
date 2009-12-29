@@ -1,34 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 
 namespace SipSharp.Servers.Registrar
 {
-    class NonceManager
+    internal class NonceManager
     {
-        readonly Dictionary<string, DateTime> _nonces = new Dictionary<string, DateTime>();
+        private readonly Dictionary<string, DateTime> _nonces = new Dictionary<string, DateTime>();
         private Timer _timer;
 
         public NonceManager()
         {
             _timer = new Timer(RemoveOld, null, 15000, 15000);
-        }
-
-        private void RemoveOld(object state)
-        {
-            lock (_nonces)
-            {
-                foreach (KeyValuePair<string, DateTime> pair in _nonces)
-                {
-                    if (pair.Value >= DateTime.Now)
-                        continue;
-
-                    _nonces.Remove(pair.Key);
-                    return;
-                }
-            }
         }
 
         /// <summary>
@@ -66,6 +49,21 @@ namespace SipSharp.Servers.Registrar
             }
 
             return true;
+        }
+
+        private void RemoveOld(object state)
+        {
+            lock (_nonces)
+            {
+                foreach (var pair in _nonces)
+                {
+                    if (pair.Value >= DateTime.Now)
+                        continue;
+
+                    _nonces.Remove(pair.Key);
+                    return;
+                }
+            }
         }
     }
 }

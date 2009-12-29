@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using SipSharp.Headers;
+﻿using SipSharp.Headers;
 using SipSharp.Messages;
 using SipSharp.Messages.Headers;
 
@@ -11,26 +7,14 @@ namespace SipSharp.Dialogs
     public class Dialog : IDialog
     {
         /// <summary>
-        /// Gets or sets unique identifier for the call leg.
+        /// Gets or sets dialog identifier.
         /// </summary>
-        public string CallId { get; set; }
+        public string Id { get; set; }
 
         /// <summary>
-        /// Gets or sets remote tag.
+        /// Gets or sets if dialog is sent over a secure transport.
         /// </summary>
-        public string RemoteTag { get; set; }
-
-        /// <summary>
-        /// Gets or sets local tag.
-        /// </summary>
-        /// 
-        public string LocalTag { get; set; }
-
-        /// <summary>
-        /// Gets or sets dialog state.
-        /// </summary>
-        public DialogState State { get; set; }
-
+        public bool IsSecure { get; set; }
 
         /// <summary>
         /// Gets or sets local sequence number.
@@ -38,40 +22,14 @@ namespace SipSharp.Dialogs
         public int LocalSequenceNumber { get; set; }
 
         /// <summary>
-        /// Gets or sets remote sequence number.
-        /// </summary>
-        public int RemoteSequenceNumber { get; set; }
-
-        /// <summary>
-        /// Gets or sets remote URI
-        /// </summary>
-        public SipUri RemoteUri { get; set; }
-
-        /// <summary>
         /// Gets or sets local URI.
         /// </summary>
         public SipUri LocalUri { get; set; }
 
         /// <summary>
-        /// Gets or sets if dialog is sent over a secure transport.
+        /// Gets or sets remote sequence number.
         /// </summary>
-        public bool IsSecure
-        {
-            get; set;
-        }
-
-        /// <summary>
-        /// Gets or sets route
-        /// </summary>
-        /// <remarks>
-        /// The route set MUST be set to the list of URIs in the Record-Route
-        /// header field from the response, taken in reverse order and preserving
-        /// all URI parameters.  If no Record-Route header field is present in
-        /// the response, the route set MUST be set to the empty set.  This route
-        /// set, even if empty, overrides any pre-existing route set for future
-        /// requests in this dialog.  
-        /// </remarks>
-        public Route RouteSet { get; set; }
+        public int RemoteSequenceNumber { get; set; }
 
         /// <summary>
         /// Gets or sets remote target.
@@ -90,9 +48,22 @@ namespace SipSharp.Dialogs
         public ContactHeader RemoteTarget { get; set; }
 
         /// <summary>
-        /// Gets or sets dialog identifier.
+        /// Gets or sets remote URI
         /// </summary>
-        public string Id { get; set; }
+        public SipUri RemoteUri { get; set; }
+
+        /// <summary>
+        /// Gets or sets route
+        /// </summary>
+        /// <remarks>
+        /// The route set MUST be set to the list of URIs in the Record-Route
+        /// header field from the response, taken in reverse order and preserving
+        /// all URI parameters.  If no Record-Route header field is present in
+        /// the response, the route set MUST be set to the empty set.  This route
+        /// set, even if empty, overrides any pre-existing route set for future
+        /// requests in this dialog.  
+        /// </remarks>
+        public Route RouteSet { get; set; }
 
         /// <summary>
         /// Create a new request within this dialog.
@@ -103,7 +74,6 @@ namespace SipSharp.Dialogs
         /// </remarks>
         public IRequest CreateRequest(string method)
         {
-
             // The URI in the To field of the request MUST be set to the remote URI
             // from the dialog state.  The tag in the To header field of the request
             // MUST be set to the remote tag of the dialog ID.  The From URI of the
@@ -119,7 +89,7 @@ namespace SipSharp.Dialogs
             //    dialog identification.  It is expected that mandatory reflection
             //    of the original To and From URI in mid-dialog requests will be
             //    deprecated in a subsequent revision of this specification.
-            Request request = new Request(method, RemoteUri, "SIP/2.0");
+            var request = new Request(method, RemoteUri, "SIP/2.0");
             request.To.Uri = RemoteUri;
             request.To.Parameters["tag"] = RemoteTag;
             request.From.Uri = LocalUri;
@@ -174,26 +144,25 @@ namespace SipSharp.Dialogs
                     request.Headers[Route.ROUTE_NAME] = RouteSet;
                 }
 
-                // If the route set is not empty, and its first URI does not contain the
-                // lr parameter, the UAC MUST place the first URI from the route set
-                // into the Request-URI, stripping any parameters that are not allowed
-                // in a Request-URI.  The UAC MUST add a Route header field containing
-                // the remainder of the route set values in order, including all
-                // parameters.  The UAC MUST then place the remote target URI into the
-                // Route header field as the last value.
+                    // If the route set is not empty, and its first URI does not contain the
+                    // lr parameter, the UAC MUST place the first URI from the route set
+                    // into the Request-URI, stripping any parameters that are not allowed
+                    // in a Request-URI.  The UAC MUST add a Route header field containing
+                    // the remainder of the route set values in order, including all
+                    // parameters.  The UAC MUST then place the remote target URI into the
+                    // Route header field as the last value.
                 else
                 {
                     request.Uri = RouteSet.First.Uri; // not cloning since same routing will always be used.
                     request.Uri.Parameters.Remove("method");
-                    Route route = new Route(Route.ROUTE_NAME);
+                    var route = new Route(Route.ROUTE_NAME);
                     request.Headers.Add(Route.ROUTE_NAME, route);
                     for (int i = 1; i < RouteSet.Items.Count; ++i)
                         route.Items.Add(RouteSet.Items[i]);
 
-                    route.Items.Add(new RouteEntry() {Uri = RemoteTarget.FirstContact.Uri});
+                    route.Items.Add(new RouteEntry {Uri = RemoteTarget.FirstContact.Uri});
                 }
             }
-
 
 
             // A UAC SHOULD include a Contact header field in any target refresh
@@ -224,9 +193,34 @@ namespace SipSharp.Dialogs
             return request;
         }
 
-    	public bool Process(IRequest request)
-    	{
-    		return false;
-    	}
+        public bool Process(IRequest request)
+        {
+            return false;
+        }
+
+        #region IDialog Members
+
+        /// <summary>
+        /// Gets or sets unique identifier for the call leg.
+        /// </summary>
+        public string CallId { get; set; }
+
+        /// <summary>
+        /// Gets or sets remote tag.
+        /// </summary>
+        public string RemoteTag { get; set; }
+
+        /// <summary>
+        /// Gets or sets local tag.
+        /// </summary>
+        /// 
+        public string LocalTag { get; set; }
+
+        /// <summary>
+        /// Gets or sets dialog state.
+        /// </summary>
+        public DialogState State { get; set; }
+
+        #endregion
     }
 }

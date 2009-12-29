@@ -51,7 +51,6 @@
     /// </remarks>
     public interface IFlow
     {
-
         /// <summary>
         /// Gets instance id
         /// </summary>
@@ -59,6 +58,5 @@
         /// Instance-id should be a UUID URN [RFC4122].
         /// </remarks>
         string InstanceId { get; }
-
     }
 }

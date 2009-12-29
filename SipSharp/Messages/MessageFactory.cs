@@ -23,8 +23,8 @@ namespace SipSharp.Messages
     /// </remarks>
     internal class MessageFactory
     {
-        private readonly HeaderFactory _factory;
         private readonly ObjectPool<MessageFactoryContext> _builders;
+        private readonly HeaderFactory _factory;
 
         public MessageFactory(HeaderFactory factory)
         {
@@ -34,30 +34,10 @@ namespace SipSharp.Messages
 
         private MessageFactoryContext CreateBuilder()
         {
-            MessageFactoryContext mb = new MessageFactoryContext(this, _factory, new SipParser());
+            var mb = new MessageFactoryContext(this, _factory, new SipParser());
             mb.RequestCompleted += OnRequest;
             mb.ResponseCompleted += OnResponse;
             return mb;
-        }
-
-        private void OnResponse(object sender, ResponseEventArgs e)
-        {
-            ResponseReceived(this, e);
-        }
-
-        private void OnRequest(object sender, RequestEventArgs e)
-        {
-            RequestReceived(this, e);
-        }
-
-        internal Request CreateRequest(string method, string path, string version)
-        {
-            return new Request(method, path, version);
-        }
-
-        internal Response CreateResponse(string version, StatusCode statusCode, string reason)
-        {
-            return new Response(version, statusCode, reason);
         }
 
         /// <summary>
@@ -73,6 +53,26 @@ namespace SipSharp.Messages
             MessageFactoryContext context = _builders.Dequeue();
             context.EndPoint = ep;
             return context;
+        }
+
+        internal Request CreateRequest(string method, string path, string version)
+        {
+            return new Request(method, path, version);
+        }
+
+        internal Response CreateResponse(string version, StatusCode statusCode, string reason)
+        {
+            return new Response(version, statusCode, reason);
+        }
+
+        private void OnRequest(object sender, RequestEventArgs e)
+        {
+            RequestReceived(this, e);
+        }
+
+        private void OnResponse(object sender, ResponseEventArgs e)
+        {
+            ResponseReceived(this, e);
         }
 
         /// <summary>

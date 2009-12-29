@@ -1,14 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace SipSharp.Servers.Registrar
 {
     public class RegistrationReporsitory : IRegistrationRepository
     {
-        private Dictionary<string, Registration> _registrations = new Dictionary<string, Registration>();
+        private readonly Dictionary<string, Registration> _registrations = new Dictionary<string, Registration>();
 
+        public void Add(string userName, string domain)
+        {
+            _registrations.Add(userName + "@" + domain, new Registration());
+        }
+
+        #region IRegistrationRepository Members
 
         /// <summary>
         /// Get registration for a user.
@@ -42,9 +45,6 @@ namespace SipSharp.Servers.Registrar
             return _registrations.ContainsKey(contact.Uri.UserName + "@" + contact.Uri.Domain);
         }
 
-        public void Add(string userName, string domain)
-        {
-            _registrations.Add(userName + "@" + domain, new Registration());
-        }
+        #endregion
     }
 }

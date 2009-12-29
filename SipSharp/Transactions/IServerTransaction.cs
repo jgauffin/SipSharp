@@ -6,10 +6,9 @@
     public interface IServerTransaction : ITransaction
     {
         /// <summary>
-        /// Send a new response.
+        /// Gets request that created the transaction.
         /// </summary>
-        /// <param name="response"></param>
-        void Send(IResponse response);
+        IRequest Request { get; }
 
         /// <summary>
         /// The request have been retransmitted by the UA.
@@ -18,8 +17,9 @@
         void Process(IRequest request);
 
         /// <summary>
-        /// Gets request that created the transaction.
+        /// Send a new response.
         /// </summary>
-        IRequest Request { get; }
+        /// <param name="response"></param>
+        void Send(IResponse response);
     }
 }

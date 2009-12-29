@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using SipSharp.Headers;
 using SipSharp.Logging;
 using SipSharp.Messages.Headers;
 using SipSharp.Transactions;
@@ -36,10 +35,10 @@ namespace SipSharp.Servers.StatefulProxy
     /// (Trying) responses to non-INVITE requests.
     /// </para>
     /// </remarks>
-    class Proxy
+    internal class Proxy
     {
+        private readonly ILogger _logger = LogFactory.CreateLogger(typeof (Proxy));
         private readonly ISipStack _stack;
-        private ILogger _logger = LogFactory.CreateLogger(typeof (Proxy));
 
         public Proxy(ISipStack stack)
         {
@@ -47,22 +46,49 @@ namespace SipSharp.Servers.StatefulProxy
             _stack.RequestReceived += OnRequest;
         }
 
-        private void OnRequest(object sender, RequestEventArgs e)
+        /// <summary>
+        /// Authenticate user.
+        /// </summary>
+        /// <param name="request">Request sent by user.</param>
+        /// <param name="authorization">Authorization header.</param>
+        /// <returns>true if authentication was successful; otherwise null.</returns>
+        /// <exception cref="ForbiddenException">User may not try to authenticate anymore.</exception>
+        protected virtual bool Authenticate(IRequest request, Authorization authorization)
         {
-            if (!ValidateRequest(e.Request, e.Transaction))
-                return;
+            return false;
+        }
 
-            if (!PreProcessRoutes(e.Request, e.Transaction))
-                return;
+        private bool CheckAuthorization(IRequest request, IServerTransaction transaction)
+        {
+            if (IsAuthenticated(request))
+                return true;
 
-            // RFC3261 section 16.5
-            if (!DetermineRequestTargets(e.Request, e.Transaction))
-                return;
+            var auth = request.Headers[Authorization.PROXY_LNAME] as Authorization;
+            if (auth == null)
+            {
+                IResponse response = request.CreateResponse(StatusCode.ProxyAuthenticationRequired,
+                                                            "Need to authenticate");
+                transaction.Send(response);
+                return false;
+            }
+
+            try
+            {
+                return Authenticate(request, auth);
+            }
+            catch (ForbiddenException err)
+            {
+                _logger.Debug("Failed to authenticate " + request + "\r\n" + err);
+                IResponse response = request.CreateResponse(StatusCode.Forbidden,
+                                                            err.Message);
+                transaction.Send(response);
+                return false;
+            }
         }
 
         private bool DetermineRequestTargets(IRequest request, IServerTransaction transaction)
         {
-            List<SipUri> targets = new List<SipUri>();
+            var targets = new List<SipUri>();
 
             //   Next, the proxy calculates the target(s) of the request.  The set of
             //   targets will either be predetermined by the contents of the request
@@ -85,7 +111,6 @@ namespace SipSharp.Servers.StatefulProxy
             //
             if (LookupTargets(request, transaction, targets))
             {
-                
             }
 
             //   If the target set for the request has not been predetermined as
@@ -166,6 +191,29 @@ namespace SipSharp.Servers.StatefulProxy
         }
 
         /// <summary>
+        /// Checks if the user sending the request have been authenticated previously.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// If you are not using authentication, alway return <c>true</c> from this method.
+        /// </remarks>
+        protected virtual bool IsAuthenticated(IRequest request)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected virtual bool IsMethodSupported(string methodName)
+        {
+            return true;
+        }
+
+        protected virtual bool IsOurDomain(SipUri uri)
+        {
+            return false;
+        }
+
+        /// <summary>
         /// Check if the request belongs to us.
         /// </summary>
         /// <param name="request"></param>
@@ -175,6 +223,88 @@ namespace SipSharp.Servers.StatefulProxy
         private bool LookupTargets(IRequest request, IServerTransaction transaction, ICollection<SipUri> targets)
         {
             return false;
+        }
+
+        private void OnRequest(object sender, RequestEventArgs e)
+        {
+            if (!ValidateRequest(e.Request, e.Transaction))
+                return;
+
+            if (!PreProcessRoutes(e.Request, e.Transaction))
+                return;
+
+            // RFC3261 section 16.5
+            if (!DetermineRequestTargets(e.Request, e.Transaction))
+                return;
+        }
+
+        /// <summary>
+        /// Route pre processing as described in RFC3261 Section 16.4 Route Information Preprocessing
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="transaction"></param>
+        /// <returns></returns>
+        private bool PreProcessRoutes(IRequest request, IServerTransaction transaction)
+        {
+            //   The proxy MUST inspect the Request-URI of the request.  If the
+            //   Request-URI of the request contains a value this proxy previously
+            //   placed into a Record-Route header field (see Section 16.6 item 4),
+            //   the proxy MUST replace the Request-URI in the request with the last
+            //   value from the Route header field, and remove that value from the
+            //   Route header field.  The proxy MUST then proceed as if it received
+            //   this modified request.
+
+            //      This will only happen when the element sending the request to the
+            //      proxy (which may have been an endpoint) is a strict router.  This
+            //      rewrite on receive is necessary to enable backwards compatibility
+            //      with those elements.  It also allows elements following this
+            //      specification to preserve the Request-URI through strict-routing
+            //      proxies (see Section 12.2.1.1).
+            //
+            //      This requirement does not obligate a proxy to keep state in order
+            //      to detect URIs it previously placed in Record-Route header fields.
+            //      Instead, a proxy need only place enough information in those URIs
+            //      to recognize them as values it provided when they later appear.
+            //
+            var route = request.Headers["route"] as Route;
+            if (route == null || route.Items.Count == 0)
+                return true;
+
+            foreach (RouteEntry entry in route.Items)
+            {
+                if (entry.Uri != request.Uri)
+                    continue;
+
+                _logger.Warning("Replacing request URI with " + route.Items[route.Items.Count - 1].Uri);
+                request.Uri = route.Items[route.Items.Count - 1].Uri;
+                route.Items.RemoveAt(route.Items.Count - 1);
+                break;
+            }
+
+
+            //   If the Request-URI contains a maddr parameter, the proxy MUST check
+            //   to see if its value is in the set of addresses or domains the proxy
+            //   is configured to be responsible for.  If the Request-URI has a maddr
+            //   parameter with a value the proxy is responsible for, and the request
+            //   was received using the port and transport indicated (explicitly or by
+            //   default) in the Request-URI, the proxy MUST strip the maddr and any
+            //   non-default port or transport parameter and continue processing as if
+            //   those values had not been present in the request.
+            //
+            //      A request may arrive with a maddr matching the proxy, but on a
+            //      port or transport different from that indicated in the URI.  Such
+            //      a request needs to be forwarded to the proxy using the indicated
+            //      port and transport.
+            //
+
+
+            //   If the first value in the Route header field indicates this proxy,
+            //   the proxy MUST remove that value from the request.
+            // jg: Remove if route is loose, since they always only reach specified target.
+            if (route.Items[0].IsLoose || IsOurDomain(route.Items[0].Uri))
+                route.Items.RemoveAt(0);
+
+            return true;
         }
 
         /// <summary>
@@ -220,7 +350,7 @@ namespace SipSharp.Servers.StatefulProxy
             if (request.Uri.Scheme != "sips" && request.Uri.Scheme != "sip")
             {
                 IResponse response = request.CreateResponse(StatusCode.UnsupportedUriScheme,
-                                                              "Scheme is not supported.");
+                                                            "Scheme is not supported.");
                 transaction.Send(response);
                 return false;
             }
@@ -245,7 +375,7 @@ namespace SipSharp.Servers.StatefulProxy
             if (request.MaxForwards == 0)
             {
                 IResponse response = request.CreateResponse(StatusCode.TooManyHops,
-                                              "Too many hops.");
+                                                            "Too many hops.");
                 transaction.Send(response);
                 return false;
             }
@@ -281,14 +411,14 @@ namespace SipSharp.Servers.StatefulProxy
             //      response.  The response MUST include an Unsupported (Section
             //      20.40) header field listing those option-tags the element did not
             //      understand.
-            MethodsHeader methods = request.Headers["proxy-require"] as MethodsHeader;
+            var methods = request.Headers["proxy-require"] as MethodsHeader;
             if (methods != null)
             {
-                foreach (var method in methods.Methods)
+                foreach (string method in methods.Methods)
                 {
                     if (IsMethodSupported(method)) continue;
                     IResponse response = request.CreateResponse(StatusCode.BadExtension,
-                                                                  method + " is not supported.");
+                                                                method + " is not supported.");
                     transaction.Send(response);
                     return false;
                 }
@@ -303,139 +433,6 @@ namespace SipSharp.Servers.StatefulProxy
             if (!CheckAuthorization(request, transaction))
                 return false;
 
-            return true;
-        }
-
-        /// <summary>
-        /// Route pre processing as described in RFC3261 Section 16.4 Route Information Preprocessing
-        /// </summary>
-        /// <param name="request"></param>
-        /// <param name="transaction"></param>
-        /// <returns></returns>
-        private bool PreProcessRoutes(IRequest request, IServerTransaction transaction)
-        {
-            //   The proxy MUST inspect the Request-URI of the request.  If the
-            //   Request-URI of the request contains a value this proxy previously
-            //   placed into a Record-Route header field (see Section 16.6 item 4),
-            //   the proxy MUST replace the Request-URI in the request with the last
-            //   value from the Route header field, and remove that value from the
-            //   Route header field.  The proxy MUST then proceed as if it received
-            //   this modified request.
-
-            //      This will only happen when the element sending the request to the
-            //      proxy (which may have been an endpoint) is a strict router.  This
-            //      rewrite on receive is necessary to enable backwards compatibility
-            //      with those elements.  It also allows elements following this
-            //      specification to preserve the Request-URI through strict-routing
-            //      proxies (see Section 12.2.1.1).
-            //
-            //      This requirement does not obligate a proxy to keep state in order
-            //      to detect URIs it previously placed in Record-Route header fields.
-            //      Instead, a proxy need only place enough information in those URIs
-            //      to recognize them as values it provided when they later appear.
-            //
-            Route route = request.Headers["route"] as Route;
-            if (route == null || route.Items.Count == 0)
-                return true;
-
-            foreach (var entry in route.Items)
-            {
-                if (entry.Uri != request.Uri)
-                    continue;
-
-                _logger.Warning("Replacing request URI with " + route.Items[route.Items.Count - 1].Uri);
-                request.Uri = route.Items[route.Items.Count - 1].Uri;
-                route.Items.RemoveAt(route.Items.Count - 1);
-                break;
-            }
-
-
-            //   If the Request-URI contains a maddr parameter, the proxy MUST check
-            //   to see if its value is in the set of addresses or domains the proxy
-            //   is configured to be responsible for.  If the Request-URI has a maddr
-            //   parameter with a value the proxy is responsible for, and the request
-            //   was received using the port and transport indicated (explicitly or by
-            //   default) in the Request-URI, the proxy MUST strip the maddr and any
-            //   non-default port or transport parameter and continue processing as if
-            //   those values had not been present in the request.
-            //
-            //      A request may arrive with a maddr matching the proxy, but on a
-            //      port or transport different from that indicated in the URI.  Such
-            //      a request needs to be forwarded to the proxy using the indicated
-            //      port and transport.
-            //
-
-
-            //   If the first value in the Route header field indicates this proxy,
-            //   the proxy MUST remove that value from the request.
-            // jg: Remove if route is loose, since they always only reach specified target.
-            if (route.Items[0].IsLoose || IsOurDomain(route.Items[0].Uri))
-                route.Items.RemoveAt(0);
-
-            return true;
-        }
-
-        protected virtual bool IsOurDomain(SipUri uri)
-        {
-            return false;
-        }
-
-
-        private bool CheckAuthorization(IRequest request, IServerTransaction transaction)
-        {
-            if (IsAuthenticated(request))
-                return true;
-
-            Authorization auth = request.Headers[Authorization.PROXY_LNAME] as Authorization;
-            if (auth == null)
-            {
-                IResponse response = request.CreateResponse(StatusCode.ProxyAuthenticationRequired,
-                                                            "Need to authenticate");
-                transaction.Send(response);
-                return false;
-            }
-
-            try
-            {
-                return Authenticate(request, auth);
-            }
-            catch (ForbiddenException err)
-            {
-                _logger.Debug("Failed to authenticate " + request + "\r\n" + err);
-                IResponse response = request.CreateResponse(StatusCode.Forbidden,
-                                                            err.Message);
-                transaction.Send(response);
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Authenticate user.
-        /// </summary>
-        /// <param name="request">Request sent by user.</param>
-        /// <param name="authorization">Authorization header.</param>
-        /// <returns>true if authentication was successful; otherwise null.</returns>
-        /// <exception cref="ForbiddenException">User may not try to authenticate anymore.</exception>
-        protected virtual bool Authenticate(IRequest request, Authorization authorization)
-        {
-            return false;
-        }
-
-        /// <summary>
-        /// Checks if the user sending the request have been authenticated previously.
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        /// <remarks>
-        /// If you are not using authentication, alway return <c>true</c> from this method.
-        /// </remarks>
-        protected virtual bool IsAuthenticated(IRequest request)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected virtual bool IsMethodSupported(string methodName)
-        {
             return true;
         }
     }

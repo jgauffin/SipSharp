@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace SipSharp
+﻿namespace SipSharp
 {
-    class BackToBackUserAgent
+    internal class BackToBackUserAgent
     {
-
     }
 }

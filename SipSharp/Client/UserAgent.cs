@@ -2,9 +2,7 @@
 using System.Net;
 using SipSharp.Calls;
 using SipSharp.Dialogs;
-using SipSharp.Headers;
 using SipSharp.Logging;
-using SipSharp.Messages;
 using SipSharp.Messages.Headers;
 using SipSharp.Transactions;
 using Authorization=SipSharp.Messages.Headers.Authorization;
@@ -50,13 +48,13 @@ namespace SipSharp.Client
         private readonly ILogger _logger = LogFactory.CreateLogger(typeof (UserAgent));
         private readonly UserAgentServer _server;
         private readonly ISipStack _stack;
+        private CallManager _callManager;
         private UserAgentClient _client;
+        private Contact _contact;
         private NetworkCredential _credentials;
+        private DialogManager _dialog;
         private IPEndPoint _endPoint;
         private int _sequenceNumber;
-        private CallManager _callManager;
-        private Contact _contact;
-    	private DialogManager _dialog;
 
 
         private UserAgent()
@@ -80,11 +78,6 @@ namespace SipSharp.Client
             IRequest request = _stack.CreateRequest("INVITE", _contact, contact);
             IClientTransaction transaction = _stack.CreateClientTransaction(request);
             transaction.ResponseReceived += OnInviteResponse;
-        }
-
-        private void OnRequest(object sender, RequestEventArgs e)
-        {
-            _server.OnRequest(sender, e);
         }
 
         /// <summary>
@@ -134,8 +127,11 @@ namespace SipSharp.Client
 
             if (!Process4xx(transaction, e.Response))
                 return;
+        }
 
-
+        private void OnRequest(object sender, RequestEventArgs e)
+        {
+            _server.OnRequest(sender, e);
         }
 
         private void OnTransactionTerminated(object sender, EventArgs e)

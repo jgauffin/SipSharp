@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SipSharp
+﻿namespace SipSharp
 {
     /// <summary>
     /// 1xx Provisional responses, also known as informational responses,
@@ -533,7 +531,7 @@ namespace SipSharp
         /// <returns>true or false ;)</returns>
         public static bool Is1xx(StatusCode code)
         {
-            int icode = (int)code;
+            var icode = (int) code;
             return icode >= 100 && icode < 200;
         }
 
@@ -544,19 +542,19 @@ namespace SipSharp
         /// <returns>true or false ;)</returns>
         public static bool Is1xx(IResponse msg)
         {
-            int icode = (int)msg.StatusCode;
+            var icode = (int) msg.StatusCode;
             return icode >= 100 && icode < 200;
         }
 
         public static bool Is2xx(StatusCode code)
         {
-            int icode = (int)code;
+            var icode = (int) code;
             return icode >= 200 && icode < 300;
         }
 
         public static bool Is2xx(IResponse msg)
         {
-            int icode = (int)msg.StatusCode;
+            var icode = (int) msg.StatusCode;
             return icode >= 200 && icode < 300;
         }
 
@@ -567,21 +565,20 @@ namespace SipSharp
         /// <returns></returns>
         public static bool Is3456xx(IResponse msg)
         {
-            int icode = (int)msg.StatusCode;
+            var icode = (int) msg.StatusCode;
             return icode >= 300 && icode < 700;
-
-        }
-
-        public static bool IsRedirected(IResponse response)
-        {
-            int icode = (int)response.StatusCode;
-            return icode >= 300 && icode < 400;
         }
 
         public static bool Is4xx(IResponse response)
         {
-            int icode = (int)response.StatusCode;
+            var icode = (int) response.StatusCode;
             return icode >= 400 && icode < 500;
+        }
+
+        public static bool IsRedirected(IResponse response)
+        {
+            var icode = (int) response.StatusCode;
+            return icode >= 300 && icode < 400;
         }
     }
 }

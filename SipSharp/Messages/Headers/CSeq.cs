@@ -27,6 +27,8 @@ namespace SipSharp.Messages.Headers
         /// </summary>
         public static readonly CSeq Empty = new CSeq(0, string.Empty);
 
+        private string _method;
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CSeq"/> class.
@@ -47,8 +49,6 @@ namespace SipSharp.Messages.Headers
             Method = method;
         }
 
-        private string _method;
-
         ///<summary>
         ///Gets or sets SIP method.
         ///</summary>
@@ -65,6 +65,20 @@ namespace SipSharp.Messages.Headers
         /// Gets or sets sequence number.
         /// </summary>
         public int Number { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            var cs = obj as CSeq;
+            if (cs == null)
+                return false;
+
+            return cs.Method.Equals(Method, StringComparison.OrdinalIgnoreCase) && cs.Number == Number;
+        }
+
+        public override string ToString()
+        {
+            return Number + " " + Method;
+        }
 
         #region IHeader Members
 
@@ -88,8 +102,6 @@ namespace SipSharp.Messages.Headers
             return new CSeq(Number, Method);
         }
 
-        #endregion
-
         /// <summary>
         /// Indicates whether the current object is equal to another object of the same type.
         /// </summary>
@@ -100,25 +112,13 @@ namespace SipSharp.Messages.Headers
         ///                 </param>
         public bool Equals(IHeader other)
         {
-            CSeq cs = other as CSeq;
+            var cs = other as CSeq;
             if (cs == null)
                 return false;
 
             return cs.Method.Equals(Method, StringComparison.OrdinalIgnoreCase) && cs.Number == Number;
         }
 
-        public override bool Equals(object obj)
-        {
-            CSeq cs = obj as CSeq;
-            if (cs == null)
-                return false;
-
-            return cs.Method.Equals(Method, StringComparison.OrdinalIgnoreCase) && cs.Number == Number;
-        }
-
-        public override string ToString()
-        {
-            return Number + " " + Method;
-        }
+        #endregion
     }
 }

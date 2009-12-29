@@ -1,4 +1,5 @@
-﻿using SipSharp.Messages.Headers;
+﻿using System;
+using SipSharp.Messages.Headers;
 
 namespace SipSharp.Messages
 {
@@ -13,6 +14,8 @@ namespace SipSharp.Messages
             SipVersion = version;
             ReasonPhrase = phrase;
         }
+
+        #region IResponse Members
 
         /// <summary>
         /// Gets or sets SIP status code.
@@ -32,12 +35,13 @@ namespace SipSharp.Messages
         /// <summary>
         /// Gets or sets all routes.
         /// </summary>
-        public Route Route { get; internal set;  }
+        public Route Route { get; internal set; }
 
         public override void Validate()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
+        #endregion
     }
 }

@@ -17,6 +17,8 @@ namespace SipSharp.Messages.Headers.Parsers
     [ParserFor(Route.RECORD_ROUTE_NAME, char.MinValue)]
     public class RouteParser : IHeaderParser
     {
+        #region IHeaderParser Members
+
         /// <summary>
         /// Parse a message value.
         /// </summary>
@@ -26,17 +28,17 @@ namespace SipSharp.Messages.Headers.Parsers
         /// <exception cref="ParseException">Header value is malformed.</exception>
         public IHeader Parse(string name, ITextReader reader)
         {
-            Route route = new Route(name);
+            var route = new Route(name);
             try
             {
                 SipUri uri = UriParser.Parse(reader);
-                route.Items.Add(new RouteEntry(name){Uri = uri});
+                route.Items.Add(new RouteEntry(name) {Uri = uri});
                 while (reader.Current == ',')
                 {
                     reader.ConsumeWhiteSpaces(',');
                     if (!reader.EOF)
                         uri = UriParser.Parse(reader);
-                    route.Items.Add(new RouteEntry(name) { Uri = uri });
+                    route.Items.Add(new RouteEntry(name) {Uri = uri});
                 }
             }
             catch (FormatException err)
@@ -46,5 +48,7 @@ namespace SipSharp.Messages.Headers.Parsers
 
             return route;
         }
+
+        #endregion
     }
 }

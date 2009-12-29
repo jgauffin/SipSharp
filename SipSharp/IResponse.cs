@@ -8,9 +8,9 @@ namespace SipSharp
     public interface IResponse : IMessage
     {
         /// <summary>
-        /// Gets or sets SIP status code.
+        /// Gets or sets where we want to be contacted
         /// </summary>
-        StatusCode StatusCode { get; set; }
+        ContactHeader Contact { get; set; }
 
         /// <summary>
         /// Gets or sets text describing why the status code was used.
@@ -18,15 +18,13 @@ namespace SipSharp
         string ReasonPhrase { get; set; }
 
         /// <summary>
-        /// Gets or sets where we want to be contacted
-        /// </summary>
-        ContactHeader Contact { get; set; }
-
-        /// <summary>
         /// Gets or sets all routes.
         /// </summary>
         Route Route { get; }
 
-
+        /// <summary>
+        /// Gets or sets SIP status code.
+        /// </summary>
+        StatusCode StatusCode { get; set; }
     }
 }

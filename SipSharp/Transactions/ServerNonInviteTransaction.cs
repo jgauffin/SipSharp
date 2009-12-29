@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using SipSharp.Messages;
 using SipSharp.Transports;
 
 namespace SipSharp.Transactions
@@ -83,22 +82,16 @@ namespace SipSharp.Transactions
             _transport.Send(response);
         }
 
-        #endregion
-
         /// <summary>
         /// Gets dialog that the transaction belongs to
         /// </summary>
         //IDialog Dialog { get; }
-
         /// <summary>
         /// Gets transaction identifier.
         /// </summary>
         public string Id
         {
-            get
-            {
-                return _request.GetTransactionId();
-            }
+            get { return _request.GetTransactionId(); }
         }
 
         /// <summary>
@@ -111,5 +104,7 @@ namespace SipSharp.Transactions
         public TransactionState State { get; private set; }
 
         public event EventHandler Terminated;
+
+        #endregion
     }
 }

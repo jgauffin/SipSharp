@@ -5,20 +5,15 @@ namespace SipSharp
 {
     public class HeaderValue
     {
-        private string _value;
-        private NameValueCollection _parameters;
         private IList<string> _options;
+        private NameValueCollection _parameters;
 
         public HeaderValue(string value)
         {
             Value = value;
         }
 
-        public string Value
-        {
-            get { return _value; }
-            set { _value = value; }
-        }
+        public string Value { get; set; }
 
         internal void Append(string value)
         {

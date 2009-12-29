@@ -8,7 +8,9 @@ namespace SipSharp.Messages.Headers
     /// </summary>
     public class ContactHeader : IHeader
     {
-        private string _name;
+        public const string LNAME = "contact";
+        public const string NAME = "Contact";
+        private readonly string _name;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ContactHeader"/> class.
@@ -28,7 +30,10 @@ namespace SipSharp.Messages.Headers
         /// <summary>
         /// Gets first contact in list.
         /// </summary>
-        public Contact FirstContact { get { return Contacts[0]; } }
+        public Contact FirstContact
+        {
+            get { return Contacts[0]; }
+        }
 
         /// <summary>
         /// Gets a list of all parameters for the first contact.
@@ -36,6 +41,15 @@ namespace SipSharp.Messages.Headers
         public IKeyValueCollection Parameters
         {
             get { return FirstContact.Parameters; }
+        }
+
+        public override string ToString()
+        {
+            string temp = string.Empty;
+            foreach (Contact contact in Contacts)
+                temp += contact + ", ";
+
+            return temp.Remove(temp.Length - 2);
         }
 
         #region IHeader Members
@@ -48,8 +62,6 @@ namespace SipSharp.Messages.Headers
             get { return _name; }
         }
 
-        #endregion
-
         /// <summary>
         /// Creates a new object that is a copy of the current instance.
         /// </summary>
@@ -61,9 +73,6 @@ namespace SipSharp.Messages.Headers
         {
             throw new NotImplementedException();
         }
-
-        public const string NAME = "Contact";
-        public const string LNAME = "contact";
 
         /// <summary>
         /// Indicates whether the current object is equal to another object of the same type.
@@ -78,13 +87,6 @@ namespace SipSharp.Messages.Headers
             throw new NotImplementedException();
         }
 
-        public override string ToString()
-        {
-            string temp = string.Empty;
-            foreach (var contact in Contacts)
-                temp += contact + ", ";
-
-            return temp.Remove(temp.Length - 2);
-        }
+        #endregion
     }
 }

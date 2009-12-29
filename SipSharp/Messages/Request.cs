@@ -30,6 +30,28 @@ namespace SipSharp.Messages
             Contact = request.Contact;
         }
 
+        internal override void Assign(string name, IHeader header)
+        {
+            switch (name)
+            {
+                case "contact":
+                    Contact = ((ContactHeader) header).FirstContact;
+                    break;
+                case "max-forwards":
+                    MaxForwards = ((NumericHeader) header).Value;
+                    break;
+            }
+
+            base.Assign(name, header);
+        }
+
+        public override string ToString()
+        {
+            return Method + " [" + Uri + "] " + CallId + "/" + CSeq;
+        }
+
+        #region IRequest Members
+
         /// <summary>
         /// Validate all mandatory headers.
         /// </summary>
@@ -132,9 +154,6 @@ namespace SipSharp.Messages
                 throw new BadRequestException("CSEQ method mismatch with  Request-Line ");
             }
         }
-
-        #region IRequest Members
-
 
         /// <summary>
         /// Gets or sets requested URI.
@@ -261,28 +280,6 @@ namespace SipSharp.Messages
             return response;
         }
 
-        #endregion
-
-        internal override void Assign(string name, IHeader header)
-        {
-            switch (name)
-            {
-                case "contact":
-                    Contact = ((ContactHeader) header).FirstContact;
-                    break;
-                case "max-forwards":
-                    MaxForwards = ((NumericHeader) header).Value;
-                    break;
-            }
-
-            base.Assign(name, header);
-        }
-
-        public override string ToString()
-        {
-            return Method + " [" + Uri + "] " + CallId + "/" + CSeq;
-        }
-
         /// <summary>
         /// Creates a new object that is a copy of the current instance.
         /// </summary>
@@ -294,5 +291,7 @@ namespace SipSharp.Messages
         {
             return new Request(this);
         }
+
+        #endregion
     }
 }

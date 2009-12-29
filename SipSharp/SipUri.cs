@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace SipSharp
 {
@@ -120,10 +119,7 @@ namespace SipSharp
         public string Domain
         {
             get { return _domain; }
-            set
-            {
-                _domain = value ?? string.Empty;
-            }
+            set { _domain = value ?? string.Empty; }
         }
 
         /// <summary>
@@ -148,10 +144,7 @@ namespace SipSharp
         public string Password
         {
             get { return _password; }
-            set
-            {
-                _password = value ?? string.Empty;
-            }
+            set { _password = value ?? string.Empty; }
         }
 
         /// <summary>
@@ -175,7 +168,8 @@ namespace SipSharp
         public string Scheme
         {
             get { return _scheme; }
-            set { 
+            set
+            {
                 _scheme = value ?? string.Empty;
                 _scheme = _scheme.ToLower();
             }
@@ -204,20 +198,15 @@ namespace SipSharp
         public string UserName
         {
             get { return _userName; }
-            set { _userName = value??string.Empty; }
+            set { _userName = value ?? string.Empty; }
         }
 
-
-        /// <summary>
-        /// Indicates whether the current object is equal to another object of the same type.
-        /// </summary>
-        /// <returns>
-        /// true if the current object is equal to the <paramref name="other"/> parameter; otherwise, false.
-        /// </returns>
-        /// <param name="other">An object to compare with this object.
-        ///                 </param>
-        public bool Equals(SipUri other)
+        public override bool Equals(object obj)
         {
+            var other = obj as SipUri;
+            if (other == null)
+                return false;
+
             return other.Domain.Equals(Domain, StringComparison.OrdinalIgnoreCase)
                    && other.Parameters.Count == Parameters.Count
                    && other.Password.Equals(Password, StringComparison.OrdinalIgnoreCase)
@@ -225,6 +214,7 @@ namespace SipSharp
                    && other.Scheme.Equals(Scheme, StringComparison.OrdinalIgnoreCase)
                    && other.UserName.Equals(UserName, StringComparison.OrdinalIgnoreCase);
         }
+
 
         /// <summary>
         /// Will only add scheme and port if specified.
@@ -242,7 +232,7 @@ namespace SipSharp
             if (_port != 0)
                 temp += ":" + _port;
 
-            foreach (KeyValuePair<string, string> pair in _parameters)
+            foreach (var pair in _parameters)
             {
                 if (string.IsNullOrEmpty(pair.Value))
                     temp += ';' + pair.Key;
@@ -265,17 +255,23 @@ namespace SipSharp
         ///<filterpriority>2</filterpriority>
         public object Clone()
         {
-            return new SipUri(_scheme, _userName, _password, _domain, _port, (IKeyValueCollection)_parameters.Clone());
+            return new SipUri(_scheme, _userName, _password, _domain, _port, (IKeyValueCollection) _parameters.Clone());
         }
 
         #endregion
 
-        public override bool Equals(object obj)
-        {
-            SipUri other = obj as SipUri;
-            if (other == null)
-                return false;
+        #region IEquatable<SipUri> Members
 
+        /// <summary>
+        /// Indicates whether the current object is equal to another object of the same type.
+        /// </summary>
+        /// <returns>
+        /// true if the current object is equal to the <paramref name="other"/> parameter; otherwise, false.
+        /// </returns>
+        /// <param name="other">An object to compare with this object.
+        ///                 </param>
+        public bool Equals(SipUri other)
+        {
             return other.Domain.Equals(Domain, StringComparison.OrdinalIgnoreCase)
                    && other.Parameters.Count == Parameters.Count
                    && other.Password.Equals(Password, StringComparison.OrdinalIgnoreCase)
@@ -284,5 +280,6 @@ namespace SipSharp
                    && other.UserName.Equals(UserName, StringComparison.OrdinalIgnoreCase);
         }
 
+        #endregion
     }
 }

@@ -4,7 +4,7 @@ namespace SipSharp.Logging
 {
     public class ConsoleLogFactory : ILogFactory
     {
-        readonly ILogFilter _filter;
+        private readonly ILogFilter _filter;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConsoleLogFactory"/> class.
@@ -14,7 +14,6 @@ namespace SipSharp.Logging
         {
             _filter = filter;
         }
-
 
         #region ILogFactory Members
 

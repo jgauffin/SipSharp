@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using SipSharp.Messages.Headers;
+﻿using SipSharp.Messages.Headers;
 using SipSharp.Messages.Headers.Parsers;
 using SipSharp.Tools;
 using Xunit;
@@ -11,7 +7,12 @@ namespace SipSharp.Test.Messages.Headers.Parsers
 {
     public class ContactParserTest
     {
-        
+        private ContactHeader Parse(string text)
+        {
+            var parser = new ContactParser();
+            return (ContactHeader) parser.Parse("From", new StringReader(text));
+        }
+
         [Fact]
         private void Test()
         {
@@ -21,12 +22,6 @@ namespace SipSharp.Test.Messages.Headers.Parsers
             Assert.Equal("agb", c.FirstContact.Uri.UserName);
             Assert.Equal("bell-telephone.com", c.FirstContact.Uri.Domain);
             Assert.Equal("a48s", c.Parameters["tag"]);
-        }
-
-        private ContactHeader Parse(string text)
-        {
-            ContactParser parser = new ContactParser();
-            return (ContactHeader) parser.Parse("From", new StringReader(text));
         }
     }
 }

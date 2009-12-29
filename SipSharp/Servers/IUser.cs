@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace SipSharp.Servers
 {
@@ -11,8 +9,7 @@ namespace SipSharp.Servers
 
         string DisplayName { get; }
 
-        DateTime ExpiresAt { get; }
-
         int Expires { get; set; }
+        DateTime ExpiresAt { get; }
     }
 }

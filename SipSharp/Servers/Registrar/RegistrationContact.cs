@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace SipSharp.Servers.Registrar
 {
@@ -17,6 +14,11 @@ namespace SipSharp.Servers.Registrar
         }
 
         /// <summary>
+        /// Gets or sets call id used during registration.
+        /// </summary>
+        public string CallId { get; set; }
+
+        /// <summary>
         /// Gets or sets expires time.
         /// </summary>
         public int Expires { get; set; }
@@ -30,11 +32,6 @@ namespace SipSharp.Servers.Registrar
         /// Gets or sets contact quality.
         /// </summary>
         public double Quality { get; set; }
-
-        /// <summary>
-        /// Gets or sets call id used during registration.
-        /// </summary>
-        public string CallId { get; set; }
 
         /// <summary>
         /// Gets or sets sequence number from CSeq.

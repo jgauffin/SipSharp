@@ -1,17 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace SipSharp.Calls
+﻿namespace SipSharp.Calls
 {
     public class PhoneNumber
     {
-        /// <summary>
-        /// Gets or sets number without area and country codes.
-        /// </summary>
-        public string Number { get; set; }
-
         /// <summary>
         /// Gets or sets area code.
         /// </summary>
@@ -27,6 +17,9 @@ namespace SipSharp.Calls
         /// </summary>
         public string E164 { get; set; }
 
-
+        /// <summary>
+        /// Gets or sets number without area and country codes.
+        /// </summary>
+        public string Number { get; set; }
     }
 }

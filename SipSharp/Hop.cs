@@ -11,17 +11,17 @@ namespace SipSharp
         }
 
         /// <summary>
-        /// Gets target IP end point.
-        /// </summary>
-        public IPEndPoint EndPoint { get; private set; }
-
-        /// <summary>
         /// Gets target IP address.
         /// </summary>
         public IPAddress Address
         {
             get { return EndPoint.Address; }
         }
+
+        /// <summary>
+        /// Gets target IP end point.
+        /// </summary>
+        public IPEndPoint EndPoint { get; private set; }
 
         /// <summary>
         /// Gets target port.

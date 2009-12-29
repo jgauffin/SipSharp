@@ -7,15 +7,16 @@ namespace SipSharp.Test.Messages.Headers.Parsers
 {
     public class RouteHeaderTest
     {
-        private RouteParser _parser;
+        private readonly RouteParser _parser;
 
         [Fact]
         private void Test()
         {
             IHeader header = _parser.Parse("Route",
-                          new StringReader("<sip:bigbox3.site3.atlanta.com;lr>,\r\n <sip:server10.biloxi.com)"));
+                                           new StringReader(
+                                               "<sip:bigbox3.site3.atlanta.com;lr>,\r\n <sip:server10.biloxi.com)"));
             Assert.IsType(typeof (Route), header);
-            Route route = (Route) header;
+            var route = (Route) header;
             Assert.Equal("bigbox3.site3.atlanta.com", route.Items[0].Uri.Domain);
             Assert.Equal("sip", route.Items[0].Uri.Scheme);
             Assert.True(route.Items[0].IsLoose);
@@ -23,6 +24,5 @@ namespace SipSharp.Test.Messages.Headers.Parsers
             Assert.Equal("sip", route.Items[1].Uri.Scheme);
             Assert.False(route.Items[1].IsLoose);
         }
-
     }
 }

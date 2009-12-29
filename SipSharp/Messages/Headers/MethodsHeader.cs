@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace SipSharp.Messages.Headers
 {
@@ -24,6 +22,8 @@ namespace SipSharp.Messages.Headers
         /// </summary>
         /// <remarks>All methods are in upper case.</remarks>
         public ICollection<string> Methods { get; private set; }
+
+        #region IHeader Members
 
         /// <summary>
         /// Creates a new object that is a copy of the current instance.
@@ -53,9 +53,8 @@ namespace SipSharp.Messages.Headers
         /// <summary>
         /// Gets header name
         /// </summary>
-        public string Name
-        {
-            get; private set;
-        }
+        public string Name { get; private set; }
+
+        #endregion
     }
 }

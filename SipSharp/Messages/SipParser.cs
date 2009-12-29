@@ -16,8 +16,8 @@ namespace SipSharp.Messages
         private int _bodyBytesLeft;
         private byte[] _buffer;
         private string _headerName;
-        private ParserMethod _parserMethod;
         private string _headerValue;
+        private ParserMethod _parserMethod;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SipParser"/> class.
@@ -114,7 +114,7 @@ namespace SipSharp.Messages
                     return true;
                 }
 
-                if(_reader.RemainingLength < 1)
+                if (_reader.RemainingLength < 1)
                     return false;
 
                 // consume one whitespace
@@ -180,15 +180,15 @@ namespace SipSharp.Messages
                 catch (ArgumentException err)
                 {
                     //  RFC3261 Section 8.1.3.2
-	                // A UAC MUST treat any final response it does not recognize as being
-	                // equivalent to the x00 response code of that class, and MUST be able
-	                // to process the x00 response code for all classes.  For example, if a
-	                // UAC receives an unrecognized response code of 431, it can safely
-	                // assume that there was something wrong with its request and treat the
-	                // response as if it had received a 400 (Bad Request) response code.  A
-	                // UAC MUST treat any provisional response different than 100 that it
-	                // does not recognize as 183 (Session Progress).  A UAC MUST be able to
-	                // process 100 and 183 responses.		
+                    // A UAC MUST treat any final response it does not recognize as being
+                    // equivalent to the x00 response code of that class, and MUST be able
+                    // to process the x00 response code for all classes.  For example, if a
+                    // UAC receives an unrecognized response code of 431, it can safely
+                    // assume that there was something wrong with its request and treat the
+                    // response as if it had received a 400 (Bad Request) response code.  A
+                    // UAC MUST treat any provisional response different than 100 that it
+                    // does not recognize as 183 (Session Progress).  A UAC MUST be able to
+                    // process 100 and 183 responses.		
                     int code;
                     if (!int.TryParse(words[1], out code))
                         throw new BadRequestException("Status code '" + words[1] + "' is not known.", err);
@@ -204,7 +204,6 @@ namespace SipSharp.Messages
                         _responseEventArgs.StatusCode = StatusCode.InternalError;
                     else if (code >= 600)
                         _responseEventArgs.StatusCode = StatusCode.BusyEverywhere;
-                    
                 }
                 _responseEventArgs.ReasonPhrase = words[1];
                 ResponseLineParsed(this, _responseEventArgs);

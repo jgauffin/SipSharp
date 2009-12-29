@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using SipSharp.Messages;
+﻿using SipSharp.Messages;
 
 namespace SipSharp.Transactions
 {
@@ -29,6 +25,5 @@ namespace SipSharp.Transactions
 
             return request.Via.First.Branch + "|" + request.Via.First.SentBy + "|" + method;
         }
-
     }
 }

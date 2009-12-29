@@ -36,13 +36,13 @@ namespace SipSharp.Transports.Parser
         public string Method { get; set; }
 
         /// <summary>
-        /// Gets or sets the version of the SIP protocol that the client want to use.
-        /// </summary>
-        public string Version { get; set; }
-
-        /// <summary>
         /// Gets or sets requested URI path.
         /// </summary>
         public string UriPath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the version of the SIP protocol that the client want to use.
+        /// </summary>
+        public string Version { get; set; }
     }
 }

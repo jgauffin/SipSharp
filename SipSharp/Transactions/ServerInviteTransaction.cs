@@ -6,7 +6,6 @@ namespace SipSharp.Transactions
 {
     internal class ServerInviteTransaction : IServerTransaction
     {
-        private readonly ITransportLayer _transport;
         private readonly IRequest _request;
 
         /// <summary>
@@ -24,6 +23,8 @@ namespace SipSharp.Transactions
         /// </summary>
         private readonly Timer _timerI;
 
+        private readonly ITransportLayer _transport;
+
         private IResponse _response;
 
         private int _timerGValue;
@@ -31,7 +32,7 @@ namespace SipSharp.Transactions
 
         public ServerInviteTransaction(ITransportLayer transport, IRequest request)
         {
-            this._transport = transport;
+            _transport = transport;
             _request = request;
             State = TransactionState.Proceeding;
             _timerG = new Timer(OnRetransmit);
@@ -68,15 +69,15 @@ namespace SipSharp.Transactions
             // transition to the "Terminated" state, and MUST indicate to the TU
             // that a transaction failure has occurred.
             Terminate(false);
-        	TimedOut(this, EventArgs.Empty);
+            TimedOut(this, EventArgs.Empty);
             //TODO: Should we have a TimedOut event too?
         }
 
         private void Terminate(bool triggerEvent)
         {
             State = TransactionState.Terminated;
-			if (triggerEvent)
-				Terminated(this, EventArgs.Empty);
+            if (triggerEvent)
+                Terminated(this, EventArgs.Empty);
             _timerG.Change(Timeout.Infinite, Timeout.Infinite);
             _timerH.Change(Timeout.Infinite, Timeout.Infinite);
             _timerI.Change(Timeout.Infinite, Timeout.Infinite);
@@ -158,9 +159,9 @@ namespace SipSharp.Transactions
             {
                 if (StatusCodeHelper.Is2xx(response))
                 {
-					// retransmissions of 2xx
-					// responses are handled by the TU.  The server transaction MUST then
-					// transition to the "Terminated" state.
+                    // retransmissions of 2xx
+                    // responses are handled by the TU.  The server transaction MUST then
+                    // transition to the "Terminated" state.
                     _transport.Send(response);
                     Terminate(true);
                 }
@@ -185,7 +186,6 @@ namespace SipSharp.Transactions
         /// Gets dialog that the transaction belongs to
         /// </summary>
         //IDialog Dialog { get; }
-
         /// <summary>
         /// Gets transaction identifier.
         /// </summary>
@@ -203,16 +203,16 @@ namespace SipSharp.Transactions
         /// </summary>
         public TransactionState State { get; private set; }
 
-        #endregion
-
         /// <summary>
         /// Ack was never received from client.
         /// </summary>
         public event EventHandler Terminated = delegate { };
 
-		/// <summary>
-		/// Transaction timed out.
-		/// </summary>
-    	public event EventHandler TimedOut = delegate { };
+        #endregion
+
+        /// <summary>
+        /// Transaction timed out.
+        /// </summary>
+        public event EventHandler TimedOut = delegate { };
     }
 }

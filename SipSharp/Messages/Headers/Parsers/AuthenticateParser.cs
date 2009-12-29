@@ -10,6 +10,7 @@ namespace SipSharp.Messages.Headers.Parsers
     [ParserFor(Authenticate.WWW_NAME, char.MinValue)]
     public class AuthenticateParser : IHeaderParser
     {
+        #region IHeaderParser Members
 
         /// <summary>
         /// Parse a message value.
@@ -36,14 +37,14 @@ namespace SipSharp.Messages.Headers.Parsers
             UriParser.ParseParameters(parameters, reader, ',');
 
             var header = new Authenticate(name)
-            {
-                Algortihm = parameters["algorithm"],
-                Domain = UriParser.Parse(parameters["domain"]),
-                Realm = parameters["realm"],
-                Nonce = parameters["nonce"],
-                Qop = parameters["qop"],
-                Opaque = parameters["opaque"]
-            };
+                             {
+                                 Algortihm = parameters["algorithm"],
+                                 Domain = UriParser.Parse(parameters["domain"]),
+                                 Realm = parameters["realm"],
+                                 Nonce = parameters["nonce"],
+                                 Qop = parameters["qop"],
+                                 Opaque = parameters["opaque"]
+                             };
 
             try
             {
@@ -56,5 +57,7 @@ namespace SipSharp.Messages.Headers.Parsers
 
             return header;
         }
+
+        #endregion
     }
 }

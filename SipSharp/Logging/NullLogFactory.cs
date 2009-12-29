@@ -7,11 +7,16 @@ namespace SipSharp.Logging
     /// </summary>
     public class NullLogFactory : ILogFactory
     {
-        private static NullLogFactory _instance = new NullLogFactory();
+        private static readonly NullLogFactory _instance = new NullLogFactory();
 
         private NullLogFactory()
-        {}
+        {
+        }
 
+        public static ILogFactory Instance
+        {
+            get { return _instance; }
+        }
 
         #region ILogFactory Members
 
@@ -30,10 +35,5 @@ namespace SipSharp.Logging
         }
 
         #endregion
-
-        public static ILogFactory Instance
-        {
-            get { return _instance; }
-        }
     }
 }

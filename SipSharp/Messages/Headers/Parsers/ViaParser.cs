@@ -10,33 +10,6 @@ namespace SipSharp.Messages.Headers.Parsers
     [ParserFor("Via", 'v')]
     public class ViaParser : IHeaderParser
     {
-        #region IHeaderParser Members
-
-        /// <summary>
-        /// Parse a message value.
-        /// </summary>
-        /// <param name="name">Name of header being parsed.</param>
-        /// <param name="reader">Reader containing the string that should be parsed.</param>
-        /// <returns>Newly created header.</returns>
-        /// <exception cref="ParseException">Header value is malformed.</exception>
-        public IHeader Parse(string name, ITextReader reader)
-        {
-            ViaEntry entry = ParseEntry(reader);
-            if (reader.Current != ',')
-                return new Via {entry};
-
-            Via via = new Via {entry};
-            while (reader.Current == ',')
-            {
-                reader.ConsumeWhiteSpaces(',');
-                entry = ParseEntry(reader);
-                via.Add(entry);
-            }
-            return via;
-        }
-
-        #endregion
-
         public static ViaEntry ParseEntry(ITextReader reader)
         {
             //SIP/2.0/UDP erlang.bell-telephone.com:5060;branch=z9hG4bK87asdks7
@@ -88,7 +61,34 @@ namespace SipSharp.Messages.Headers.Parsers
                 entry.Rport = value;
             }
 
-            return entry;            
+            return entry;
         }
+
+        #region IHeaderParser Members
+
+        /// <summary>
+        /// Parse a message value.
+        /// </summary>
+        /// <param name="name">Name of header being parsed.</param>
+        /// <param name="reader">Reader containing the string that should be parsed.</param>
+        /// <returns>Newly created header.</returns>
+        /// <exception cref="ParseException">Header value is malformed.</exception>
+        public IHeader Parse(string name, ITextReader reader)
+        {
+            ViaEntry entry = ParseEntry(reader);
+            if (reader.Current != ',')
+                return new Via {entry};
+
+            var via = new Via {entry};
+            while (reader.Current == ',')
+            {
+                reader.ConsumeWhiteSpaces(',');
+                entry = ParseEntry(reader);
+                via.Add(entry);
+            }
+            return via;
+        }
+
+        #endregion
     }
 }

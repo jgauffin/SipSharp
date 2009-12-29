@@ -1,9 +1,4 @@
 ﻿#if TEST
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 namespace SipSharp.Tests
 {
     public class TestMessages
@@ -12,7 +7,7 @@ namespace SipSharp.Tests
         /// from RFC 4475
         /// </summary>
         public const string AShortTortuousINVITE =
-                @"INVITE sip:vivekg@chair-dnrc.example.com;unknownparam SIP/2.0
+            @"INVITE sip:vivekg@chair-dnrc.example.com;unknownparam SIP/2.0
 TO :
  sip:vivekg@chair-dnrc.example.com ;   tag    = 1918181833n
 from   : ""J Rosenberg \\\""""       <sip:jdrosen@example.com>
@@ -52,18 +47,52 @@ a=rtpmap:31 LPC
 ";
 
         /// <summary>
-        /// RFC 4475, 3.1.1.2.  Wide Range of Valid Characters
+        /// 3.1.1.8.  Extra Trailing Octets in a UDP Datagram
         /// </summary>
-        public const string ValidCharacters =
-            "!interesting-Method0123456789_*+`.%indeed'~ sip:1_unusual.URI~(to-be!sure)&isn't+it$/crazy?,/;;*:&it+has=1,weird!*pas$wo~d_too.(doesn't-it)@example.com SIP/2.0\r\n" +
-            "Via: SIP/2.0/TCP host1.example.com;branch=z9hG4bK-.!%66*_+`'~" +
-            "To: \"BEL:\x07 NUL:\x00 DEL:\x7F\"<sip:1_unusual.URI~(to-be!sure)&isn't+it$/crazy?,/;;*@example.com>" +
-            "From: token1~` token2'+_ token3*%!.- <sip:mundane@example.com>;fromParam''~+*_!.-%=\"\xD1\x80\xD0\xB0\xD0\xB1\xD0\xBE\xD1\x82\xD0\xB0\xD1\x8E\xD1\x89\xD0\xB8\xD0\xB9\";tag=_token~1'+`*%!-." +
-            "Call-ID: intmeth.word%ZK-!.*_+'@word`~)(><:\\/\"][?}{" +
-            "CSeq: 139122385 !interesting-Method0123456789_*+`.%indeed'~" +
-            "Max-Forwards: 255" +
-            "extensionHeader-!.%*+_`'~:\xEF\xBB\xBF\xE5\xA4\xA7\xE5\x81\x9C\xE9\x9B\xBB" +
-            "Content-Length: 0";
+        /// <remarks>
+        /// <para>This message contains a single SIP REGISTER request, which ostensibly
+        /// arrived over UDP in a single datagram.  The packet contains extra
+        /// octets after the body (which in this case has zero length).  The
+        /// extra octets happen to look like a SIP INVITE request, but (per
+        /// section 18.3 of [RFC3261]) they are just spurious noise that must be
+        /// ignored.
+        /// </para>
+        /// <para>
+        /// A SIP element receiving this datagram would handle the REGISTER
+        /// request normally and ignore the extra bits that look like an INVITE
+        /// request.  If the element is a proxy choosing to forward the REGISTER,
+        /// the INVITE octets would not appear in the forwarded request.
+        /// </para>
+        /// </remarks>
+        public const string CrapAtTheEnd =
+            @"REGISTER sip:example.com SIP/2.0
+To: sip:j.user@example.com
+From: sip:j.user@example.com;tag=43251j3j324
+Max-Forwards: 8
+I: dblreq.0ha0isndaksdj99sdfafnl3lk233412
+Contact: sip:j.user@host.example.com
+CSeq: 8 REGISTER
+Via: SIP/2.0/UDP 192.0.2.125;branch=z9hG4bKkdjuw23492
+Content-Length: 0
+
+INVITE sip:joe@example.com SIP/2.0
+t: sip:joe@example.com
+From: sip:caller@example.net;tag=141334
+Max-Forwards: 8
+Call-ID: dblreq.0ha0isnda977644900765@192.0.2.15
+CSeq: 8 INVITE
+Via: SIP/2.0/UDP 192.0.2.15;branch=z9hG4bKkdjuw380234
+Content-Type: application/sdp
+Content-Length: 150
+
+v=0
+o=mhandley 29739 7272939 IN IP4 192.0.2.15
+s=-
+c=IN IP4 192.0.2.15
+t=0 0
+m=audio 49217 RTP/AVP 0 12
+m =video 3227 RTP/AVP 31
+a=rtpmap:31 LPC";
 
         /// <summary>
         /// RFC 4475, 3.1.1.3.  Valid Use of the % Escaping Mechanism
@@ -105,35 +134,6 @@ Via: SIP/2.0/UDP host5.example.com;branch=z9hG4bKkdjuw
 Contact: <sip:%00@host5.example.com>
 Contact: <sip:%00%00@host5.example.com>
 L:0";
-
-        /// <summary>
-        /// RFC 4475, 3.1.1.5.  Use of % When It Is Not an Escape
-        /// </summary>
-        public const string PercentIsNotEscape =
-            @"RE%47IST%45R sip:registrar.example.com SIP/2.0
-To: ""%Z%45"" <sip:resource@example.com>
-From: ""%Z%45"" <sip:resource@example.com>;tag=f232jadfj23
-Call-ID: esc02.asdfnqwo34rq23i34jrjasdcnl23nrlknsdf
-Via: SIP/2.0/TCP host.example.com;branch=z9hG4bK209%fzsnel234
-CSeq: 29344 RE%47IST%45R
-Max-Forwards: 70
-Contact: <sip:alias1@host1.example.com>
-C%6Fntact: <sip:alias2@host2.example.com>
-Contact: <sip:alias3@host3.example.com>
-l: 0";
-
-        /// <summary>
-        /// RFC 4475, 3.1.1.6.  Message with No LWS between Display Name and <
-        /// </summary>
-        public const string NoWhiteSpaces =
-            @"OPTIONS sip:user@example.com SIP/2.0
-To: sip:user@example.com
-From: caller<sip:caller@example.com>;tag=323
-Max-Forwards: 70
-Call-ID: lwsdisp.1234abcd@funky.example.com
-CSeq: 60 OPTIONS
-Via: SIP/2.0/UDP funky.example.com;branch=z9hG4bKkdjuw
-l: 0";
 
         /// <summary>
         /// RFC 4475, 3.1.1.7.  Long Values in Header Fields
@@ -194,52 +194,17 @@ m=video 3227 RTP/AVP 31
 a=rtpmap:31 LPC";
 
         /// <summary>
-        /// 3.1.1.8.  Extra Trailing Octets in a UDP Datagram
+        /// RFC 4475, 3.1.1.6.  Message with No LWS between Display Name and <
         /// </summary>
-        /// <remarks>
-        /// <para>This message contains a single SIP REGISTER request, which ostensibly
-        /// arrived over UDP in a single datagram.  The packet contains extra
-        /// octets after the body (which in this case has zero length).  The
-        /// extra octets happen to look like a SIP INVITE request, but (per
-        /// section 18.3 of [RFC3261]) they are just spurious noise that must be
-        /// ignored.
-        /// </para>
-        /// <para>
-        /// A SIP element receiving this datagram would handle the REGISTER
-        /// request normally and ignore the extra bits that look like an INVITE
-        /// request.  If the element is a proxy choosing to forward the REGISTER,
-        /// the INVITE octets would not appear in the forwarded request.
-        /// </para>
-        /// </remarks>
-        public const string CrapAtTheEnd =
-            @"REGISTER sip:example.com SIP/2.0
-To: sip:j.user@example.com
-From: sip:j.user@example.com;tag=43251j3j324
-Max-Forwards: 8
-I: dblreq.0ha0isndaksdj99sdfafnl3lk233412
-Contact: sip:j.user@host.example.com
-CSeq: 8 REGISTER
-Via: SIP/2.0/UDP 192.0.2.125;branch=z9hG4bKkdjuw23492
-Content-Length: 0
-
-INVITE sip:joe@example.com SIP/2.0
-t: sip:joe@example.com
-From: sip:caller@example.net;tag=141334
-Max-Forwards: 8
-Call-ID: dblreq.0ha0isnda977644900765@192.0.2.15
-CSeq: 8 INVITE
-Via: SIP/2.0/UDP 192.0.2.15;branch=z9hG4bKkdjuw380234
-Content-Type: application/sdp
-Content-Length: 150
-
-v=0
-o=mhandley 29739 7272939 IN IP4 192.0.2.15
-s=-
-c=IN IP4 192.0.2.15
-t=0 0
-m=audio 49217 RTP/AVP 0 12
-m =video 3227 RTP/AVP 31
-a=rtpmap:31 LPC";
+        public const string NoWhiteSpaces =
+            @"OPTIONS sip:user@example.com SIP/2.0
+To: sip:user@example.com
+From: caller<sip:caller@example.com>;tag=323
+Max-Forwards: 70
+Call-ID: lwsdisp.1234abcd@funky.example.com
+CSeq: 60 OPTIONS
+Via: SIP/2.0/UDP funky.example.com;branch=z9hG4bKkdjuw
+l: 0";
 
         /// <summary>
         /// 3.1.1.9.  Semicolon-Separated Parameters in URI User Part
@@ -247,11 +212,10 @@ a=rtpmap:31 LPC";
         /// <remarks>
         /// <para>
         /// This request has a semicolon-separated parameter contained in the
-   /// "user" part of the Request-URI (whose value contains an escaped @
-   /// symbol).  Receiving elements will accept this as a well-formed
-   /// message.  The Request-URI will parse so that the user part is
+        /// "user" part of the Request-URI (whose value contains an escaped @
+        /// symbol).  Receiving elements will accept this as a well-formed
+        /// message.  The Request-URI will parse so that the user part is
         /// "user;par=u@example.net".
-
         /// </para>
         /// </remarks>
         public const string ParametersInUriUserPart =
@@ -267,6 +231,37 @@ Accept: application/sdp, application/pkcs7-mime,
 Via: SIP/2.0/UDP 192.0.2.1;branch=z9hG4bKkdjuw
 l: 0
 ";
+
+        /// <summary>
+        /// RFC 4475, 3.1.1.5.  Use of % When It Is Not an Escape
+        /// </summary>
+        public const string PercentIsNotEscape =
+            @"RE%47IST%45R sip:registrar.example.com SIP/2.0
+To: ""%Z%45"" <sip:resource@example.com>
+From: ""%Z%45"" <sip:resource@example.com>;tag=f232jadfj23
+Call-ID: esc02.asdfnqwo34rq23i34jrjasdcnl23nrlknsdf
+Via: SIP/2.0/TCP host.example.com;branch=z9hG4bK209%fzsnel234
+CSeq: 29344 RE%47IST%45R
+Max-Forwards: 70
+Contact: <sip:alias1@host1.example.com>
+C%6Fntact: <sip:alias2@host2.example.com>
+Contact: <sip:alias3@host3.example.com>
+l: 0";
+
+        /// <summary>
+        /// RFC 4475, 3.1.1.2.  Wide Range of Valid Characters
+        /// </summary>
+        public const string ValidCharacters =
+            "!interesting-Method0123456789_*+`.%indeed'~ sip:1_unusual.URI~(to-be!sure)&isn't+it$/crazy?,/;;*:&it+has=1,weird!*pas$wo~d_too.(doesn't-it)@example.com SIP/2.0\r\n" +
+            "Via: SIP/2.0/TCP host1.example.com;branch=z9hG4bK-.!%66*_+`'~" +
+            "To: \"BEL:\x07 NUL:\x00 DEL:\x7F\"<sip:1_unusual.URI~(to-be!sure)&isn't+it$/crazy?,/;;*@example.com>" +
+            "From: token1~` token2'+_ token3*%!.- <sip:mundane@example.com>;fromParam''~+*_!.-%=\"\xD1\x80\xD0\xB0\xD0\xB1\xD0\xBE\xD1\x82\xD0\xB0\xD1\x8E\xD1\x89\xD0\xB8\xD0\xB9\";tag=_token~1'+`*%!-." +
+            "Call-ID: intmeth.word%ZK-!.*_+'@word`~)(><:\\/\"][?}{" +
+            "CSeq: 139122385 !interesting-Method0123456789_*+`.%indeed'~" +
+            "Max-Forwards: 255" +
+            "extensionHeader-!.%*+_`'~:\xEF\xBB\xBF\xE5\xA4\xA7\xE5\x81\x9C\xE9\x9B\xBB" +
+            "Content-Length: 0";
     }
 }
+
 #endif

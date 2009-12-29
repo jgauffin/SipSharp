@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SipSharp.Messages.Headers
+﻿namespace SipSharp.Messages.Headers
 {
     internal class MaxForwards : IHeader
     {
@@ -36,8 +34,6 @@ namespace SipSharp.Messages.Headers
             get { return NAME; }
         }
 
-        #endregion
-
         /// <summary>
         /// Indicates whether the current object is equal to another object of the same type.
         /// </summary>
@@ -48,15 +44,17 @@ namespace SipSharp.Messages.Headers
         ///                 </param>
         public bool Equals(IHeader other)
         {
-            NumericHeader header = other as NumericHeader;
+            var header = other as NumericHeader;
             if (header != null)
                 return Count == header.Value;
 
-            MaxForwards forwards = other as MaxForwards;
+            var forwards = other as MaxForwards;
             if (forwards != null)
                 return forwards.Count == Count;
 
             return false;
         }
+
+        #endregion
     }
 }

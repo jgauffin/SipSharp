@@ -11,28 +11,6 @@ namespace SipSharp.Messages.Headers
     /// <seealso cref="Event"/>
     internal class SubscriptionState : IHeader
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SubscriptionState"/> class.
-        /// </summary>
-        public SubscriptionState()
-        {
-            
-        }
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SubscriptionState"/> class.
-        /// </summary>
-        /// <param name="state">State to copy.</param>
-        private SubscriptionState(SubscriptionState state)
-        {
-            if (state == null)
-                throw new ArgumentNullException("state");
-
-            Expires = state.Expires;
-            Reason = state.Reason;
-            RetryAfter = state.RetryAfter;
-            State = state.State;
-        }
-
         #region SubscribeReason enum
 
         public enum SubscribeReason
@@ -135,6 +113,28 @@ namespace SipSharp.Messages.Headers
         public const string NAME = "Subscription-State";
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="SubscriptionState"/> class.
+        /// </summary>
+        public SubscriptionState()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SubscriptionState"/> class.
+        /// </summary>
+        /// <param name="state">State to copy.</param>
+        private SubscriptionState(SubscriptionState state)
+        {
+            if (state == null)
+                throw new ArgumentNullException("state");
+
+            Expires = state.Expires;
+            Reason = state.Reason;
+            RetryAfter = state.RetryAfter;
+            State = state.State;
+        }
+
+        /// <summary>
         /// Gets or sets number of seconds before the subscription expires.
         /// </summary>
         /// <remarks>
@@ -165,21 +165,21 @@ namespace SipSharp.Messages.Headers
         public int Expires { get; set; }
 
         /// <summary>
-        /// Gets or sets description.
-        /// </summary>
-        public int RetryAfter { get; set; }
-
-        #region IHeader Members
-
-        /// <summary>
         /// Gets or sets why subscription was terminated
         /// </summary>
         public SubscribeReason Reason { get; set; }
 
         /// <summary>
+        /// Gets or sets description.
+        /// </summary>
+        public int RetryAfter { get; set; }
+
+        /// <summary>
         /// Gets or sets current subscription state
         /// </summary>
         public SubscribeState State { get; set; }
+
+        #region IHeader Members
 
         /// <summary>
         /// Creates a new object that is a copy of the current instance.
@@ -201,8 +201,6 @@ namespace SipSharp.Messages.Headers
             get { return NAME; }
         }
 
-        #endregion
-
         /// <summary>
         /// Indicates whether the current object is equal to another object of the same type.
         /// </summary>
@@ -213,11 +211,13 @@ namespace SipSharp.Messages.Headers
         ///                 </param>
         public bool Equals(IHeader other)
         {
-            SubscriptionState state = other as SubscriptionState;
+            var state = other as SubscriptionState;
             if (state == null)
                 return false;
 
             return state.State == State && state.Expires == Expires && state.RetryAfter == RetryAfter;
         }
+
+        #endregion
     }
 }

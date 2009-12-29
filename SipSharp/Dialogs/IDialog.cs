@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace SipSharp.Dialogs
+﻿namespace SipSharp.Dialogs
 {
     /// <summary>
     /// A dialog represents a peer-to-peer SIP relationship between two user agents
@@ -40,15 +35,15 @@ namespace SipSharp.Dialogs
         string CallId { get; set; }
 
         /// <summary>
-        /// Gets or sets remote tag.
-        /// </summary>
-        string RemoteTag { get; set; }
-
-        /// <summary>
         /// Gets or sets local tag.
         /// </summary>
         /// 
         string LocalTag { get; set; }
+
+        /// <summary>
+        /// Gets or sets remote tag.
+        /// </summary>
+        string RemoteTag { get; set; }
 
         /// <summary>
         /// Gets or sets dialog state.

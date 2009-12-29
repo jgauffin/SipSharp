@@ -12,6 +12,7 @@ namespace SipSharp.Messages.Headers
         /// </summary>
         string Name { get; }
     }
+
     /*
     /// <summary>
     /// Header class is used for multiple headers.

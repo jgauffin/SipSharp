@@ -16,6 +16,11 @@ namespace SipSharp
     public interface IKeyValueCollection<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>, ICloneable
     {
         /// <summary>
+        /// Gets numer of items.
+        /// </summary>
+        int Count { get; }
+
+        /// <summary>
         /// Gets if the collection is read only.
         /// </summary>
         bool IsReadOnly { get; }
@@ -53,12 +58,6 @@ namespace SipSharp
         /// <param name="key">Key</param>
         /// <remarks><c>true</c> if value was found; otherwise <c>false</c>.</remarks>
         bool Remove(TKey key);
-
-        /// <summary>
-        /// Gets numer of items.
-        /// </summary>
-        int Count { get; }
-
     }
 
     /// <summary>
@@ -78,6 +77,11 @@ namespace SipSharp
         public KeyValueCollection()
         {
             _items = new Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
+        }
+
+        public void Clear()
+        {
+            _items.Clear();
         }
 
         #region IKeyValueCollection Members
@@ -189,16 +193,11 @@ namespace SipSharp
         }
 
         #endregion
-
-        public void Clear()
-        {
-            _items.Clear();
-        }
     }
 
     public class KeyValueCollection<TKey, TValue> : IKeyValueCollection<TKey, TValue>
     {
-        private IDictionary<TKey, TValue> _items;
+        private readonly IDictionary<TKey, TValue> _items;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KeyValueCollection"/> class.
@@ -208,7 +207,7 @@ namespace SipSharp
             _items = new Dictionary<TKey, TValue>();
         }
 
-        #region IKeyValueCollection Members
+        #region IKeyValueCollection<TKey,TValue> Members
 
         /// <summary>
         /// Gets or sets a value.

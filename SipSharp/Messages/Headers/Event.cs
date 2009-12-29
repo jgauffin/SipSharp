@@ -2,13 +2,15 @@
 {
     public class Event : IHeader
     {
+        public const string NAME = "Event";
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Event"/> class.
         /// </summary>
         public Event()
         {
-            
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Event"/> class.
         /// </summary>
@@ -17,8 +19,19 @@
         {
             EventType = value.EventType;
             EventId = value.EventId;
-
         }
+
+        /// <summary>
+        /// Gets or sets event identity.
+        /// </summary>
+        public string EventId { get; set; }
+
+        /// <summary>
+        /// Gets or sets type of event.
+        /// </summary>
+        public string EventType { get; set; }
+
+        #region IHeader Members
 
         /// <summary>
         /// Creates a new object that is a copy of the current instance.
@@ -33,24 +46,12 @@
         }
 
         /// <summary>
-        /// Gets or sets type of event.
-        /// </summary>
-        public string EventType { get; set; }
-
-        /// <summary>
-        /// Gets or sets event identity.
-        /// </summary>
-        public string EventId { get; set; }
-
-        /// <summary>
         /// Gets header name
         /// </summary>
         public string Name
         {
             get { return NAME; }
         }
-
-        public const string NAME = "Event";
 
         /// <summary>
         /// Indicates whether the current object is equal to another object of the same type.
@@ -62,10 +63,12 @@
         ///                 </param>
         public virtual bool Equals(IHeader other)
         {
-            Event header = other as Event;
+            var header = other as Event;
             if (header != null)
                 return header.EventId == EventId && string.Compare(EventType, header.EventType) == 0;
             return false;
         }
+
+        #endregion
     }
 }

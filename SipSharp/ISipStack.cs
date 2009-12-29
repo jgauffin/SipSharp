@@ -11,6 +11,21 @@ namespace SipSharp
     /// </summary>
     public interface ISipStack
     {
+        Authenticator Authenticator { get; }
+        IClientTransaction CreateClientTransaction(IRequest request);
+
+        /// <summary>
+        /// Create a new request
+        /// </summary>
+        /// <param name="method">Sip method.</param>
+        /// <param name="from">Who is dialing?</param>
+        /// <param name="to">Destination</param>
+        /// <returns>Request object.</returns>
+        /// <seealso cref="SipMethod"/>
+        IRequest CreateRequest(string method, Contact from, Contact to);
+
+        IServerTransaction CreateServerTransaction(IRequest request);
+
         /// <summary>
         /// Send a request.
         /// </summary>
@@ -40,30 +55,10 @@ namespace SipSharp
         /// A new transaction are automatically created by the stack and attached to this event.
         /// </remarks>
         event EventHandler<ResponseEventArgs> ResponseReceived;
-
-
-        IServerTransaction CreateServerTransaction(IRequest request);
-        IClientTransaction CreateClientTransaction(IRequest request);
-
-        Authenticator Authenticator { get; }
-
-        /// <summary>
-        /// Create a new request
-        /// </summary>
-        /// <param name="method">Sip method.</param>
-        /// <param name="from">Who is dialing?</param>
-        /// <param name="to">Destination</param>
-        /// <returns>Request object.</returns>
-        /// <seealso cref="SipMethod"/>
-        IRequest CreateRequest(string method, Contact from, Contact to);
     }
 
     public class RequestEventArgs : EventArgs
     {
-        public IRequest Request { get; private set; }
-        public IServerTransaction Transaction { get; private set; }
-        public EndPoint RemoteEndPoint { get; private set; }
-
         public RequestEventArgs(IRequest request, IServerTransaction transaction, EndPoint endPoint)
         {
             Request = request;
@@ -76,14 +71,14 @@ namespace SipSharp
         /// Request was handled by a handler.
         /// </summary>
         public bool IsHandled { get; set; }
+
+        public EndPoint RemoteEndPoint { get; private set; }
+        public IRequest Request { get; private set; }
+        public IServerTransaction Transaction { get; private set; }
     }
 
     public class ResponseEventArgs : EventArgs
     {
-        public IResponse Response { get; private set; }
-        public EndPoint RemoteEndPoint { get; private set; }
-        public IServerTransaction Transaction { get; private set; }
-
         public ResponseEventArgs(IResponse response, IServerTransaction transaction, EndPoint remoteEndPoint)
         {
             Response = response;
@@ -101,7 +96,9 @@ namespace SipSharp
         /// Request was handled by a handler.
         /// </summary>
         public bool IsHandled { get; set; }
+
+        public EndPoint RemoteEndPoint { get; private set; }
+        public IResponse Response { get; private set; }
+        public IServerTransaction Transaction { get; private set; }
     }
-
-
 }

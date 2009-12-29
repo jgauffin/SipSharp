@@ -108,7 +108,7 @@ namespace SipSharp.Transactions
                               CSeq = new CSeq(_request.CSeq.Number, "ACK")
                           };
             ack.Via.AddToTop(_request.Via.First);
-            ack.Headers.Add("Route", (IHeader)response.Route.Clone());
+            ack.Headers.Add("Route", (IHeader) response.Route.Clone());
 
             return ack;
         }
@@ -140,8 +140,8 @@ namespace SipSharp.Transactions
 			 * state, the client transaction MUST move to the terminated state.
 			 */
             if (State == TransactionState.Completed)
-				Terminate();
-		}
+                Terminate();
+        }
 
         private void OnTimeout(object state)
         {
@@ -156,14 +156,20 @@ namespace SipSharp.Transactions
             }
         }
 
-		private void Terminate()
-		{
-			_timerA.Change(Timeout.Infinite, Timeout.Infinite);
-			_timerB.Change(Timeout.Infinite, Timeout.Infinite);
-			_timerD.Change(Timeout.Infinite, Timeout.Infinite);
-			State = TransactionState.Terminated;
-		}
+        private void SendAck(IResponse response)
+        {
+            _transport.Send(CreateAck(response));
+        }
 
+        private void Terminate()
+        {
+            _timerA.Change(Timeout.Infinite, Timeout.Infinite);
+            _timerB.Change(Timeout.Infinite, Timeout.Infinite);
+            _timerD.Change(Timeout.Infinite, Timeout.Infinite);
+            State = TransactionState.Terminated;
+        }
+
+        #region IClientTransaction Members
 
         /// <summary>
         /// Gets request that the transaction is for.
@@ -238,12 +244,7 @@ namespace SipSharp.Transactions
             return true;
         }
 
-        public event EventHandler TransportFailed = delegate{};
-
-        private void SendAck(IResponse response)
-        {
-            _transport.Send(CreateAck(response));
-        }
+        public event EventHandler TransportFailed = delegate { };
 
         /// <summary>
         /// A timeout have occurred.
@@ -270,7 +271,6 @@ namespace SipSharp.Transactions
         /// Gets dialog that the transaction belongs to
         /// </summary>
         //IDialog Dialog { get; }
-
         /// <summary>
         /// Gets transaction identifier.
         /// </summary>
@@ -293,5 +293,7 @@ namespace SipSharp.Transactions
         /// Gets current transaction state
         /// </summary>
         public TransactionState State { get; private set; }
+
+        #endregion
     }
 }

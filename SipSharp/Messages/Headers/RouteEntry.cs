@@ -1,6 +1,5 @@
 ﻿using System;
 using SipSharp.Messages.Headers;
-using SipSharp.Tools;
 
 namespace SipSharp.Headers
 {
@@ -59,6 +58,8 @@ namespace SipSharp.Headers
         /// </summary>
         public SipUri Uri { get; set; }
 
+        #region IHeader Members
+
         /// <summary>
         /// Creates a new object that is a copy of the current instance.
         /// </summary>
@@ -71,8 +72,6 @@ namespace SipSharp.Headers
             return new RouteEntry(_name);
         }
 
-        #region IHeader Members
-
         /// <summary>
         /// Gets or sets name of header.
         /// </summary>
@@ -80,10 +79,6 @@ namespace SipSharp.Headers
         {
             get { return _name; }
         }
-
-
-
-        #endregion
 
         /// <summary>
         /// Indicates whether the current object is equal to another object of the same type.
@@ -95,11 +90,13 @@ namespace SipSharp.Headers
         ///                 </param>
         public bool Equals(IHeader other)
         {
-            RouteEntry entry = other as RouteEntry;
+            var entry = other as RouteEntry;
             if (entry != null)
                 return entry.Uri == Uri;
 
             return false;
         }
+
+        #endregion
     }
 }

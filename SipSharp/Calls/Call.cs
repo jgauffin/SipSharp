@@ -14,14 +14,9 @@
         }
 
         /// <summary>
-        /// Gets or sets call id.
+        /// Gets or sets party that was originally called.
         /// </summary>
-        public string Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets related call
-        /// </summary>
-        public Call RelatedCall { get; set; }
+        public CallParty CalledParty { get; set; }
 
         /// <summary>
         /// Gets or sets party that made the call
@@ -34,19 +29,9 @@
         public CallParty Destination { get; set; }
 
         /// <summary>
-        /// Gets or sets party that was originally called.
+        /// Gets or sets call id.
         /// </summary>
-        public CallParty CalledParty { get; set; }
-
-        /// <summary>
-        /// Gets or sets call state
-        /// </summary>
-        public CallState State { get; set; }
-
-        /// <summary>
-        /// Gets or sets previous call state
-        /// </summary>
-        public CallState PreviousState { get; set; }
+        public string Id { get; set; }
 
 
         /// <summary>
@@ -55,9 +40,23 @@
         public CallOrigins Origin { get; set; }
 
         /// <summary>
+        /// Gets or sets previous call state
+        /// </summary>
+        public CallState PreviousState { get; set; }
+
+        /// <summary>
         /// Gets or sets why the call was made.
         /// </summary>
         public CallReasons Reason { get; set; }
-    }
 
+        /// <summary>
+        /// Gets or sets related call
+        /// </summary>
+        public Call RelatedCall { get; set; }
+
+        /// <summary>
+        /// Gets or sets call state
+        /// </summary>
+        public CallState State { get; set; }
+    }
 }

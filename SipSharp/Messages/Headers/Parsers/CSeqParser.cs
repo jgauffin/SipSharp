@@ -8,6 +8,8 @@ namespace SipSharp.Messages.Headers.Parsers
     [ParserFor("CSeq", char.MinValue)]
     public class CSeqParser : IHeaderParser
     {
+        #region IHeaderParser Members
+
         /// <summary>
         /// Parse a message value.
         /// </summary>
@@ -29,5 +31,6 @@ namespace SipSharp.Messages.Headers.Parsers
             return new CSeq(sequence, method);
         }
 
+        #endregion
     }
 }

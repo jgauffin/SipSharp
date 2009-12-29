@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using SipSharp.Dialogs;
 
 namespace SipSharp.Transactions
 {
@@ -15,7 +11,6 @@ namespace SipSharp.Transactions
         /// Gets dialog that the transaction belongs to
         /// </summary>
         //IDialog Dialog { get; }
-
         /// <summary>
         /// Gets transaction identifier.
         /// </summary>
@@ -30,8 +25,6 @@ namespace SipSharp.Transactions
         /// Gets bransch that identifies that transaction.
         /// </summary>
         //string BranschId { get; }
-
-
         /// <summary>
         /// Transaction have been terminated.
         /// </summary>

@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using SipSharp.Headers;
-using SipSharp.Messages.Headers;
 
 namespace SipSharp
 {
@@ -22,25 +19,25 @@ namespace SipSharp
     public interface IRequest : IMessage, ICloneable
     {
         /// <summary>
-        /// Gets or sets requested URI.
+        /// Gets or sets a SIP or SIPS URI that can be used to contact UA that sent the
+        /// request.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// The initial Request-URI of the message SHOULD be set to the value of the URI in
-        /// the To field. One notable exception is the REGISTER method; behavior for
-        /// setting the Request-URI of REGISTER is given in Section 10 (RFC 3261). It may
-        /// also be undesirable for privacy reasons or convenience to set these fields to
-        /// the same value (especially if the originating UA expects that the Request-URI
-        /// will be changed during transit).
+        /// The Contact header field MUST be present and contain exactly one SIP or SIPS
+        /// URI in any request that can result in the establishment of a dialog. For the
+        /// methods defined in this specification, that includes only the INVITE request.
+        /// For these requests, the scope of the Contact is global. That is, the Contact
+        /// header field value contains the URI at which the UA would like to receive
+        /// requests, and this URI MUST be valid even if used in subsequent requests
+        /// outside of any dialogs.
+        /// </para>
+        /// <para>
+        /// If the Request-URI or top Route header field value contains a SIPS URI, the
+        /// Contact header field MUST contain a SIPS URI as well.
         /// </para>
         /// </remarks>
-        SipUri Uri { get; set; }
-
-        /// <summary>
-        /// Gets or sets requested method.
-        /// </summary>
-        string Method { get; set; }
-
+        Contact Contact { get; set; }
 
         /// <summary>
         /// Gets or sets maximum number of times the request can be forwarded.
@@ -68,33 +65,32 @@ namespace SipSharp
         int MaxForwards { get; set; }
 
         /// <summary>
-        /// Gets or sets a SIP or SIPS URI that can be used to contact UA that sent the
-        /// request.
+        /// Gets or sets requested method.
+        /// </summary>
+        string Method { get; set; }
+
+        /// <summary>
+        /// Gets or sets requested URI.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// The Contact header field MUST be present and contain exactly one SIP or SIPS
-        /// URI in any request that can result in the establishment of a dialog. For the
-        /// methods defined in this specification, that includes only the INVITE request.
-        /// For these requests, the scope of the Contact is global. That is, the Contact
-        /// header field value contains the URI at which the UA would like to receive
-        /// requests, and this URI MUST be valid even if used in subsequent requests
-        /// outside of any dialogs.
-        /// </para>
-        /// <para>
-        /// If the Request-URI or top Route header field value contains a SIPS URI, the
-        /// Contact header field MUST contain a SIPS URI as well.
+        /// The initial Request-URI of the message SHOULD be set to the value of the URI in
+        /// the To field. One notable exception is the REGISTER method; behavior for
+        /// setting the Request-URI of REGISTER is given in Section 10 (RFC 3261). It may
+        /// also be undesirable for privacy reasons or convenience to set these fields to
+        /// the same value (especially if the originating UA expects that the Request-URI
+        /// will be changed during transit).
         /// </para>
         /// </remarks>
-        Contact Contact { get; set; }
+        SipUri Uri { get; set; }
 
-    	/// <summary>
-    	/// Create a new response.
-    	/// </summary>
-    	/// <param name="code">Response status code</param>
-    	/// <param name="reason">Reason to why the status code was used.</param>
-    	/// <returns>A Created response.</returns>
-    	/// <exception cref="InvalidOperationException">Provisional responses is only valid for INVITE method.</exception>
-    	IResponse CreateResponse(StatusCode code, string reason);
+        /// <summary>
+        /// Create a new response.
+        /// </summary>
+        /// <param name="code">Response status code</param>
+        /// <param name="reason">Reason to why the status code was used.</param>
+        /// <returns>A Created response.</returns>
+        /// <exception cref="InvalidOperationException">Provisional responses is only valid for INVITE method.</exception>
+        IResponse CreateResponse(StatusCode code, string reason);
     }
 }

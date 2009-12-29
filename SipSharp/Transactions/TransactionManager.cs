@@ -12,13 +12,6 @@ namespace SipSharp.Transactions
     /// </summary>
     internal class TransactionManager
     {
-        private readonly Dictionary<string, IClientTransaction> _clientTransactions =
-            new Dictionary<string, IClientTransaction>();
-        private readonly Dictionary<string, IServerTransaction> _serverTransactions =
-            new Dictionary<string, IServerTransaction>();
-
-        private readonly ILogger _logger = LogFactory.CreateLogger(typeof (TransactionManager));
-
         /// <summary>
         /// Estimated round-trip time (RTT)
         /// </summary>
@@ -34,6 +27,14 @@ namespace SipSharp.Transactions
         /// server transactions
         /// </summary>
         public const int T4 = 5000;
+
+        private readonly Dictionary<string, IClientTransaction> _clientTransactions =
+            new Dictionary<string, IClientTransaction>();
+
+        private readonly ILogger _logger = LogFactory.CreateLogger(typeof (TransactionManager));
+
+        private readonly Dictionary<string, IServerTransaction> _serverTransactions =
+            new Dictionary<string, IServerTransaction>();
 
         private readonly ITransportLayer _transport;
 
@@ -59,14 +60,6 @@ namespace SipSharp.Transactions
             return transaction;
         }
 
-        private void OnTerminated(object sender, EventArgs e)
-        {
-            if (sender is IClientTransaction)
-                _clientTransactions.Remove(((IClientTransaction)sender).Id);
-            else
-                _serverTransactions.Remove(((IServerTransaction)sender).Id);
-        }
-
         public IServerTransaction CreateServerTransaction(IRequest request)
         {
             IServerTransaction transaction;
@@ -78,6 +71,14 @@ namespace SipSharp.Transactions
             _serverTransactions.Add(transaction.Id, transaction);
             transaction.Terminated += OnTerminated;
             return transaction;
+        }
+
+        private void OnTerminated(object sender, EventArgs e)
+        {
+            if (sender is IClientTransaction)
+                _clientTransactions.Remove(((IClientTransaction) sender).Id);
+            else
+                _serverTransactions.Remove(((IServerTransaction) sender).Id);
         }
 
         public bool Process(IResponse response)

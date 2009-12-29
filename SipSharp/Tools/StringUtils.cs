@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 
 namespace SipSharp.Tools
@@ -13,10 +10,10 @@ namespace SipSharp.Tools
             MD5 md5 = new MD5CryptoServiceProvider();
             byte[] result = md5.ComputeHash(Encoding.ASCII.GetBytes(value));
 
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             foreach (byte b in result)
                 sb.Append(b.ToString("x2"));
-            return sb.ToString();            
+            return sb.ToString();
         }
 
         public static string ToMd5Hash(this string value)

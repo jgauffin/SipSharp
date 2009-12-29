@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Text;
 using Xunit;
 
 namespace SipSharp.Tools
 {
     public class BufferReaderTest
     {
-        private Encoding _encoding = Encoding.UTF8;
-        BufferReader _reader;
+        private readonly Encoding _encoding = Encoding.UTF8;
+        private readonly BufferReader _reader;
 
         public BufferReaderTest()
         {
@@ -22,7 +19,7 @@ namespace SipSharp.Tools
             byte[] buffer = _encoding.GetBytes("0123456789");
             int startIndex = 3;
             int endIndex = 5;
-            Assert.Equal("345", _encoding.GetString(buffer, startIndex, endIndex - startIndex + 1)); 
+            Assert.Equal("345", _encoding.GetString(buffer, startIndex, endIndex - startIndex + 1));
         }
 
 
@@ -63,6 +60,5 @@ namespace SipSharp.Tools
             _reader.Consume('\t', ' ');
             Assert.Equal("header", _reader.ReadLine());
         }
-
     }
 }

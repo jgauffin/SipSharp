@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace SipSharp.Client
 {
@@ -10,36 +8,8 @@ namespace SipSharp.Client
     /// </summary>
     public class MethodHandlers
     {
-        Dictionary<string, List<EventHandler<RequestEventArgs>>> _items = new Dictionary<string, List<EventHandler<RequestEventArgs>>>();
-
-        public void Register(string method, EventHandler<RequestEventArgs> handler)
-        {
-            List<EventHandler<RequestEventArgs>> items = GetListOrCreateIt(method);
-            lock (items)
-                items.Add(handler);
-        }
-
-        public void Remove(string method, EventHandler<RequestEventArgs> handler)
-        {
-            List<EventHandler<RequestEventArgs>> items = GetList(method);
-            if (items == null)
-                return;
-
-            lock (items)
-                items.Remove(handler);
-        }
-
-        public bool Invoke(string method, string source, RequestEventArgs args)
-        {
-            List<EventHandler<RequestEventArgs>> items = GetList(method);
-            if (items == null)
-                return false;
-
-            lock (items)
-                foreach (var handler in items)
-                    handler(source, args);
-            return items.Count > 0;
-        }
+        private readonly Dictionary<string, List<EventHandler<RequestEventArgs>>> _items =
+            new Dictionary<string, List<EventHandler<RequestEventArgs>>>();
 
         private List<EventHandler<RequestEventArgs>> GetList(string method)
         {
@@ -61,6 +31,35 @@ namespace SipSharp.Client
             }
 
             return items;
+        }
+
+        public bool Invoke(string method, string source, RequestEventArgs args)
+        {
+            List<EventHandler<RequestEventArgs>> items = GetList(method);
+            if (items == null)
+                return false;
+
+            lock (items)
+                foreach (var handler in items)
+                    handler(source, args);
+            return items.Count > 0;
+        }
+
+        public void Register(string method, EventHandler<RequestEventArgs> handler)
+        {
+            List<EventHandler<RequestEventArgs>> items = GetListOrCreateIt(method);
+            lock (items)
+                items.Add(handler);
+        }
+
+        public void Remove(string method, EventHandler<RequestEventArgs> handler)
+        {
+            List<EventHandler<RequestEventArgs>> items = GetList(method);
+            if (items == null)
+                return;
+
+            lock (items)
+                items.Remove(handler);
         }
     }
 }

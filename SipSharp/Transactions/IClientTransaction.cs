@@ -7,12 +7,18 @@ namespace SipSharp.Transactions
     /// Used to make sure that requests will receive respones
     /// properly.
     /// </summary>
-	public interface IClientTransaction : ITransaction
-	{
+    public interface IClientTransaction : ITransaction
+    {
         /// <summary>
         /// Gets request that the transaction is for.
         /// </summary>
         IRequest Request { get; }
+
+        /// <summary>
+        /// We like to reuse transaction objects. Remove all references
+        /// to the transaction and reset all parameters.
+        /// </summary>
+        void Cleanup();
 
 
         /// <summary>
@@ -37,11 +43,5 @@ namespace SipSharp.Transactions
         /// A response have been received.
         /// </summary>
         event EventHandler<ResponseEventArgs> ResponseReceived;
-
-        /// <summary>
-        /// We like to reuse transaction objects. Remove all references
-        /// to the transaction and reset all parameters.
-        /// </summary>
-	    void Cleanup();
-	}
+    }
 }

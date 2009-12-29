@@ -16,12 +16,13 @@ namespace SipSharp.Messages.Headers
         private readonly ILogger _logger = LogFactory.CreateLogger(typeof (MessageFactory));
         private readonly ObjectPool<StringReader> _readers = new ObjectPool<StringReader>(() => new StringReader());
         private readonly Dictionary<char, IHeaderParser> _shortNameParsers = new Dictionary<char, IHeaderParser>();
+
         public void AddDefaultParsers()
         {
             string ns = GetType().Namespace + ".Parsers";
             Type parserInterface = typeof (IHeaderParser);
 
-            foreach (var type in Assembly.GetExecutingAssembly().GetTypes())
+            foreach (Type type in Assembly.GetExecutingAssembly().GetTypes())
             {
                 if (type.Namespace != ns)
                     continue;
@@ -31,14 +32,14 @@ namespace SipSharp.Messages.Headers
                     continue;
 
 
-                IHeaderParser parser = (IHeaderParser)Activator.CreateInstance(type);
-                foreach (var attr in type.GetCustomAttributes(false))
+                var parser = (IHeaderParser) Activator.CreateInstance(type);
+                foreach (object attr in type.GetCustomAttributes(false))
                 {
                     // Generic parser should not be added automatically.
                     if (attr is GenericParserAttribute)
                         break;
 
-                    ParserForAttribute attribute = attr as ParserForAttribute;
+                    var attribute = attr as ParserForAttribute;
                     if (attribute != null)
                         AddParser(parser, attribute.Name, attribute.CompactName);
                 }
@@ -69,6 +70,11 @@ namespace SipSharp.Messages.Headers
 
             lock (_shortNameParsers)
                 _shortNameParsers[shortName] = parser;
+        }
+
+        protected virtual IHeader CreateDefaultHeader(string name, string value)
+        {
+            return new StringHeader(name) {Value = value};
         }
 
         public IHeaderParser GetParser(string name)
@@ -109,11 +115,6 @@ namespace SipSharp.Messages.Headers
             {
                 _readers.Enqueue(reader);
             }
-        }
-
-        protected virtual IHeader CreateDefaultHeader(string name, string value)
-        {
-            return new StringHeader(name) {Value = value};
         }
     }
 }

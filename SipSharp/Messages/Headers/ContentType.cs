@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SipSharp.Messages.Headers
+﻿namespace SipSharp.Messages.Headers
 {
     public class ContentType : IHeader
     {
@@ -61,8 +59,6 @@ namespace SipSharp.Messages.Headers
             get { return NAME; }
         }
 
-        #endregion
-
         /// <summary>
         /// Indicates whether the current object is equal to another object of the same type.
         /// </summary>
@@ -73,10 +69,12 @@ namespace SipSharp.Messages.Headers
         ///                 </param>
         public bool Equals(IHeader other)
         {
-            ContentType ct = other as ContentType;
+            var ct = other as ContentType;
             if (ct == null)
                 return false;
             return string.Compare(ct.Type, Type, true) == 0 && string.Compare(ct.SubType, SubType, true) == 0;
         }
+
+        #endregion
     }
 }

@@ -11,21 +11,22 @@ namespace SipSharp.Transactions
     /// </summary>
     public class ClientNonInviteTransaction : IClientTransaction
     {
+        private readonly Timer _timer1;
+
         /// <summary>
         /// Retransmit timer for Non-Invite transactions.
         /// </summary>
         private readonly Timer _timerE;
 
-        private readonly ITransportLayer _transport;
-        private EndPoint _endPoint;
-        private readonly Timer _timer1;
-
-        private int _timerEValue = TransactionManager.T1*2;
-
         /// <summary>
         /// Timeout timer for Non-Invite transactions.
         /// </summary>
         private readonly Timer _timerF;
+
+        private readonly ITransportLayer _transport;
+        private EndPoint _endPoint;
+
+        private int _timerEValue = TransactionManager.T1*2;
 
         /// <summary>
         /// Time in completed state timer
@@ -137,6 +138,14 @@ namespace SipSharp.Transactions
                 TimedOut(this, EventArgs.Empty);
         }
 
+        public void TriggerTransportFailed()
+        {
+            State = TransactionState.Terminated;
+            TransportFailed(this, EventArgs.Empty);
+        }
+
+        #region IClientTransaction Members
+
         /// <summary>
         /// Gets request that the transaction is for.
         /// </summary>
@@ -179,12 +188,6 @@ namespace SipSharp.Transactions
         }
 
 
-        public void TriggerTransportFailed()
-        {
-            State = TransactionState.Terminated;
-            TransportFailed(this, EventArgs.Empty);
-        }
-
         /// <summary>
         /// Invoked if transportation failed.
         /// </summary>
@@ -193,7 +196,7 @@ namespace SipSharp.Transactions
         /// <summary>
         /// A timeout have occurred.
         /// </summary>
-        public event EventHandler TimedOut = delegate{};
+        public event EventHandler TimedOut = delegate { };
 
         /// <summary>
         /// A response have been received.
@@ -226,13 +229,13 @@ namespace SipSharp.Transactions
         /// Gets dialog that the transaction belongs to
         /// </summary>
         //IDialog Dialog { get; }
-
         /// <summary>
         /// Gets transaction identifier.
         /// </summary>
         public string Id
         {
-            get {
+            get
+            {
                 string token = Request.Via.First.Branch;
                 token += Request.Via.First.SentBy;
 
@@ -253,5 +256,6 @@ namespace SipSharp.Transactions
         /// </summary>
         public TransactionState State { get; private set; }
 
+        #endregion
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Text;
 using SipSharp.Headers;
@@ -32,13 +31,17 @@ namespace SipSharp.Transports
     internal class TransportLayer : ITransportLayer
     {
         public const int UdpMaxSize = 65507;
+
+        private readonly ObjectPool<byte[]> _buffers = new ObjectPool<byte[]>(() => new byte[131072]);
+                                            // double size to support large messages.
+
         private readonly ILogger _logger = LogFactory.CreateLogger(typeof (TransportLayer));
         private readonly MessageFactory _messageFactory;
         private readonly MessageSerializer _serializer = new MessageSerializer();
-        private readonly ObjectPool<byte[]> _buffers = new ObjectPool<byte[]>(() => new byte[131072]); // double size to support large messages.
+
         private readonly Dictionary<string, ITransport> _transports = new Dictionary<string, ITransport>();
-        private bool _isStarted;
         private string _domainName;
+        private bool _isStarted;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TransportLayer"/> class.
@@ -48,6 +51,36 @@ namespace SipSharp.Transports
             _messageFactory = messageFactory;
             _messageFactory.RequestReceived += OnRequest;
             _messageFactory.ResponseReceived += OnResponse;
+        }
+
+        /// <summary>
+        /// Create a endpoint for the destination that should be reached.
+        /// </summary>
+        /// <param name="request">Request to send</param>
+        /// <returns>Endpoint if destination could be looked up; otherwise <c>null</c>.</returns>
+        protected virtual EndPoint CreateEndPoint(IRequest request)
+        {
+            string domain = request.Uri.Domain;
+            IPHostEntry entry = Dns.GetHostEntry(domain);
+            if (entry.AddressList.Length == 0)
+                return null;
+
+            int port = request.Uri.Scheme == "sips" ? 5061 : 5060;
+            return new IPEndPoint(entry.AddressList[0], port);
+        }
+
+        private string GetMessage(IRequest request)
+        {
+            byte[] buffer = _buffers.Dequeue();
+            long count = _serializer.Serialize(request, buffer);
+            return Encoding.ASCII.GetString(buffer, 0, (int) count);
+        }
+
+        private string GetMessage(IResponse response)
+        {
+            byte[] buffer = _buffers.Dequeue();
+            long count = _serializer.Serialize(response, buffer);
+            return Encoding.ASCII.GetString(buffer, 0, (int) count);
         }
 
         private void OnRequest(object sender, RequestEventArgs e)
@@ -129,20 +162,6 @@ namespace SipSharp.Transports
             transport.BufferPool = _buffers;
         }
 
-        private string GetMessage(IRequest request)
-        {
-            byte[] buffer = _buffers.Dequeue();
-            long count = _serializer.Serialize(request, buffer);
-            return Encoding.ASCII.GetString(buffer, 0, (int) count);
-        }
-        private string GetMessage(IResponse response)
-        {
-            byte[] buffer = _buffers.Dequeue();
-            long count = _serializer.Serialize(response, buffer);
-            return Encoding.ASCII.GetString(buffer, 0, (int)count);
-        }
-
-
 
         /// <summary>
         /// Start layer.
@@ -202,23 +221,7 @@ namespace SipSharp.Transports
             }
 
             // And send it.
-            transport.Send(ep, buffer, 0, (int)count);
-        }
-
-        /// <summary>
-        /// Create a endpoint for the destination that should be reached.
-        /// </summary>
-        /// <param name="request">Request to send</param>
-        /// <returns>Endpoint if destination could be looked up; otherwise <c>null</c>.</returns>
-        protected virtual EndPoint CreateEndPoint(IRequest request)
-        {
-            string domain = request.Uri.Domain;
-            IPHostEntry entry = Dns.GetHostEntry(domain);
-            if (entry.AddressList.Length == 0)
-                return null;
-
-            int port = request.Uri.Scheme == "sips" ? 5061 : 5060;
-            return new IPEndPoint(entry.AddressList[0], port);
+            transport.Send(ep, buffer, 0, (int) count);
         }
 
 

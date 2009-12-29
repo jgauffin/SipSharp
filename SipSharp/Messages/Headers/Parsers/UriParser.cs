@@ -28,7 +28,7 @@ namespace SipSharp.Messages.Headers.Parsers
             string domain;
             int port = 0;
             bool containsAt = reader.Contains('@');
-            
+
 
             // scheme:domain:port
             // scheme:domain
@@ -59,11 +59,10 @@ namespace SipSharp.Messages.Headers.Parsers
                     throw new ParseException("Port is not a number: " + first);
 
                 return new SipUri(scheme, domain, port);
-
             }
-            // Can either be "scheme:username" 
-            // or "username:password" 
-            // or "scheme:username:password"
+                // Can either be "scheme:username" 
+                // or "username:password" 
+                // or "scheme:username:password"
             else if (reader.Current == ':')
             {
                 reader.Consume();
@@ -137,6 +136,7 @@ namespace SipSharp.Messages.Headers.Parsers
         {
             return scheme == "tel" || scheme == "sip" || scheme == "sips" || scheme == "mailto";
         }
+
         /// <summary>
         /// Parse all semicolon separated parameters.
         /// </summary>

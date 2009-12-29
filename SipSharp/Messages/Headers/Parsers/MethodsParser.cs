@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using SipSharp.Tools;
+﻿using SipSharp.Tools;
 
 namespace SipSharp.Messages.Headers.Parsers
 {
@@ -14,6 +10,8 @@ namespace SipSharp.Messages.Headers.Parsers
     [ParserFor("Supported", char.MinValue)]
     public class MethodsParser : IHeaderParser
     {
+        #region IHeaderParser Members
+
         /// <summary>
         /// Parse a message value.
         /// </summary>
@@ -23,7 +21,7 @@ namespace SipSharp.Messages.Headers.Parsers
         /// <exception cref="ParseException">Header value is malformed.</exception>
         public IHeader Parse(string name, ITextReader reader)
         {
-            MethodsHeader header = new MethodsHeader(name);
+            var header = new MethodsHeader(name);
 
             string method = reader.ReadToEnd(',');
             do
@@ -35,5 +33,7 @@ namespace SipSharp.Messages.Headers.Parsers
             header.Methods.Add(method);
             return header;
         }
+
+        #endregion
     }
 }

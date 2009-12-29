@@ -13,12 +13,10 @@ namespace SipSharp.Messages
         /// <param name="errMsg">The err MSG.</param>
         public ParseException(string errMsg) : base(errMsg)
         {
-            
         }
 
-        public ParseException(string errMsg, Exception inner):base(errMsg, inner)
+        public ParseException(string errMsg, Exception inner) : base(errMsg, inner)
         {
-            
         }
     }
 }

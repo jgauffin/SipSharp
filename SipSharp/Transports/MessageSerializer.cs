@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Text;
-using SipSharp.Tools;
 
 namespace SipSharp.Transports
 {
@@ -11,8 +10,8 @@ namespace SipSharp.Transports
     {
         public virtual int Serialize(IRequest request, byte[] buffer)
         {
-            MemoryStream stream = new MemoryStream(buffer);
-            StreamWriter writer = new StreamWriter(stream, Encoding.ASCII);
+            var stream = new MemoryStream(buffer);
+            var writer = new StreamWriter(stream, Encoding.ASCII);
             writer.Write(request.Method);
             writer.Write(" ");
             writer.Write(request.Uri.ToString());
@@ -36,32 +35,23 @@ namespace SipSharp.Transports
 
             if (request.Body != null)
             {
-                MemoryStream ms = (MemoryStream)request.Body;
+                var ms = (MemoryStream) request.Body;
                 ms.WriteTo(stream);
             }
 
             writer.Flush();
 
-            string temp = Encoding.ASCII.GetString(buffer, 0, (int)stream.Length);
-            return (int)stream.Position;
-        }
-
-        protected void WriteHeader(TextWriter writer, string name, object value)
-        {
-            if (value == null)
-                return;
-            writer.Write(name);
-            writer.Write(": ");
-            writer.WriteLine(value.ToString());
+            string temp = Encoding.ASCII.GetString(buffer, 0, (int) stream.Length);
+            return (int) stream.Position;
         }
 
         public virtual int Serialize(IResponse response, byte[] buffer)
         {
-            MemoryStream stream = new MemoryStream(buffer);
-            StreamWriter writer = new StreamWriter(stream, Encoding.ASCII);
+            var stream = new MemoryStream(buffer);
+            var writer = new StreamWriter(stream, Encoding.ASCII);
             writer.Write(response.SipVersion);
             writer.Write(" ");
-            writer.Write((int)response.StatusCode);
+            writer.Write((int) response.StatusCode);
             writer.Write(" ");
             writer.WriteLine(response.ReasonPhrase);
 
@@ -81,14 +71,23 @@ namespace SipSharp.Transports
 
             if (response.Body != null)
             {
-                MemoryStream ms = (MemoryStream)response.Body;
+                var ms = (MemoryStream) response.Body;
                 ms.WriteTo(stream);
             }
 
             writer.Flush();
 
-            string temp = Encoding.ASCII.GetString(buffer, 0, (int)stream.Length);
-            return (int)stream.Position;
+            string temp = Encoding.ASCII.GetString(buffer, 0, (int) stream.Length);
+            return (int) stream.Position;
+        }
+
+        protected void WriteHeader(TextWriter writer, string name, object value)
+        {
+            if (value == null)
+                return;
+            writer.Write(name);
+            writer.Write(": ");
+            writer.WriteLine(value.ToString());
         }
     }
 }

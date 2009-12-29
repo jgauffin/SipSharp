@@ -5,6 +5,11 @@
     /// </summary>
     public class CallParty
     {
+        /// <summary>
+        /// Gets or sets address of party.
+        /// </summary>
+        private IPartyAddress Address { get; set; }
+
         public Contact Contact { get; set; }
 
 
@@ -12,10 +17,5 @@
         /// Gets or sets whether party is registered in the switch
         /// </summary>
         public bool IsInternal { get; set; }
-
-        /// <summary>
-        /// Gets or sets address of party.
-        /// </summary>
-        IPartyAddress Address { get; set; }
     }
 }

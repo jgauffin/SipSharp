@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using SipSharp.Headers;
 using SipSharp.Messages.Headers;
 
 namespace SipSharp.Messages
@@ -18,13 +19,13 @@ namespace SipSharp.Messages
         {
             Headers = new HeaderKeyValueCollection();
             foreach (var header in message.Headers)
-                Headers.Add(header.Key, (IHeader)header.Value.Clone());
-            
+                Headers.Add(header.Key, (IHeader) header.Value.Clone());
+
             SipVersion = message.SipVersion;
-            To = (Contact)message.To.Clone();
-            From = (Contact)message.From.Clone();
+            To = (Contact) message.To.Clone();
+            From = (Contact) message.From.Clone();
             CSeq = (CSeq) message.CSeq.Clone();
-            Via = (Via)message.Via.Clone();
+            Via = (Via) message.Via.Clone();
             IsReliableProtocol = message.IsReliableProtocol;
             ContentLength = message.ContentLength;
         }
@@ -42,16 +43,16 @@ namespace SipSharp.Messages
                     To = ((ContactHeader) header).FirstContact;
                     break;
                 case "from":
-                    From = ((ContactHeader)header).FirstContact;
+                    From = ((ContactHeader) header).FirstContact;
                     break;
                 case "cseq":
-                    CSeq = (CSeq)header;
+                    CSeq = (CSeq) header;
                     break;
                 case "via":
-                    Via via = (Via)header;
+                    var via = (Via) header;
                     if (Via != null && Via.Items.Count > 0)
                     {
-                        foreach (var entry in via)
+                        foreach (ViaEntry entry in via)
                             Via.Add(entry);
                     }
                     else
@@ -101,10 +102,7 @@ namespace SipSharp.Messages
         /// </para>
         /// </remarks>
         /// 
-        public Contact To
-        {
-            get; set;
-        }
+        public Contact To { get; set; }
 
         /// <summary>
         /// Gets or sets whom the request is from.
@@ -192,8 +190,8 @@ namespace SipSharp.Messages
         {
             get
             {
-                StringHeader header = (StringHeader) Headers["call-id"];
-                return  header == null ? string.Empty : header.Value;
+                var header = (StringHeader) Headers["call-id"];
+                return header == null ? string.Empty : header.Value;
             }
             set
             {
@@ -207,10 +205,7 @@ namespace SipSharp.Messages
         /// <summary>
         /// Gets number of bytes in body.
         /// </summary>
-        public int ContentLength
-        {
-            get; set;
-        }
+        public int ContentLength { get; set; }
 
         #endregion
     }

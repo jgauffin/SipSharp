@@ -13,26 +13,6 @@ namespace SipSharp.Logging
         private readonly Dictionary<Type, LogLevel> _types = new Dictionary<Type, LogLevel>();
 
         /// <summary>
-        /// Parser can only display errors. Transports only warnings.
-        /// </summary>
-        public void AddStandardRules()
-        {
-            AddNamespace("SipSharp.Messages.Headers.Parsers", LogLevel.Error);
-            AddType(typeof(SipParser), LogLevel.Error);
-            AddType(typeof(MessageFactory), LogLevel.Error);
-
-            bool found = false;
-            foreach (var ns in _namespaces)
-            {
-                if (!ns.NameSpace.StartsWith("SipSharp.Transports")) continue;
-                found = true;
-                break;
-            }
-            if (!found)
-                AddNamespace("SipSharp.Transports.*", LogLevel.Warning);
-        }
-
-        /// <summary>
         /// Add a namespace filter.
         /// </summary>
         /// <param name="ns">Namespace to add filter for.</param>
@@ -51,6 +31,26 @@ namespace SipSharp.Logging
         {
             lock (_namespaces)
                 _namespaces.Add(new NamespaceFilter(ns, level));
+        }
+
+        /// <summary>
+        /// Parser can only display errors. Transports only warnings.
+        /// </summary>
+        public void AddStandardRules()
+        {
+            AddNamespace("SipSharp.Messages.Headers.Parsers", LogLevel.Error);
+            AddType(typeof (SipParser), LogLevel.Error);
+            AddType(typeof (MessageFactory), LogLevel.Error);
+
+            bool found = false;
+            foreach (NamespaceFilter ns in _namespaces)
+            {
+                if (!ns.NameSpace.StartsWith("SipSharp.Transports")) continue;
+                found = true;
+                break;
+            }
+            if (!found)
+                AddNamespace("SipSharp.Transports.*", LogLevel.Warning);
         }
 
         /// <summary>

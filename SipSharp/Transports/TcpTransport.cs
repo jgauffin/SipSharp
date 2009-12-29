@@ -26,7 +26,7 @@ namespace SipSharp.Transports
         /// <param name="factory">Message factory.</param>
         public TcpTransport(MessageFactory factory)
         {
-            _factory= factory;
+            _factory = factory;
         }
 
         /// <summary>
@@ -103,7 +103,8 @@ namespace SipSharp.Transports
         /// <exception cref="System.ObjectDisposedException">Socket have been disposed.</exception>
         protected virtual void SetupNewContext(Socket socket)
         {
-            var context = new ClientContext(socket, BufferPool.Dequeue(), _factory.CreateNewContext(socket.RemoteEndPoint));
+            var context = new ClientContext(socket, BufferPool.Dequeue(),
+                                            _factory.CreateNewContext(socket.RemoteEndPoint));
             if (context.Buffer == null)
                 throw new InvalidOperationException("Could not allocate new buffer.");
 
@@ -185,10 +186,7 @@ namespace SipSharp.Transports
         /// <summary>
         /// Gets port that the point is listening on.
         /// </summary>
-        public int Port
-        {
-            get; set;
-        }
+        public int Port { get; set; }
 
         /// <summary>
         /// Gets of protocol is message based.
@@ -202,10 +200,7 @@ namespace SipSharp.Transports
         /// <para>This property should be used to </para>
         /// </remarks>
         //string IsMessageBasedProtocl{ get;}
-        public ObjectPool<byte[]> BufferPool
-        {
-            set; private get;
-        }
+        public ObjectPool<byte[]> BufferPool { set; private get; }
 
         /// <summary>
         /// A exception that was not handled by a worker thread.

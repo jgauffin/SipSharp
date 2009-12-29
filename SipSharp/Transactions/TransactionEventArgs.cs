@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace SipSharp.Transactions
 {
@@ -10,11 +7,11 @@ namespace SipSharp.Transactions
     /// </summary>
     public class TransactionEventArgs : EventArgs
     {
-        public ITransaction Transaction { get; private set; }
-
         public TransactionEventArgs(ITransaction transaction)
         {
             Transaction = transaction;
         }
+
+        public ITransaction Transaction { get; private set; }
     }
 }

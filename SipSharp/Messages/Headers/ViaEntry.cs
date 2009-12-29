@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Specialized;
 using SipSharp.Messages.Headers;
-using SipSharp.Tools;
 
 namespace SipSharp.Headers
 {
@@ -58,23 +56,17 @@ namespace SipSharp.Headers
             Rport = 0;
         }
 
-    	private ViaEntry(ViaEntry entry)
-    	{
-    	    Protocol = entry.Protocol;
-    		SipVersion = entry.SipVersion;
-    		Transport = entry.Transport;
-    		Domain = entry.Domain;
-    		foreach (var pair in entry._parameters)
+        private ViaEntry(ViaEntry entry)
+        {
+            Protocol = entry.Protocol;
+            SipVersion = entry.SipVersion;
+            Transport = entry.Transport;
+            Domain = entry.Domain;
+            foreach (var pair in entry._parameters)
                 _parameters.Add(pair.Key, pair.Value);
-    	}
+        }
 
         /// <summary>
-        /// Gets or sets protocol.
-        /// </summary>
-        /// <value>"SIP" or "SIPS"</value>
-        public string Protocol { get; set; }
-
-    	/// <summary>
         /// Gets or sets string used to identify the transaction that created this request.
         /// </summary>
         /// <remarks>
@@ -107,16 +99,21 @@ namespace SipSharp.Headers
             set { _parameters["maddr"] = value; }
         }
 
+        internal KeyValueCollection Parameters
+        {
+            get { return _parameters; }
+        }
+
         /// <summary>
         /// Gets or sets port to connect on in server..
         /// </summary>
         public int Port { get; set; }
 
         /// <summary>
-        /// Gets or sets protocol used for transportation.
+        /// Gets or sets protocol.
         /// </summary>
-        /// <example>'UDP' or 'TCP'</example>
-        public string Transport { get; set; }
+        /// <value>"SIP" or "SIPS"</value>
+        public string Protocol { get; set; }
 
         /// <summary>
         /// Gets or sets IP address that the request was received from.
@@ -176,55 +173,11 @@ namespace SipSharp.Headers
         /// <example>2.0</example>
         public string SipVersion { get; set; }
 
-        #region IHeader Members
-
         /// <summary>
-        /// Gets or sets name of header.
+        /// Gets or sets protocol used for transportation.
         /// </summary>
-        string IHeader.Name
-        {
-            get { return "Via"; }
-        }
-
-
-        #endregion
-
-        internal KeyValueCollection Parameters
-        {
-            get { return _parameters; }
-        }
-    	/// <summary>
-    	///                     Creates a new object that is a copy of the current instance.
-    	/// </summary>
-    	/// <returns>
-    	///                     A new object that is a copy of this instance.
-    	/// </returns>
-    	/// <filterpriority>2</filterpriority>
-    	public object Clone()
-    	{
-    		return new ViaEntry(this);
-    	}
-
-        /// <summary>
-        /// Indicates whether the current object is equal to another object of the same type.
-        /// </summary>
-        /// <returns>
-        /// true if the current object is equal to the <paramref name="other"/> parameter; otherwise, false.
-        /// </returns>
-        /// <param name="other">An object to compare with this object.
-        ///                 </param>
-        public bool Equals(IHeader other)
-        {
-            ViaEntry entry = other as ViaEntry;
-            if (entry == null)
-                return false;
-
-            return string.Compare(Transport, entry.Transport, true) == 0
-                   && string.Compare(Protocol, entry.Protocol, true) == 0
-                   && string.Compare(Domain, entry.Domain, true) == 0
-                   && Port == entry.Port
-                   && Parameters.Count == entry.Parameters.Count;
-        }
+        /// <example>'UDP' or 'TCP'</example>
+        public string Transport { get; set; }
 
         public override string ToString()
         {
@@ -240,7 +193,51 @@ namespace SipSharp.Headers
             }
 
             return temp;
-
         }
+
+        #region IHeader Members
+
+        /// <summary>
+        /// Gets or sets name of header.
+        /// </summary>
+        string IHeader.Name
+        {
+            get { return "Via"; }
+        }
+
+        /// <summary>
+        ///                     Creates a new object that is a copy of the current instance.
+        /// </summary>
+        /// <returns>
+        ///                     A new object that is a copy of this instance.
+        /// </returns>
+        /// <filterpriority>2</filterpriority>
+        public object Clone()
+        {
+            return new ViaEntry(this);
+        }
+
+        /// <summary>
+        /// Indicates whether the current object is equal to another object of the same type.
+        /// </summary>
+        /// <returns>
+        /// true if the current object is equal to the <paramref name="other"/> parameter; otherwise, false.
+        /// </returns>
+        /// <param name="other">An object to compare with this object.
+        ///                 </param>
+        public bool Equals(IHeader other)
+        {
+            var entry = other as ViaEntry;
+            if (entry == null)
+                return false;
+
+            return string.Compare(Transport, entry.Transport, true) == 0
+                   && string.Compare(Protocol, entry.Protocol, true) == 0
+                   && string.Compare(Domain, entry.Domain, true) == 0
+                   && Port == entry.Port
+                   && Parameters.Count == entry.Parameters.Count;
+        }
+
+        #endregion
     }
 }

@@ -11,12 +11,28 @@ namespace SipSharp.Transports
     public interface ITransport
     {
         /// <summary>
-        /// Start transport.
+        /// Gets of protocol is message based.
         /// </summary>
-        /// <param name="listenerEndPoint">Address/port that clients should connect to.</param>
-        /// <exception cref="ArgumentException"><see cref="EndPoint"/> is not of the type expected by the transport implementation</exception>
-        /// <exception cref="ArgumentNullException"><c>endPoint</c> is null.</exception>
-        void Start(EndPoint listenerEndPoint);
+        /// <remarks>
+        /// <para>
+        /// Message based protocols like UDP should only receive one (and a complete) message
+        /// in each receive. While packet based protocols like TCP can receive partial, complete or multiple
+        /// messages in one packet.
+        /// </para>
+        /// <para>This property should be used to </para>
+        /// </remarks>
+        //string IsMessageBasedProtocl{ get;}
+        ObjectPool<byte[]> BufferPool { set; }
+
+        /// <summary>
+        /// Gets port that the point is listening on.
+        /// </summary>
+        int Port { get; }
+
+        /// <summary>
+        /// Gets protocol used by this transporter.
+        /// </summary>
+        string Protocol { get; }
 
         /// <summary>
         /// Send a buffer to a certain end point.
@@ -31,41 +47,23 @@ namespace SipSharp.Transports
         void Send(EndPoint endPoint, byte[] buffer, int offset, int count);
 
         /// <summary>
-        /// Gets protocol used by this transporter.
+        /// Start transport.
         /// </summary>
-        string Protocol { get; }
+        /// <param name="listenerEndPoint">Address/port that clients should connect to.</param>
+        /// <exception cref="ArgumentException"><see cref="EndPoint"/> is not of the type expected by the transport implementation</exception>
+        /// <exception cref="ArgumentNullException"><c>endPoint</c> is null.</exception>
+        void Start(EndPoint listenerEndPoint);
 
         /// <summary>
-        /// Gets port that the point is listening on.
+        /// A exception was unhandled in a worker thread.
         /// </summary>
-        int Port{ get;}
-
-        /// <summary>
-        /// Gets of protocol is message based.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// Message based protocols like UDP should only receive one (and a complete) message
-        /// in each receive. While packet based protocols like TCP can receive partial, complete or multiple
-        /// messages in one packet.
-        /// </para>
-        /// <para>This property should be used to </para>
-        /// </remarks>
-        //string IsMessageBasedProtocl{ get;}
-
-        ObjectPool<byte[]> BufferPool { set; }
-
-		/// <summary>
-		/// A exception was unhandled in a worker thread.
-		/// </summary>
-    	event UnhandledExceptionEventHandler UnhandledException;
+        event UnhandledExceptionEventHandler UnhandledException;
     }
 
     public class ReceivedEventArgs : EventArgs
     {
         public ReceivedEventArgs(byte[] buffer, int offset, int count)
         {
-            
         }
     }
 }

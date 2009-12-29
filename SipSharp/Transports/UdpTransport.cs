@@ -5,16 +5,15 @@ using System.Text;
 using SipSharp.Logging;
 using SipSharp.Messages;
 using SipSharp.Tools;
-using SipSharp.Transports.Parser;
 
 namespace SipSharp.Transports
 {
     internal class UdpTransport : ITransport
     {
         private readonly ILogger _logger = LogFactory.CreateLogger(typeof (UdpTransport));
-        private Socket _socket;
         private readonly MessageFactory _parsers;
         private EndPoint _serverEndPoint;
+        private Socket _socket;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UdpTransport"/> class.
@@ -55,9 +54,10 @@ namespace SipSharp.Transports
                     isKeepAlive = false;
 
                 if (!isKeepAlive)
-                    _logger.Debug("Received "+bytesRead+" bytes from " + endPoint + ":\r\n" + Encoding.ASCII.GetString(buffer, 0, bytesRead));
+                    _logger.Debug("Received " + bytesRead + " bytes from " + endPoint + ":\r\n" +
+                                  Encoding.ASCII.GetString(buffer, 0, bytesRead));
             }
-            catch(Exception err)
+            catch (Exception err)
             {
                 _logger.Warning("EndReceiveFrom failed: " + err);
             }
@@ -69,9 +69,9 @@ namespace SipSharp.Transports
             try
             {
                 _socket.BeginReceiveFrom(newBuffer, 0, newBuffer.Length, SocketFlags.None,
-                                                ref _serverEndPoint, OnRead, newBuffer);
+                                         ref _serverEndPoint, OnRead, newBuffer);
             }
-            catch(Exception err)
+            catch (Exception err)
             {
                 _logger.Warning("BeginReceiveFrom failed, closing socket. Exception: " + err);
                 BufferPool.Enqueue(newBuffer);
@@ -101,7 +101,6 @@ namespace SipSharp.Transports
             }
         }
 
-        
 
         private void OnSendComplete(IAsyncResult ar)
         {
@@ -111,22 +110,7 @@ namespace SipSharp.Transports
             _logger.Trace("OnSendComplete, " + bytesSent + " sent ");
         }
 
-
-        #region Nested type: ClientContext
-
-        private struct SendContext
-        {
-            public readonly EndPoint endPoint;
-            public readonly byte[] buffer;
-
-            public SendContext(EndPoint endPoint, byte[] buffer)
-            {
-                this.endPoint = endPoint;
-                this.buffer = buffer;
-            }
-        }
-
-        #endregion
+        #region ITransport Members
 
         /// <summary>
         /// Start transport.
@@ -138,7 +122,7 @@ namespace SipSharp.Transports
         {
             if (listenerEndPoint == null)
                 throw new ArgumentNullException("listenerEndPoint");
-            IPEndPoint ep = listenerEndPoint as IPEndPoint;
+            var ep = listenerEndPoint as IPEndPoint;
             if (ep == null)
                 throw new ArgumentException("Endpoint is not of type IPEndPoint", "listenerEndPoint");
 
@@ -158,9 +142,9 @@ namespace SipSharp.Transports
         {
             _logger.Debug("Sending " + count + " bytes to " + endPoint + ":\r\n" +
                           Encoding.ASCII.GetString(buffer, 0, count));
-            SendContext context = new SendContext(endPoint, buffer);
+            var context = new SendContext(endPoint, buffer);
             _socket.BeginSendTo(buffer, 0, count, SocketFlags.None, endPoint, OnSendComplete,
-                                       context);
+                                context);
         }
 
         /// <summary>
@@ -174,10 +158,7 @@ namespace SipSharp.Transports
         /// <summary>
         /// Gets port that the point is listening on.
         /// </summary>
-        public int Port
-        {
-            get; set;
-        }
+        public int Port { get; set; }
 
         /// <summary>
         /// Gets of protocol is message based.
@@ -191,11 +172,26 @@ namespace SipSharp.Transports
         /// <para>This property should be used to </para>
         /// </remarks>
         //string IsMessageBasedProtocl{ get;}
-        public ObjectPool<byte[]> BufferPool
+        public ObjectPool<byte[]> BufferPool { set; private get; }
+
+        public event UnhandledExceptionEventHandler UnhandledException = delegate { };
+
+        #endregion
+
+        #region Nested type: SendContext
+
+        private struct SendContext
         {
-            set; private get;
+            public readonly byte[] buffer;
+            public readonly EndPoint endPoint;
+
+            public SendContext(EndPoint endPoint, byte[] buffer)
+            {
+                this.endPoint = endPoint;
+                this.buffer = buffer;
+            }
         }
 
-        public event UnhandledExceptionEventHandler UnhandledException = delegate{};
+        #endregion
     }
 }

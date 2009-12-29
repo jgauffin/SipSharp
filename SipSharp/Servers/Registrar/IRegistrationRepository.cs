@@ -1,19 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace SipSharp.Servers.Registrar
+﻿namespace SipSharp.Servers.Registrar
 {
     public interface IRegistrationRepository
     {
-        /// <summary>
-        /// Get registration for a user.
-        /// </summary>
-        /// <param name="uri"></param>
-        /// <returns></returns>
-        Registration Get(SipUri uri);
-
         /// <summary>
         /// Create a new registration object.
         /// </summary>
@@ -28,5 +16,12 @@ namespace SipSharp.Servers.Registrar
         /// <param name="realm"></param>
         /// <returns></returns>
         bool Exists(Contact contact, SipUri realm);
+
+        /// <summary>
+        /// Get registration for a user.
+        /// </summary>
+        /// <param name="uri"></param>
+        /// <returns></returns>
+        Registration Get(SipUri uri);
     }
 }

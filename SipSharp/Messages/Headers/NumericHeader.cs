@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SipSharp.Messages.Headers
+﻿namespace SipSharp.Messages.Headers
 {
     /// <summary>
     /// Contains an int value.
@@ -32,6 +30,19 @@ namespace SipSharp.Messages.Headers
         /// </summary>
         public int Value { get; set; }
 
+        public override bool Equals(object obj)
+        {
+            var header = obj as NumericHeader;
+            if (header != null)
+                return header.Value == Value;
+            return false;
+        }
+
+        public override string ToString()
+        {
+            return Value.ToString();
+        }
+
         #region IHeader Members
 
         /// <summary>
@@ -51,8 +62,6 @@ namespace SipSharp.Messages.Headers
         /// </summary>
         public string Name { get; private set; }
 
-        #endregion
-
         /// <summary>
         /// Indicates whether the current object is equal to another object of the same type.
         /// </summary>
@@ -63,23 +72,12 @@ namespace SipSharp.Messages.Headers
         ///                 </param>
         public bool Equals(IHeader other)
         {
-            NumericHeader header = other as NumericHeader;
+            var header = other as NumericHeader;
             if (header != null)
                 return header.Value == Value;
             return false;
         }
 
-        public override bool Equals(object obj)
-        {
-            NumericHeader header = obj as NumericHeader;
-            if (header != null)
-                return header.Value == Value;
-            return false;
-        }
-
-        public override string ToString()
-        {
-            return Value.ToString();
-        }
+        #endregion
     }
 }

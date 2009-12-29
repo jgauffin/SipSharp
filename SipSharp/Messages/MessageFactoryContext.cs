@@ -14,12 +14,11 @@ namespace SipSharp.Messages
     /// </remarks>
     internal class MessageFactoryContext : IDisposable
     {
-        private readonly MessageFactory _msgFactory;
         private readonly HeaderFactory _factory;
+        private readonly MessageFactory _msgFactory;
         private readonly SipParser _parser;
-        private Message _message;
         private ILogger _logger = LogFactory.CreateLogger(typeof (MessageFactoryContext));
-        private EndPoint _endPoint;
+        private Message _message;
 
         public MessageFactoryContext(MessageFactory msgFactory, HeaderFactory factory, SipParser parser)
         {
@@ -32,15 +31,21 @@ namespace SipSharp.Messages
             parser.ResponseLineParsed += OnResponseLine;
         }
 
-        public EndPoint EndPoint
+        public EndPoint EndPoint { get; internal set; }
+
+
+        private void OnHeader(object sender, HeaderEventArgs e)
         {
-            get { return _endPoint; }
-            internal set { _endPoint = value; }
+            IHeader header = _factory.Parse(e.Name, e.Value);
+            _message.Assign(header.Name.ToLower(), header);
         }
 
-        private void OnResponseLine(object sender, ResponseLineEventArgs e)
+        private void OnMessageComplete(object sender, EventArgs e)
         {
-            _message = _msgFactory.CreateResponse(e.Version, e.StatusCode, e.ReasonPhrase);
+            if (_message is IRequest)
+                RequestCompleted(this, new RequestEventArgs((IRequest) _message, null, EndPoint));
+            else
+                ResponseCompleted(this, new ResponseEventArgs((IResponse) _message, null, EndPoint));
         }
 
         private void OnRequestLine(object sender, RequestLineEventArgs e)
@@ -48,19 +53,9 @@ namespace SipSharp.Messages
             _message = _msgFactory.CreateRequest(e.Method, e.UriPath, e.Version);
         }
 
-        private void OnMessageComplete(object sender, EventArgs e)
+        private void OnResponseLine(object sender, ResponseLineEventArgs e)
         {
-            if (_message is IRequest)
-                RequestCompleted(this, new RequestEventArgs((IRequest)_message, null, EndPoint));
-            else
-                ResponseCompleted(this, new ResponseEventArgs((IResponse)_message, null, EndPoint));
-        }
-
-
-        private void OnHeader(object sender, HeaderEventArgs e)
-        {
-            IHeader header = _factory.Parse(e.Name, e.Value);
-            _message.Assign(header.Name.ToLower(), header);
+            _message = _msgFactory.CreateResponse(e.Version, e.StatusCode, e.ReasonPhrase);
         }
 
         /// <summary>
@@ -85,14 +80,17 @@ namespace SipSharp.Messages
             return currentOffset;
         }
 
+        #region IDisposable Members
+
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
         /// <filterpriority>2</filterpriority>
         public void Dispose()
         {
-            
         }
+
+        #endregion
 
         public event EventHandler<RequestEventArgs> RequestCompleted = delegate { };
         public event EventHandler<ResponseEventArgs> ResponseCompleted = delegate { };

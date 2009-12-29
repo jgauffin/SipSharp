@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using SipSharp.Messages.Headers;
 using SipSharp.Servers.Registrar;
 
@@ -12,26 +9,21 @@ namespace SipSharp.Servers
     /// </summary>
     public class Authenticator
     {
-        private NonceManager _nonce = new NonceManager();
+        private readonly NonceManager _nonce = new NonceManager();
 
         public Authenticate CreateWwwHeader(string realm, SipUri domain)
         {
-            Authenticate header = new Authenticate(Authenticate.WWW_NAME)
-                                      {
-                                          Algortihm = "MD5",
-                                          Domain = domain,
-                                          Realm = realm,
-                                          Nonce = _nonce.Create(),
-                                          Opaque = Guid.NewGuid().ToString().Replace("-", string.Empty),
-                                          Qop = "auth",
-                                          Stale = false
-                                      };
+            var header = new Authenticate(Authenticate.WWW_NAME)
+                             {
+                                 Algortihm = "MD5",
+                                 Domain = domain,
+                                 Realm = realm,
+                                 Nonce = _nonce.Create(),
+                                 Opaque = Guid.NewGuid().ToString().Replace("-", string.Empty),
+                                 Qop = "auth",
+                                 Stale = false
+                             };
             return header;
-        }
-
-        public bool IsNonceValid(string nonce)
-        {
-            return _nonce.IsValid(nonce);
         }
 
         public bool IsAuthenticated(IRequest request)
@@ -48,6 +40,11 @@ namespace SipSharp.Servers
             }
 */
             return false;
+        }
+
+        public bool IsNonceValid(string nonce)
+        {
+            return _nonce.IsValid(nonce);
         }
     }
 }

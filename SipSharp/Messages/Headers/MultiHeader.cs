@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using SipSharp.Messages.Headers;
-using SipSharp.Tools;
 
 namespace SipSharp.Headers
 {
@@ -24,16 +23,24 @@ namespace SipSharp.Headers
             _name = name;
         }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="MultiHeader&lt;T&gt;"/> class.
-		/// </summary>
-		/// <param name="header">Header to deep copy information from.</param>
-		protected MultiHeader(MultiHeader<T> header)
-		{
-			_name = header._name;
-			foreach (T item in header._items)
-				_items.Add((T)item.Clone());
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MultiHeader&lt;T&gt;"/> class.
+        /// </summary>
+        /// <param name="header">Header to deep copy information from.</param>
+        protected MultiHeader(MultiHeader<T> header)
+        {
+            _name = header._name;
+            foreach (T item in header._items)
+                _items.Add((T) item.Clone());
+        }
+
+        /// <summary>
+        /// Gets first header entry
+        /// </summary>
+        public T First
+        {
+            get { return Items.Count > 0 ? Items[0] : null; }
+        }
 
         /// <summary>
         /// All entries.
@@ -57,27 +64,14 @@ namespace SipSharp.Headers
             return (T) Activator.CreateInstance(typeof (T));
         }
 
-        /// <summary>
-        /// Gets first header entry
-        /// </summary>
-        public T First
+        public override string ToString()
         {
-            get
-            {
-                return Items.Count > 0 ? Items[0] : null;
-            }
+            string temp = string.Empty;
+            foreach (T item in Items)
+                temp += item + ",";
+            return temp.Length > 0 ? temp.Remove(temp.Length - 1) : temp;
         }
 
-
-        #region IHeader Members
-
-        /// <summary>
-        /// Gets or sets name of header.
-        /// </summary>
-        string IHeader.Name
-        {
-            get { return _name; }
-        }
 /*
 
         /// <summary>
@@ -101,7 +95,8 @@ namespace SipSharp.Headers
             }
         }
         */
-        #endregion
+
+        #region IEnumerable<T> Members
 
         /// <summary>
         ///                     Returns an enumerator that iterates through the collection.
@@ -127,14 +122,26 @@ namespace SipSharp.Headers
             return GetEnumerator();
         }
 
-    	/// <summary>
-    	///                     Creates a new object that is a copy of the current instance.
-    	/// </summary>
-    	/// <returns>
-    	///                     A new object that is a copy of this instance.
-    	/// </returns>
-    	/// <filterpriority>2</filterpriority>
-    	public abstract object Clone();
+        #endregion
+
+        #region IHeader Members
+
+        /// <summary>
+        /// Gets or sets name of header.
+        /// </summary>
+        string IHeader.Name
+        {
+            get { return _name; }
+        }
+
+        /// <summary>
+        ///                     Creates a new object that is a copy of the current instance.
+        /// </summary>
+        /// <returns>
+        ///                     A new object that is a copy of this instance.
+        /// </returns>
+        /// <filterpriority>2</filterpriority>
+        public abstract object Clone();
 
         /// <summary>
         /// Indicates whether the current object is equal to another object of the same type.
@@ -146,14 +153,14 @@ namespace SipSharp.Headers
         ///                 </param>
         public bool Equals(IHeader other)
         {
-            MultiHeader<T> header = other as MultiHeader<T>;
-            if (header == null) 
+            var header = other as MultiHeader<T>;
+            if (header == null)
                 return false;
 
             if (header.Items.Count != Items.Count)
                 return false;
 
-            for (int i = 0; i < Items.Count; ++i )
+            for (int i = 0; i < Items.Count; ++i)
             {
                 if (header.Items[i] != Items[i])
                     return false;
@@ -162,12 +169,6 @@ namespace SipSharp.Headers
             return true;
         }
 
-        public override string ToString()
-        {
-            string temp = string.Empty;
-            foreach (var item in Items)
-                temp += item + ",";
-            return temp.Length > 0 ? temp.Remove(temp.Length - 1) : temp;
-        }
+        #endregion
     }
 }

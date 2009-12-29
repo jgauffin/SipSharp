@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using SipSharp.Tools;
-using Xunit;
 
 namespace SipSharp.Messages.Headers.Parsers
 {
@@ -19,9 +18,7 @@ namespace SipSharp.Messages.Headers.Parsers
     [ParserFor("From", 'f')]
     public class ContactParser : IHeaderParser
     {
-
         #region IHeaderParser Members
-
 
         /// <summary>
         /// Parse a message value.

@@ -29,6 +29,11 @@ namespace SipSharp.Messages.Headers
     /// </example>
     public class Route : MultiHeader<RouteEntry>
     {
+        public const string RECORD_ROUTE_LNAME = "record-route";
+        public const string RECORD_ROUTE_NAME = "Record-Route";
+        public const string ROUTE_LNAME = "route";
+        public const string ROUTE_NAME = "Route";
+
         /// <summary>
         /// Initializes a new instance of the <see cref="MultiHeader&lt;T&gt;"/> class.
         /// </summary>
@@ -39,16 +44,6 @@ namespace SipSharp.Messages.Headers
 
         public Route(Route route) : base(route)
         {
-            
-        }
-
-        /// <summary>
-        /// Create a new header value instance.
-        /// </summary>
-        /// <returns>A newly created header.</returns>
-        protected override IHeader CreateHeader()
-        {
-            return new RouteEntry(((IHeader)this).Name);
         }
 
         /// <summary>
@@ -63,9 +58,13 @@ namespace SipSharp.Messages.Headers
             return new Route(this);
         }
 
-        public const string ROUTE_NAME = "Route";
-        public const string ROUTE_LNAME = "route";
-        public const string RECORD_ROUTE_NAME = "Record-Route";
-        public const string RECORD_ROUTE_LNAME = "record-route";
+        /// <summary>
+        /// Create a new header value instance.
+        /// </summary>
+        /// <returns>A newly created header.</returns>
+        protected override IHeader CreateHeader()
+        {
+            return new RouteEntry(((IHeader) this).Name);
+        }
     }
 }

@@ -25,6 +25,67 @@ namespace SipSharp.Servers.Registrar
             MinExpires = 600;
         }
 
+        /// <summary>
+        /// Gets or sets domain that the users have to authenticate against.
+        /// </summary>
+        /// <example>
+        /// sip:biloxi.com
+        /// </example>
+        public SipUri Domain { get; set; }
+
+        /// <summary>
+        /// Gets or sets minimum time in seconds before user expires.
+        /// </summary>
+        /// <remarks>
+        /// This is the default and minimum expires time. It will be used
+        /// if the time suggested by client is lower, or if the client
+        /// haven't suggested a time at all.
+        /// </remarks>
+        public int MinExpires { get; set; }
+
+        /// <summary>
+        /// Gets or sets more like a show domain.
+        /// </summary>
+        /// <example>
+        /// biloxi.com
+        /// </example>
+        public string Realm { get; set; }
+
+        protected virtual IHeader CreateAuthenticateHeader()
+        {
+            return new Authorization(Authorization.NAME);
+        }
+
+
+        protected IRegistrarUser CreateUser()
+        {
+            return new RegistrarUser();
+        }
+
+        protected virtual void ForwardRequest(IRequest request)
+        {
+        }
+
+        public Registration Get(Contact contact)
+        {
+            return _repository.Get(contact.Uri);
+        }
+
+        protected virtual bool IsOurDomain(SipUri uri)
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Check if we support everything in the Require header.
+        /// </summary>
+        /// <param name="request">Register request.</param>
+        /// <returns><c>true</c> if supported; otherwise <c>false</c>.</returns>
+        protected virtual bool IsRequireOk(IRequest request)
+        {
+            return true;
+        }
+
         private void OnRequest(object sender, RequestEventArgs e)
         {
             if (e.Request.Method != SipMethod.REGISTER)
@@ -34,7 +95,7 @@ namespace SipSharp.Servers.Registrar
             {
                 IServerTransaction trans = _stack.CreateServerTransaction(e.Request);
                 IResponse resp = e.Request.CreateResponse(StatusCode.BadRequest,
-                                                             "Only SIP and SIPS protocols are allowed.");
+                                                          "Only SIP and SIPS protocols are allowed.");
                 resp.Headers["Date"] = new StringHeader("Date", DateTime.Now.ToString("R"));
                 trans.Send(resp);
                 return;
@@ -274,75 +335,14 @@ namespace SipSharp.Servers.Registrar
              */
             if (response.Contact == null)
                 response.Contact = new ContactHeader("Contact");
-            foreach (var contact in newContacts)
+            foreach (RegistrationContact contact in newContacts)
             {
-                Contact regContact = new Contact(string.Empty, contact.Uri);
+                var regContact = new Contact(string.Empty, contact.Uri);
                 regContact.Parameters.Add("expires", contact.Expires.ToString());
                 regContact.Parameters.Add("q", contact.Quality.ToString());
                 response.Contact.Contacts.Add(regContact);
             }
             transaction.Send(response);
-        }
-
-        /// <summary>
-        /// Gets or sets domain that the users have to authenticate against.
-        /// </summary>
-        /// <example>
-        /// sip:biloxi.com
-        /// </example>
-        public SipUri Domain { get; set; }
-
-        /// <summary>
-        /// Gets or sets minimum time in seconds before user expires.
-        /// </summary>
-        /// <remarks>
-        /// This is the default and minimum expires time. It will be used
-        /// if the time suggested by client is lower, or if the client
-        /// haven't suggested a time at all.
-        /// </remarks>
-        public int MinExpires { get; set; }
-
-        /// <summary>
-        /// Gets or sets more like a show domain.
-        /// </summary>
-        /// <example>
-        /// biloxi.com
-        /// </example>
-        public string Realm { get; set; }
-
-        protected virtual IHeader CreateAuthenticateHeader()
-        {
-            return new Authorization(Authorization.NAME);
-        }
-
-
-        protected IRegistrarUser CreateUser()
-        {
-            return new RegistrarUser();
-        }
-
-        protected virtual void ForwardRequest(IRequest request)
-        {
-        }
-
-        protected virtual bool IsOurDomain(SipUri uri)
-        {
-            return true;
-        }
-
-        /// <summary>
-        /// Check if we support everything in the Require header.
-        /// </summary>
-        /// <param name="request">Register request.</param>
-        /// <returns><c>true</c> if supported; otherwise <c>false</c>.</returns>
-        protected virtual bool IsRequireOk(IRequest request)
-        {
-            return true;
-        }
-
-        public Registration Get(Contact contact)
-        {
-            return _repository.Get(contact.Uri);
         }
     }
 

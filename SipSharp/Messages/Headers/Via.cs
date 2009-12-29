@@ -1,5 +1,4 @@
-﻿using System;
-using SipSharp.Headers;
+﻿using SipSharp.Headers;
 
 namespace SipSharp.Messages.Headers
 {
@@ -23,13 +22,9 @@ namespace SipSharp.Messages.Headers
         {
         }
 
-        ///<summary>
-        ///
-        ///</summary>
-        ///<returns></returns>
-        protected override IHeader CreateHeader()
+        public void Add(ViaEntry entry)
         {
-            return new ViaEntry();
+            Items.Add(entry);
         }
 
         /// <summary>
@@ -52,10 +47,13 @@ namespace SipSharp.Messages.Headers
             return new Via(this);
         }
 
-        public void Add(ViaEntry entry)
+        ///<summary>
+        ///
+        ///</summary>
+        ///<returns></returns>
+        protected override IHeader CreateHeader()
         {
-            Items.Add(entry);
+            return new ViaEntry();
         }
-
     }
 }
