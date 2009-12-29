@@ -15,6 +15,7 @@ namespace SipSharp.Calls
         private readonly ISipStack _stack;
         Dictionary<string, Call> _calls = new Dictionary<string, Call>();
         private ILogger _logger = LogFactory.CreateLogger(typeof (CallManager));
+        private Dictionary<string, Dialog> _dialogs = new Dictionary<string, Dialog>();
 
         public CallManager(ISipStack stack)
         {
@@ -23,6 +24,19 @@ namespace SipSharp.Calls
 
         public bool Process(IRequest request)
         {
+            /*
+            string callID = request.CallID;
+            string localTag = request.To.Tag;
+            string remoteTag = request.From.Tag;
+            if (callID != null && localTag != null && remoteTag != null)
+            {
+                string dialogID = callID + "-" + localTag + "-" + remoteTag;
+                lock (m_pDialogs)
+                {
+                    m_pDialogs.TryGetValue(dialogID, out dialog);
+                }
+            }
+            */
             return true;
         }
 
@@ -82,6 +96,7 @@ namespace SipSharp.Calls
             if (e.Transaction.Request.Method == SipMethod.INVITE)
             {
                 Dialog dialog = CreateClientDialog(e.Transaction.Request, e.Response);
+                _dialogs.Add(dialog.Id, dialog);
                 return;
             }
         }
@@ -158,6 +173,8 @@ namespace SipSharp.Calls
             dialog.RemoteUri = request.To.Uri;
             dialog.LocalUri = request.From.Uri;
 
+            dialog.Id = response.CallId + "-" + (response.From.Parameters["tag"] ?? string.Empty) + "-" +
+                        (response.To.Parameters["tag"] ?? string.Empty);
             return dialog;
         }
 
@@ -230,6 +247,9 @@ namespace SipSharp.Calls
             // local URI MUST be set to the URI in the To field.
             dialog.RemoteUri = transaction.Request.From.Uri;
             dialog.LocalUri = transaction.Request.To.Uri;
+
+            dialog.Id = response.CallId + "-" + (response.To.Parameters["tag"] ?? string.Empty) + "-" +
+                        (response.From.Parameters["tag"] ?? string.Empty);
 
             return dialog;
         }
