@@ -9,17 +9,30 @@ using Authorization=SipSharp.Messages.Headers.Authorization;
 
 namespace SipSharp.Servers.Registrar
 {
-    public class Registrar
+    /// <summary>
+    /// Takes care of registrations.
+    /// </summary>
+    public class Registrar : IRequestHandler
     {
         private readonly Authenticator _authenticator;
         private readonly ILogger _logger = LogFactory.CreateLogger(typeof (Registrar));
         private readonly IRegistrationRepository _repository;
         private readonly ISipStack _stack;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Registrar"/> class.
+        /// </summary>
+        /// <param name="stack">Stack used for communication.</param>
+        /// <param name="repository">Repository storing users.</param>
+        /// <exception cref="ArgumentNullException"><c>stack</c> or <c>repository</c> is <c>null</c>.</exception>
         public Registrar(ISipStack stack, IRegistrationRepository repository)
         {
+            if (stack == null)
+                throw new ArgumentNullException("stack");
+            if (repository == null)
+                throw new ArgumentNullException("repository");
             _stack = stack;
-            _stack.RequestReceived += OnRequest;
+            _stack.Register(this);
             _repository = repository;
             _authenticator = stack.Authenticator;
             MinExpires = 600;
@@ -32,6 +45,7 @@ namespace SipSharp.Servers.Registrar
         /// sip:biloxi.com
         /// </example>
         public SipUri Domain { get; set; }
+
 
         /// <summary>
         /// Gets or sets minimum time in seconds before user expires.
@@ -86,19 +100,110 @@ namespace SipSharp.Servers.Registrar
             return true;
         }
 
-        private void OnRequest(object sender, RequestEventArgs e)
-        {
-            if (e.Request.Method != SipMethod.REGISTER)
-                return;
 
-            if (e.Request.To.Uri.Scheme != "sip" && e.Request.To.Uri.Scheme != "sips")
+        /// <summary>
+        /// Update all contacts (registration bindings) for a user.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="registration"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// Should be done after a successful authentication.
+        /// </remarks>
+        private List<RegistrationContact> UpdateContacts(RequestContext context, Registration registration)
+        {
+            var contactHeader = context.Request.Headers[ContactHeader.LNAME] as ContactHeader;
+            if (contactHeader == null)
             {
-                IServerTransaction trans = _stack.CreateServerTransaction(e.Request);
-                IResponse resp = e.Request.CreateResponse(StatusCode.BadRequest,
-                                                          "Only SIP and SIPS protocols are allowed.");
-                resp.Headers["Date"] = new StringHeader("Date", DateTime.Now.ToString("R"));
-                trans.Send(resp);
-                return;
+                _logger.Warning("Contact header was not specified.");
+                context.Response.ReasonPhrase = "Missing/Invalid contact header.";
+                context.Response.StatusCode = StatusCode.BadRequest;
+                return null;
+            }
+
+            var newContacts = new List<RegistrationContact>();
+            foreach (Contact contact in contactHeader.Contacts)
+            {
+                int expires = MinExpires;
+                if (contact.Parameters.Contains("expires"))
+                {
+                    if (!int.TryParse(contact.Parameters["expires"], out expires))
+                    {
+                        _logger.Warning("Invalid expires value: " + contact.Parameters["expires"]);
+                        context.Response.ReasonPhrase = "Invalid expires value on contact header.";
+                        context.Response.StatusCode = StatusCode.BadRequest;
+                        return null;
+                    }
+
+                    if (expires > 0 && expires < MinExpires)
+                    {
+                        _logger.Warning("Too small expires value: " + expires);
+                        context.Response.ReasonPhrase = "Increase expires value.";
+                        context.Response.StatusCode = StatusCode.IntervalTooBrief;
+                        context.Response.Headers.Add("MinExpires", new NumericHeader("MinExpires", MinExpires));
+                        return null;
+                    }
+                }
+                RegistrationContact oldContact = registration.Find(contact.Uri);
+                if (oldContact != null && oldContact.CallId == context.Request.CallId
+                    && context.Request.CSeq.Number < oldContact.SequenceNumber)
+                {
+                    context.Response.StatusCode = StatusCode.BadRequest;
+                    context.Response.ReasonPhrase = "CSeq value in contact is out of order.";
+                    return null;
+                }
+                // Add new contact
+                newContacts.Add(new RegistrationContact(contact.Name, contact.Uri)
+                                    {
+                                        CallId = context.Request.CallId,
+                                        Expires = expires,
+                                        ExpiresAt = DateTime.Now.AddSeconds(expires),
+                                        Quality = context.Request.Contact.Quality,
+                                        SequenceNumber = context.Request.CSeq.Number,
+                                        UpdatedAt = DateTime.Now,
+                                    });
+            }
+
+
+            // Now replace contacts.
+            // We do it in two steps since no contacts should be updated
+            // if someone fails.
+            _repository.UpdateContacts(registration, newContacts);
+            return newContacts;
+        }
+
+        private Registration Authenticate(RequestContext context)
+        {
+            Authorization authorization = (Authorization) context.Request.Headers[Authorization.LNAME];
+            Registration registration = _repository.GetByAuthentication(authorization.Realm, authorization.UserName);
+            if (registration == null)
+            {
+                _logger.Info("Failed to find auth user name: " + authorization.UserName + " in realm " + authorization.Realm);
+                context.Response.ReasonPhrase = "Failed to find auth user name";
+                context.Response.StatusCode = StatusCode.BadRequest;
+                return null;
+            }
+
+            _repository.UpdateUri(registration, context.Request.From.Uri);
+
+            //TODO: Digest authentication.
+
+
+
+            return registration;
+        }
+
+        public ProcessingResult ProcessRequest(RequestContext context)
+        {
+            if (context.Request.Method != SipMethod.REGISTER)
+                return ProcessingResult.Continue;
+
+            if (context.Request.To.Uri.Scheme != "sip" && context.Request.To.Uri.Scheme != "sips")
+            {
+                context.Response.StatusCode = StatusCode.BadRequest;
+                context.Response.ReasonPhrase = "Only SIP and SIPS protocols are allowed.";
+                context.Response.Headers["Date"] = new StringHeader("Date", DateTime.Now.ToString("R"));
+                return ProcessingResult.SendResponse;
             }
             /*
             When receiving a REGISTER request, a registrar follows these steps:
@@ -110,10 +215,10 @@ namespace SipSharp.Servers.Registrar
                  domain, following the general behavior for proxying messages
                  described in Section 16.
             */
-            if (!IsOurDomain(e.Request.Uri))
+            if (!IsOurDomain(context.Request.Uri))
             {
-                ForwardRequest(e.Request);
-                return;
+                ForwardRequest(context.Request);
+                return ProcessingResult.SendResponse;
             }
 
             /*
@@ -121,13 +226,12 @@ namespace SipSharp.Servers.Registrar
                  extensions, the registrar MUST process the Require header field
                  values as described for UASs in Section 8.2.2.
             */
-            if (IsRequireOk(e.Request))
+            if (IsRequireOk(context.Request))
             {
             }
 
-            IServerTransaction transaction = _stack.CreateServerTransaction(e.Request);
-            IResponse response = e.Request.CreateResponse(StatusCode.OK, "You are REGISTERED! :)");
-            response.Headers["Date"] = new StringHeader("Date", DateTime.Now.ToString("R"));
+            context.Response.ReasonPhrase = "You are REGISTERED! :)";
+            context.Response.Headers["Date"] = new StringHeader("Date", DateTime.Now.ToUniversalTime().ToString("R"));
 
             /*
               3. A registrar SHOULD authenticate the UAC.  Mechanisms for the
@@ -137,14 +241,13 @@ namespace SipSharp.Servers.Registrar
                  mechanism is available, the registrar MAY take the From address
                  as the asserted identity of the originator of the request.
             */
-            if (e.Request.Headers[Authorization.LNAME] == null)
+            if (context.Request.Headers[Authorization.LNAME] == null)
             {
-                response.StatusCode = StatusCode.Unauthorized;
-                response.ReasonPhrase = "You must authorize";
+                context.Response.StatusCode = StatusCode.Unauthorized;
+                context.Response.ReasonPhrase = "You must authorize";
                 IHeader wwwHeader = _authenticator.CreateWwwHeader(Realm, Domain);
-                response.Headers.Add(Authenticate.WWW_NAME, wwwHeader);
-                transaction.Send(response);
-                return;
+                context.Response.Headers.Add(Messages.Headers.Authenticate.WWW_NAME, wwwHeader);
+                return ProcessingResult.SendResponse;
             }
 
             /*
@@ -173,13 +276,9 @@ namespace SipSharp.Servers.Registrar
                  any escaped characters MUST be converted to their unescaped
                  form.  The result serves as an index into the list of bindings.
             */
-            if (!_repository.Exists(e.Request.To, e.Request.Uri))
-            {
-                response.StatusCode = StatusCode.NotFound;
-                response.ReasonPhrase = "User was not found in '" + e.Request.Uri + "'.";
-                transaction.Send(response);
-                return;
-            }
+
+            // done in the Authenticate method
+
 
             /*
               6. The registrar checks whether the request contains the Contact
@@ -258,73 +357,15 @@ namespace SipSharp.Servers.Registrar
                  request MUST fail with a 500 (Server Error) response and all
                  tentative binding updates MUST be removed.
             */
-            Registration registration = _repository.Get(e.Request.To.Uri);
+            ;
+            Registration registration = Authenticate(context);
             if (registration == null)
-            {
-                _logger.Debug("Creating new registration for: " + e.Request.To);
-                registration = _repository.Create(e.Request.To.Uri);
-            }
-
-            var contactHeader = e.Request.Headers[ContactHeader.LNAME] as ContactHeader;
-            if (contactHeader == null)
-            {
-                _logger.Warning("Contact header was not specified.");
-                response.ReasonPhrase = "Missing/Invalid contact header.";
-                response.StatusCode = StatusCode.BadRequest;
-                transaction.Send(response);
-                return;
-            }
-
-            var newContacts = new List<RegistrationContact>();
-            foreach (Contact contact in contactHeader.Contacts)
-            {
-                int expires = MinExpires;
-                if (contact.Parameters.Contains("expires"))
-                {
-                    if (!int.TryParse(contact.Parameters["expires"], out expires))
-                    {
-                        _logger.Warning("Invalid expires value: " + contact.Parameters["expires"]);
-                        response.ReasonPhrase = "Invalid expires value on contact header.";
-                        response.StatusCode = StatusCode.BadRequest;
-                        transaction.Send(response);
-                        return;
-                    }
-
-                    if (expires > 0 && expires < MinExpires)
-                    {
-                        _logger.Warning("Too small expires value: " + expires);
-                        response.ReasonPhrase = "Increase expires value.";
-                        response.StatusCode = StatusCode.IntervalTooBrief;
-                        response.Headers.Add("MinExpires", new NumericHeader("MinExpires", MinExpires));
-                        transaction.Send(response);
-                    }
-                }
-                RegistrationContact oldContact = registration.Find(contact.Uri);
-                if (oldContact != null && oldContact.CallId == e.Request.CallId
-                    && e.Request.CSeq.Number < oldContact.SequenceNumber)
-                {
-                    response.StatusCode = StatusCode.BadRequest;
-                    response.ReasonPhrase = "CSeq value in contact is out of order.";
-                    transaction.Send(response);
-                    return;
-                }
-                // Add new contact
-                newContacts.Add(new RegistrationContact(contact.Name, contact.Uri)
-                                    {
-                                        CallId = e.Request.CallId,
-                                        Expires = expires,
-                                        ExpiresAt = DateTime.Now.AddSeconds(expires),
-                                        Quality = e.Request.Contact.Quality,
-                                        SequenceNumber = e.Request.CSeq.Number,
-                                        UpdatedAt = DateTime.Now,
-                                    });
-            }
+                return ProcessingResult.SendResponse;
 
 
-            // Now replace contacts.
-            // We do it in two steps since no contacts should be updated
-            // if someone fails.
-            registration.Replace(newContacts);
+            List<RegistrationContact> newContacts = UpdateContacts(context, registration);
+            if (newContacts == null)
+                return ProcessingResult.SendResponse;
 
             /*
               8. The registrar returns a 200 (OK) response.  The response MUST
@@ -333,17 +374,44 @@ namespace SipSharp.Servers.Registrar
                  parameter indicating its expiration interval chosen by the
                  registrar.  The response SHOULD include a Date header field.
              */
-            if (response.Contact == null)
-                response.Contact = new ContactHeader("Contact");
+            if (context.Response.Contact == null)
+                context.Response.Contact = new ContactHeader("Contact");
             foreach (RegistrationContact contact in newContacts)
             {
                 var regContact = new Contact(string.Empty, contact.Uri);
                 regContact.Parameters.Add("expires", contact.Expires.ToString());
                 regContact.Parameters.Add("q", contact.Quality.ToString());
-                response.Contact.Contacts.Add(regContact);
+                context.Response.Contact.Contacts.Add(regContact);
             }
-            transaction.Send(response);
+
+            return ProcessingResult.SendResponse;
         }
+    }
+
+    /// <summary>
+    /// Authentication result
+    /// </summary>
+    public enum AuthenticationResult
+    {
+        /// <summary>
+        /// User was not found
+        /// </summary>
+        NotFound,
+
+        /// <summary>
+        /// Failed to authenticate password
+        /// </summary>
+        InvalidPassword,
+
+        /// <summary>
+        /// Account is locked.
+        /// </summary>
+        Locked,
+
+        /// <summary>
+        /// Authentication was successful.
+        /// </summary>
+        Success
     }
 
     public interface IRegistrarDataSource

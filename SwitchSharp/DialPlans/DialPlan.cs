@@ -1,22 +1,42 @@
-﻿using SipSharp.Calls;
+﻿using System.Collections.Specialized;
+using SipSharp;
+using SipSharp.Calls;
+using SwitchSharp.DialPlans.Actions;
 
 namespace SwitchSharp.DialPlans
 {
     /// <summary>
-    /// Used to hunt for dial plan actions.
+    /// Dial plan to execute
     /// </summary>
     public class DialPlan
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DialPlan"/> class.
         /// </summary>
-        /// <param name="call">Call that the dial plan should be created for.</param>
-        public DialPlan(Call call)
+        public DialPlan(Contact from, Contact to)
         {
-            Call = call;
+            Caller = from;
+            Destination = to;
             Actions = new ActionCollection();
         }
 
+        /// <summary>
+        /// Gets or sets who the caller is.
+        /// </summary>
+        /// <remarks>
+        /// Always original caller.
+        /// </remarks>
+        public Contact Caller { get; set; }
+
+        /// <summary>
+        /// Gets or sets what the caller want to reach.
+        /// </summary>
+        public Contact Destination { get; set; }
+
+        /// <summary>
+        /// Gets or sets last destination (if this is a forward)
+        /// </summary>
+        public Contact Forwarded { get; set; }
 
         /// <summary>
         /// Gets actions to invoke.
@@ -24,8 +44,13 @@ namespace SwitchSharp.DialPlans
         public ActionCollection Actions { get; private set; }
 
         /// <summary>
-        /// Gets or sets call that the dial plan should be made for.
+        /// Gets or sets abort processing and send back result.
         /// </summary>
-        public Call Call { get; private set; }
+        public bool Abort { get; set; }
+
+        /// <summary>
+        /// Context used by dial plan manager.
+        /// </summary>
+        internal object Context { get; set; }
     }
 }

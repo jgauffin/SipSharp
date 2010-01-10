@@ -34,8 +34,9 @@ namespace SipSharp.Test.Transports
             _messageFactory.RequestReceived += OnRequest;
             _messageFactory.ResponseReceived += OnResponse;
             var pool = new ObjectPool<byte[]>(CreateBuffer);
-            _transport = new UdpTransport(_messageFactory) {BufferPool = _bufferPool};
-            _transport.Start(new IPEndPoint(IPAddress.Loopback, PortNumber));
+            _transport = new UdpTransport(new IPEndPoint(IPAddress.Loopback, PortNumber), _messageFactory)
+                             {BufferPool = _bufferPool};
+            _transport.Start();
             _transport.UnhandledException += OnUnhandledException;
         }
 

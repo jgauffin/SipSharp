@@ -1,4 +1,4 @@
-﻿using System;
+﻿/*using System;
 using System.Collections.Generic;
 using SipSharp.Headers;
 using SipSharp.Logging;
@@ -35,7 +35,7 @@ namespace SipSharp.Servers.StatefulProxy
     /// (Trying) responses to non-INVITE requests.
     /// </para>
     /// </remarks>
-    internal class Proxy
+    internal class Proxy : IRequestHandler
     {
         private readonly ILogger _logger = LogFactory.CreateLogger(typeof (Proxy));
         private readonly ISipStack _stack;
@@ -43,7 +43,7 @@ namespace SipSharp.Servers.StatefulProxy
         public Proxy(ISipStack stack)
         {
             _stack = stack;
-            _stack.RequestReceived += OnRequest;
+            _stack.Register(this);
         }
 
         /// <summary>
@@ -223,19 +223,6 @@ namespace SipSharp.Servers.StatefulProxy
         private bool LookupTargets(IRequest request, IServerTransaction transaction, ICollection<SipUri> targets)
         {
             return false;
-        }
-
-        private void OnRequest(object sender, RequestEventArgs e)
-        {
-            if (!ValidateRequest(e.Request, e.Transaction))
-                return;
-
-            if (!PreProcessRoutes(e.Request, e.Transaction))
-                return;
-
-            // RFC3261 section 16.5
-            if (!DetermineRequestTargets(e.Request, e.Transaction))
-                return;
         }
 
         /// <summary>
@@ -435,5 +422,18 @@ namespace SipSharp.Servers.StatefulProxy
 
             return true;
         }
+
+        public ProcessingResult ProcessRequest(RequestContext context)
+        {
+            if (!ValidateRequest(e.Request, e.Transaction))
+                return;
+
+            if (!PreProcessRoutes(e.Request, e.Transaction))
+                return;
+
+            // RFC3261 section 16.5
+            if (!DetermineRequestTargets(e.Request, e.Transaction))
+                return;
+        }
     }
-}
+}*/

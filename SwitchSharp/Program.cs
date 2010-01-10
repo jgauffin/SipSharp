@@ -17,12 +17,12 @@ namespace SwitchSharp
 
             LogFactory.Assign(new ConsoleLogFactory(filter));
 
-            var repos = new RegistrationReporsitory();
-            repos.Add("test3", "127.0.0.1");
+            var repos = new RegistrationRepository();
+            repos.Add(new SipUri("0706930821@mydomain.com"), "u1000067");
 
             SwitchSharp switchSharp = new SwitchSharp();
-
-            switchSharp.AddListener(new UdpTransport(switchSharp.MessageFactory));
+            switchSharp.RegistrationDatabase = repos;
+            switchSharp.AddListener(new UdpTransport(new IPEndPoint(IPAddress.Any, 5060), switchSharp.MessageFactory));
             switchSharp.Start("mydomain.com");
             
 

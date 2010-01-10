@@ -16,8 +16,7 @@ namespace SwitchSharp.DialPlans
         /// Process a dial plan.
         /// </summary>
         /// <param name="dialPlan">Dial plan.</param>
-        /// <param name="transaction">Transaction to user waiting on dial plan.</param>
-        public void Process(DialPlan dialPlan, IServerTransaction transaction)
+        public void Process(DialPlan dialPlan)
         {
         }
     }

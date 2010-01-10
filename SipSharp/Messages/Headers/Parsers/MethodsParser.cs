@@ -26,9 +26,16 @@ namespace SipSharp.Messages.Headers.Parsers
             string method = reader.ReadToEnd(',');
             do
             {
-                header.Methods.Add(method);
+                header.Methods.Add(method.Trim());
+
+                if (reader.Current == ',')
+                    reader.Consume(); // eat the current comma
+                reader.ConsumeWhiteSpaces();
+
+                // read next.
                 method = reader.ReadToEnd(',');
-            } while (reader.Current == ',');
+
+            } while (!reader.EOF && reader.Current == ',');
 
             header.Methods.Add(method);
             return header;

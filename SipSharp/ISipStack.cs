@@ -42,7 +42,7 @@ namespace SipSharp
         /// </para>
         /// A new transaction are automatically created by the stack and attached to this event.
         /// </remarks>
-        event EventHandler<RequestEventArgs> RequestReceived;
+        //event EventHandler<RequestEventArgs> RequestReceived;
 
 
         /// <summary>
@@ -54,8 +54,20 @@ namespace SipSharp
         /// </para>
         /// A new transaction are automatically created by the stack and attached to this event.
         /// </remarks>
-        event EventHandler<ResponseEventArgs> ResponseReceived;
+        //event EventHandler<ResponseEventArgs> ResponseReceived;
+
+        /// <summary>
+        /// Register a request handler.
+        /// </summary>
+        /// <param name="handler">Delegate used to process </param>
+        void Register(IRequestHandler handler);
     }
+
+    public interface IRequestHandler
+    {
+        ProcessingResult ProcessRequest(RequestContext context);
+    }
+
 
     public class RequestEventArgs : EventArgs
     {

@@ -73,6 +73,7 @@
     <Compile Include="Calls\CallOrigins.cs" />
     <Compile Include="Calls\CallReasons.cs" />
     <Compile Include="Calls\CallState.cs" />
+    <Compile Include="Calls\HangupCause.cs" />
     <Compile Include="Calls\IPartyAddress.cs" />
     <Compile Include="Calls\Party.cs" />
     <Compile Include="Calls\PhoneNumber.cs" />
@@ -162,7 +163,6 @@
     <Compile Include="Servers\Registrar\NonceManager.cs" />
     <Compile Include="Servers\Registrar\Registration.cs" />
     <Compile Include="Servers\Registrar\RegistrationContact.cs" />
-    <Compile Include="Servers\Registrar\RegistrationReporsitory.cs" />
     <Compile Include="Servers\Registrar\RegistrationRepository.cs" />
     <Compile Include="Servers\StatefulProxy\Proxy.cs" />
     <Compile Include="SipException.cs" />

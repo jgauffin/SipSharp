@@ -3,14 +3,28 @@ using System.Collections.Generic;
 
 namespace SipSharp.Servers.Registrar
 {
+    /// <summary>
+    /// Contains a registration for a user.
+    /// </summary>
     public class Registration
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Registration"/> class.
+        /// </summary>
         public Registration()
         {
-            Contacts = new List<RegistrationContact>();
+            _contacts = new List<RegistrationContact>();
         }
 
-        public List<RegistrationContact> Contacts { get; private set; }
+        private List<RegistrationContact> _contacts;
+
+        /// <summary>
+        /// A list with all contacts for a user.
+        /// </summary>
+        public IList<RegistrationContact> Contacts
+        {
+            get { return _contacts; }
+        }
 
         /// <summary>
         /// Gets or sets when the registration was created
@@ -50,6 +64,11 @@ namespace SipSharp.Servers.Registrar
         /// </summary>
         public string UserName { get; set; }
 
+        /// <summary>
+        /// Gets or sets authentication user name.
+        /// </summary>
+        public string AuthenticationUserName { get; set; }
+
         public RegistrationContact Find(SipUri uri)
         {
             foreach (RegistrationContact contact in Contacts)
@@ -61,12 +80,12 @@ namespace SipSharp.Servers.Registrar
             return null;
         }
 
-        public void Replace(List<RegistrationContact> contacts)
+        public void ReplaceContacts(IEnumerable<RegistrationContact> contacts)
         {
-            lock (Contacts)
-            {
-                Contacts = contacts;
-            }
+            List<RegistrationContact> newcontacts = new List<RegistrationContact>();
+            foreach (var contact in contacts)
+                newcontacts.Add(contact);
+            _contacts = newcontacts;
         }
     }
 }

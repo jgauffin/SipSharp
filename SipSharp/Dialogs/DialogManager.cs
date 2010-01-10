@@ -257,7 +257,7 @@ namespace SipSharp.Dialogs
                 _logger.Warning("Failed to find dialog with to tag: " + localTag);
                 transaction.Send(response);
             }
-            return true;
+            return false;
         }
     }
 }

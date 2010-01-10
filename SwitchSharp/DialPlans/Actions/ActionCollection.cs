@@ -2,47 +2,58 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace SwitchSharp.DialPlans
+namespace SwitchSharp.DialPlans.Actions
 {
-    public class ActionCollection : IEnumerable<IDialPlanAction>
+    /// <summary>
+    /// Collection of dial plan actions.
+    /// </summary>
+    public class ActionCollection : IEnumerable<IAction>
     {
-        private readonly List<IDialPlanAction> _actions = new List<IDialPlanAction>();
+        private readonly LinkedList<IAction> _actions = new LinkedList<IAction>();
 
         /// <summary>
-        /// Checks if the last action is terminating.
+        /// Gets number of items in the collection.
         /// </summary>
-        /// <remarks>
-        /// Terminating actions will hangup the call, no other actions can be processed afterward.
-        /// </remarks>
-        public bool IsLastActionTerminating
+        public int Count
         {
-            get { return _actions.Count > 0 && _actions[_actions.Count - 1].IsTerminatingAction; }
+            get { return _actions.Count; }
         }
 
         /// <summary>
         /// Gets last action in the collection.
         /// </summary>
-        public IDialPlanAction LastAction
+        public IAction LastAction
         {
-            get { return _actions.Count > 0 ? _actions[_actions.Count - 1] : null; }
+            get { return _actions.Count > 0 ? _actions.Last.Value : null; }
         }
 
         /// <summary>
         /// Add a new action
         /// </summary>
         /// <param name="action">Action to add.</param>
-        /// <exception cref="InvalidOperationException">Last action is terminating</exception>
         /// <exception cref="ArgumentNullException"><c>action</c> is <c>null</c>.</exception>
-        public void Add(IDialPlanAction action)
+        public void AddLast(IAction action)
         {
             if (action == null)
                 throw new ArgumentNullException("action");
 
-            if (_actions.Count > 0 && LastAction.IsTerminatingAction)
-                throw new InvalidOperationException("Last action is terminating");
+            _actions.AddLast(action);
         }
 
-        #region IEnumerable<IDialPlanAction> Members
+        /// <summary>
+        /// Add a new action
+        /// </summary>
+        /// <param name="action">Action to add.</param>
+        /// <exception cref="ArgumentNullException"><c>action</c> is <c>null</c>.</exception>
+        public void AddFirst(IAction action)
+        {
+            if (action == null)
+                throw new ArgumentNullException("action");
+
+            _actions.AddFirst(action);
+        }
+
+        #region IEnumerable<IAction> Members
 
         /// <summary>
         /// Returns an enumerator that iterates through the collection.
@@ -51,7 +62,7 @@ namespace SwitchSharp.DialPlans
         /// A <see cref="T:System.Collections.Generic.IEnumerator`1"/> that can be used to iterate through the collection.
         /// </returns>
         /// <filterpriority>1</filterpriority>
-        public IEnumerator<IDialPlanAction> GetEnumerator()
+        public IEnumerator<IAction> GetEnumerator()
         {
             return _actions.GetEnumerator();
         }

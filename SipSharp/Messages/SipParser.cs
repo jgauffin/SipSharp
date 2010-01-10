@@ -168,6 +168,7 @@ namespace SipSharp.Messages
         /// <param name="words">Will always contain three elements.</param>
         /// <remarks>Used to raise the RequestLineParsed or ResponseLineParsed event 
         /// depending on the words in the array.</remarks>
+        /// <exception cref="BadRequestException"><c>BadRequestException</c>.</exception>
         protected virtual void OnFirstLine(string[] words)
         {
             if (words[0] == "SIP/2.0")
@@ -227,7 +228,7 @@ namespace SipSharp.Messages
         /// <summary>
         /// Continue parsing a message
         /// </summary>
-        /// <param name="buffer">Byte buffer containting bytes</param>
+        /// <param name="buffer">Byte buffer containing bytes</param>
         /// <param name="offset">Where to start the parsing</param>
         /// <param name="count">Number of bytes to parse</param>
         /// <returns>index where the parsing stopped.</returns>
@@ -279,5 +280,10 @@ namespace SipSharp.Messages
         private delegate bool ParserMethod();
 
         #endregion
+
+        public void Reset()
+        {
+            _parserMethod = ParseFirstLine;
+        }
     }
 }

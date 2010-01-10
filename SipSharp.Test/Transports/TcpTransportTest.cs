@@ -33,8 +33,9 @@ namespace SipSharp.Test.Transports
             _messageFactory.RequestReceived += OnRequest;
             _messageFactory.ResponseReceived += OnResponse;
             var pool = new ObjectPool<byte[]>(CreateBuffer);
-            _transport = new TcpTransport(_messageFactory) {BufferPool = _bufferPool};
-            _transport.Start(new IPEndPoint(IPAddress.Any, 1324));
+            _transport = new TcpTransport(new IPEndPoint(IPAddress.Any, 1324), _messageFactory)
+                             {BufferPool = _bufferPool};
+            _transport.Start();
             _transport.UnhandledException += OnUnhandledException;
         }
 

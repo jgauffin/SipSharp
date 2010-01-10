@@ -169,6 +169,8 @@ namespace SipSharp.Transports
         public void Start()
         {
             _isStarted = true;
+            foreach (var transport in _transports)
+                transport.Value.Start();
         }
 
         #region ITransportLayer Members

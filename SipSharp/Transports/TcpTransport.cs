@@ -19,13 +19,16 @@ namespace SipSharp.Transports
         private readonly MessageFactory _factory;
         private TcpListener _listener;
         private BufferReader _reader;
+        private IPEndPoint _listeningPoint;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TcpTransport"/> class.
         /// </summary>
+        /// <param name="endPoint">End point to accept new connections on.</param>
         /// <param name="factory">Message factory.</param>
-        public TcpTransport(MessageFactory factory)
+        public TcpTransport(IPEndPoint endPoint, MessageFactory factory)
         {
+            _listeningPoint = endPoint;
             _factory = factory;
         }
 
@@ -116,23 +119,24 @@ namespace SipSharp.Transports
         /// <summary>
         /// Starts the specified end point.
         /// </summary>
-        /// <param name="endPoint">The end point.</param>
         /// <exception cref="ArgumentException"><see cref="EndPoint"/> is not of the type expected by the transport implementation</exception>
         /// <exception cref="ArgumentNullException"><c>endPoint</c> is null.</exception>
         /// <exception cref="System.Net.Sockets.SocketException">If listener cannot be started.</exception>
-        public void Start(EndPoint endPoint)
+        public void Start()
         {
-            if (endPoint == null)
-                throw new ArgumentNullException("endPoint");
-            var ep = endPoint as IPEndPoint;
-            if (ep == null)
-                throw new ArgumentException("EndPoint is not of type IPEndPoint");
-
-            _listener = new TcpListener(ep);
+            _listener = new TcpListener(_listeningPoint);
             _listener.Start();
             _listener.BeginAcceptSocket(OnAccept, null);
         }
 
+
+        /// <summary>
+        /// Gets or sets listening end point.
+        /// </summary>
+        public EndPoint LocalEndPoint
+        {
+            get { return _listeningPoint; }
+        }
 
         /// <summary>
         /// Send a buffer to a certain end point.

@@ -19,5 +19,10 @@ namespace SipSharp.Client
         public void Subscribe(string method, EventHandler<ResponseEventArgs> handler)
         {
         }
+
+        public ProcessingResult ProcessRequest(RequestContext context)
+        {
+            return ProcessingResult.SendResponse;
+        }
     }
 }

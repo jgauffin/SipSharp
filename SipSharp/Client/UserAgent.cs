@@ -42,7 +42,7 @@ namespace SipSharp.Client
     /// S/MIME.
     /// </para>
     /// </remarks>
-    public class UserAgent
+    public class UserAgent : IRequestHandler
     {
         private readonly MethodHandlers _handlers = new MethodHandlers();
         private readonly ILogger _logger = LogFactory.CreateLogger(typeof (UserAgent));
@@ -64,8 +64,7 @@ namespace SipSharp.Client
         internal UserAgent(ISipStack stack)
         {
             _stack = stack;
-            _stack.RequestReceived += OnRequest;
-            _stack.ResponseReceived += OnInviteResponse;
+            _stack.Register(this);
         }
 
 
@@ -129,10 +128,6 @@ namespace SipSharp.Client
                 return;
         }
 
-        private void OnRequest(object sender, RequestEventArgs e)
-        {
-            _server.OnRequest(sender, e);
-        }
 
         private void OnTransactionTerminated(object sender, EventArgs e)
         {
@@ -317,6 +312,11 @@ namespace SipSharp.Client
             transaction.TransportFailed += OnTransportFailed;
             transaction.ResponseReceived += OnInviteResponse;
             _stack.Send(request);
+        }
+
+        public ProcessingResult ProcessRequest(RequestContext context)
+        {
+            return _server.ProcessRequest(context);
         }
     }
 }

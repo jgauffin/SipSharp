@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using SipSharp.Calls;
 using SipSharp.Dialogs;
@@ -17,10 +18,6 @@ namespace SipSharp
         private readonly Authenticator _authenticator;
         private readonly ILogger _logger = LogFactory.CreateLogger(typeof (SipStack));
         private readonly MessageFactory _messageFactory;
-
-        private readonly SubscriberList<EventHandler<RequestEventArgs>> _requestSubscribers =
-            new SubscriberList<EventHandler<RequestEventArgs>>();
-
         private readonly TransactionManager _transactionManager;
         private readonly TransportLayer _transportLayer;
         private Contact _contact;
@@ -28,6 +25,7 @@ namespace SipSharp
         private string _domain;
         private IPEndPoint _endPoint;
         private int _sequenceNumber;
+        private List<IRequestHandler> _requestHandlers = new List<IRequestHandler>();
 
         public SipStack()
         {
@@ -38,6 +36,7 @@ namespace SipSharp
             _transportLayer.RequestReceived += OnRequest;
             _transportLayer.ResponseReceived += OnResponse;
             _transactionManager = new TransactionManager(_transportLayer);
+            _dialogManager = new DialogManager(this);
             _authenticator = new Authenticator();
         }
 
@@ -97,6 +96,37 @@ namespace SipSharp
                 _logger.Warning("Failed to authenticate");
                 return;
             }
+
+
+            IServerTransaction transaction = _transactionManager.CreateServerTransaction(e.Request);
+            var context = new RequestContext(e.Request, e.Request.CreateResponse(StatusCode.OK, "OK!"), transaction);
+            bool isSent = false;
+            foreach (var handler in _requestHandlers)
+            {
+                ProcessingResult result = handler.ProcessRequest(context);
+                if (result == ProcessingResult.SendResponse)
+                {
+                    _logger.Debug(handler.GetType().FullName + " added a response.");
+                    transaction.Send(context.Response);
+                    isSent = true;
+                    break;
+                }
+                if (result == ProcessingResult.Abort)
+                {
+                    _logger.Debug(handler.GetType().FullName + " aborted processing.");
+                    return;
+                }
+            }
+
+            if (!isSent)
+            {
+                _logger.Info("Nothing handled " + e.Request);
+                context.Response.StatusCode = StatusCode.NotImplemented;
+                context.Response.ReasonPhrase = "Ohh no. We can't handle that method :(";
+                transaction.Send(context.Response);
+            }
+
+            return;
 
             // 8.2.1 Method Inspection
             // 
@@ -345,7 +375,7 @@ namespace SipSharp
             //    mode for each new request.       
 
             #endregion
-
+            /*
             IServerTransaction transaction = _transactionManager.CreateServerTransaction(e.Request);
             var args = new RequestEventArgs(e.Request, transaction, e.RemoteEndPoint);
             if (!_requestSubscribers.Invoke(e.Request.Method, handler => handler(this, args)))
@@ -353,6 +383,7 @@ namespace SipSharp
                 IResponse response = e.Request.CreateResponse(StatusCode.NotImplemented, "Method not implemented");
                 _transportLayer.Send(response);
             }
+             * */
         }
 
         private void OnResponse(object sender, ResponseEventArgs e)
@@ -505,9 +536,43 @@ namespace SipSharp
             return _transactionManager.CreateClientTransaction(request);
         }
 
+        /// <summary>
+        /// A request have been received by the stack
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Requests handled by transactions or dialogs are not being handled by this event.
+        /// </para>
+        /// A new transaction are automatically created by the stack and attached to this event.
+        /// </remarks>
+        //event EventHandler<RequestEventArgs> RequestReceived;
 
-        public event EventHandler<RequestEventArgs> RequestReceived;
-        public event EventHandler<ResponseEventArgs> ResponseReceived;
+
+        /// <summary>
+        /// A response have been received by the stack
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Responses handled by transactions or dialogs are not being handled by this event.
+        /// </para>
+        /// A new transaction are automatically created by the stack and attached to this event.
+        /// </remarks>
+        //event EventHandler<ResponseEventArgs> ResponseReceived;
+
+        /// <summary>
+        /// Register a request handler.
+        /// </summary>
+        /// <param name="handler">Delegate used to process </param>
+        public void Register(IRequestHandler handler)
+        {
+            // Create a new list to avoid multi threading issues.
+            // we do this to not having to lock the list.
+            _requestHandlers = new List<IRequestHandler>(_requestHandlers) {handler};
+        }
+
+
+        //public event EventHandler<RequestEventArgs> RequestReceived;
+        //public event EventHandler<ResponseEventArgs> ResponseReceived;
 
 
         public IServerTransaction CreateServerTransaction(IRequest request)
@@ -531,5 +596,39 @@ namespace SipSharp
         }
 
         #endregion
+    }
+
+
+    public class RequestContext
+    {
+        /// <summary>
+        /// Gets or sets request
+        /// </summary>
+        public IRequest Request { get; set; }
+
+        /// <summary>
+        /// Gets or sets response
+        /// </summary>
+        public IResponse Response { get; set; }
+
+        public IServerTransaction Transaction { get; private set; }
+
+        public RequestContext(IRequest request, IResponse response, IServerTransaction transaction)
+        {
+            Request = request;
+            Response = response;
+            Transaction = transaction;
+        }
+    }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public enum ProcessingResult
+    {
+        Continue,
+        SendResponse,
+        Abort
     }
 }

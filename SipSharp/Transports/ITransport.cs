@@ -35,6 +35,11 @@ namespace SipSharp.Transports
         string Protocol { get; }
 
         /// <summary>
+        /// Gets or sets listening end point.
+        /// </summary>
+        EndPoint LocalEndPoint { get; }
+
+        /// <summary>
         /// Send a buffer to a certain end point.
         /// </summary>
         /// <param name="endPoint">End point that the buffer should be sent to.</param>
@@ -49,10 +54,9 @@ namespace SipSharp.Transports
         /// <summary>
         /// Start transport.
         /// </summary>
-        /// <param name="listenerEndPoint">Address/port that clients should connect to.</param>
         /// <exception cref="ArgumentException"><see cref="EndPoint"/> is not of the type expected by the transport implementation</exception>
-        /// <exception cref="ArgumentNullException"><c>endPoint</c> is null.</exception>
-        void Start(EndPoint listenerEndPoint);
+        /// <exception cref="ArgumentNullException"><c>endPoint</c> is <c>null</c>.</exception>
+        void Start();
 
         /// <summary>
         /// A exception was unhandled in a worker thread.

@@ -42,6 +42,7 @@ namespace SipSharp.Messages
 
         private void OnMessageComplete(object sender, EventArgs e)
         {
+            _parser.Reset();
             if (_message is IRequest)
                 RequestCompleted(this, new RequestEventArgs((IRequest) _message, null, EndPoint));
             else
@@ -68,16 +69,16 @@ namespace SipSharp.Messages
         /// <exception cref="ParseException">Parsing failed.</exception>
         public int Parse(byte[] buffer, int offset, int length)
         {
-            int lastOffset = _parser.Parse(buffer, offset, length);
-            int currentOffset = _parser.Parse(buffer, lastOffset, length);
+                int lastOffset = _parser.Parse(buffer, offset, length);
+                int currentOffset = _parser.Parse(buffer, lastOffset, length);
 
-            while (lastOffset != currentOffset)
-            {
-                lastOffset = currentOffset;
-                currentOffset = _parser.Parse(buffer, lastOffset, length);
-            }
+                while (lastOffset != currentOffset)
+                {
+                    lastOffset = currentOffset;
+                    currentOffset = _parser.Parse(buffer, lastOffset, length);
+                }
 
-            return currentOffset;
+                return currentOffset;
         }
 
         #region IDisposable Members

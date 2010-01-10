@@ -13,17 +13,20 @@ namespace SipSharp.Transports
     /// </summary>
     public class UdpTransport : ITransport
     {
+        public IPAddress Address { get; set; }
         private readonly ILogger _logger = LogFactory.CreateLogger(typeof (UdpTransport));
+        private readonly IPEndPoint _listeningPoint;
         private readonly MessageFactory _parsers;
-        private EndPoint _serverEndPoint;
         private Socket _socket;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UdpTransport"/> class.
         /// </summary>
+        /// <param name="listeningPoint">End point to accept new connections on.</param>
         /// <param name="parsers">The parsers.</param>
-        public UdpTransport(MessageFactory parsers)
+        public UdpTransport(IPEndPoint listeningPoint, MessageFactory parsers)
         {
+            _listeningPoint = listeningPoint;
             _parsers = parsers;
         }
 
@@ -79,8 +82,9 @@ namespace SipSharp.Transports
 
             try
             {
+                EndPoint localEndPoint = new IPEndPoint(_listeningPoint.Address, _listeningPoint.Port);
                 _socket.BeginReceiveFrom(newBuffer, 0, newBuffer.Length, SocketFlags.None,
-                                         ref _serverEndPoint, OnRead, newBuffer);
+                                         ref localEndPoint, OnRead, newBuffer);
             }
             catch (Exception err)
             {
@@ -126,27 +130,20 @@ namespace SipSharp.Transports
         /// <summary>
         /// Start transport.
         /// </summary>
-        /// <param name="listenerEndPoint">Address/port that clients should connect to.</param>
         /// <exception cref="ArgumentException"><see cref="EndPoint"/> is not of the type expected by the transport implementation</exception>
         /// <exception cref="ArgumentNullException"><c>endPoint</c> is null.</exception>
-        public void Start(EndPoint listenerEndPoint)
+        public void Start()
         {
-            if (listenerEndPoint == null)
-                throw new ArgumentNullException("listenerEndPoint");
-            var ep = listenerEndPoint as IPEndPoint;
-            if (ep == null)
-                throw new ArgumentException("Endpoint is not of type IPEndPoint", "listenerEndPoint");
-
             if (BufferPool == null)
                 BufferPool = new ObjectPool<byte[]>(() => new byte[65535]);
 
             byte[] buffer = BufferPool.Dequeue();
             _socket = CreateSocket();
-            _socket.Bind(ep);
+            _socket.Bind(_listeningPoint);
 
             _logger.Trace("BeginReceiveFrom");
-            _serverEndPoint = listenerEndPoint;
-            _socket.BeginReceiveFrom(buffer, 0, buffer.Length, SocketFlags.None, ref _serverEndPoint, OnRead, buffer);
+            EndPoint ep = new IPEndPoint(_listeningPoint.Address, _listeningPoint.Port);
+            _socket.BeginReceiveFrom(buffer, 0, buffer.Length, SocketFlags.None, ref ep, OnRead, buffer);
         }
 
         public void Send(EndPoint endPoint, byte[] buffer, int offset, int count)
@@ -164,6 +161,14 @@ namespace SipSharp.Transports
         public string Protocol
         {
             get { return "UDP"; }
+        }
+
+        /// <summary>
+        /// Gets or sets listening end point.
+        /// </summary>
+        public EndPoint LocalEndPoint
+        {
+            get { return _listeningPoint; }
         }
 
         /// <summary>
